@@ -1,5 +1,5 @@
 """
-CodeSentinel v2.0 - Installation Location Page
+CodeSentinel - Installation Location Page
 
 Created by: joediggidyyy
 Architecture: SECURITY > EFFICIENCY > MINIMALISM

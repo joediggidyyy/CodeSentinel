@@ -1,5 +1,5 @@
 """
-CodeSentinel v2.0 - Setup Wizard Main Application
+CodeSentinel - Setup Wizard Main Application
 
 Created by: joediggidyyy
 Architecture: SECURITY > EFFICIENCY > MINIMALISM
@@ -37,7 +37,7 @@ class SetupWizard:
     
     def _setup_window(self) -> None:
         """Configure the main window."""
-        self.root.title("CodeSentinel v2.0 Setup Wizard")
+        self.root.title("CodeSentinel Setup Wizard")
         self.root.geometry("900x700")
         self.root.resizable(True, True)
         
@@ -177,7 +177,7 @@ class SetupWizard:
             current_page.frame.pack(fill="both", expand=True)
             
             # Update window title
-            self.root.title(f"CodeSentinel v2.0 Setup - {current_page.title}")
+            self.root.title(f"CodeSentinel Setup - {current_page.title}")
             
             # Call page activation hook
             if hasattr(current_page, 'on_page_shown'):

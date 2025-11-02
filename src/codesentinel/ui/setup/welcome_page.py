@@ -1,5 +1,5 @@
 """
-CodeSentinel v2.0 - Welcome Page Component
+CodeSentinel - Welcome Page Component
 
 Created by: joediggidyyy
 Architecture: SECURITY > EFFICIENCY > MINIMALISM
@@ -60,7 +60,7 @@ class WelcomePage:
         # Main title
         title_label = ttk.Label(
             header_frame,
-            text="CodeSentinel v2.0",
+            text="CodeSentinel",
             font=("Segoe UI", 24, "bold"),
             foreground="#2E3440"
         )
@@ -90,7 +90,7 @@ class WelcomePage:
         welcome_frame.pack(fill="x", pady=(0, 20))
         
         welcome_text = (
-            "Welcome to CodeSentinel v2.0, a security-first automated maintenance and monitoring "
+            "Welcome to CodeSentinel, a security-first automated maintenance and monitoring "
             "system for development projects. This setup wizard will guide you through configuring "
             "CodeSentinel for your development environment.\n\n"
             "CodeSentinel provides comprehensive monitoring capabilities with multi-channel alerting, "
@@ -223,7 +223,7 @@ class WelcomePage:
         
         version_label = ttk.Label(
             version_frame,
-            text="CodeSentinel v2.0 | MIT License | © 2025 joediggidyyy",
+            text="CodeSentinel | MIT License | © 2025 joediggidyyy",
             font=("Segoe UI", 9),
             foreground="#81A1C1"
         )

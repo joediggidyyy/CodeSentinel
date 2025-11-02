@@ -43,7 +43,7 @@ def install_dependencies():
                     print(f"   ✓ {package}")
         
         print("")
-        print("🚀 You can now run: python launch_v2.py")
+        print("🚀 You can now run: python launch.py")
         return 0
         
     except subprocess.CalledProcessError as e:

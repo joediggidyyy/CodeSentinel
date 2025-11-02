@@ -1,5 +1,5 @@
 """
-CodeSentinel v2.0 - Base Page Component
+CodeSentinel - Base Page Component
 
 Created by: joediggidyyy
 Architecture: SECURITY > EFFICIENCY > MINIMALISM

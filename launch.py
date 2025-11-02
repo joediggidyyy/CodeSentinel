@@ -123,3 +123,8 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+# Entry point for console script
+def launcher_main():
+    """Entry point for codesentinel-setup console script."""
+    return main()

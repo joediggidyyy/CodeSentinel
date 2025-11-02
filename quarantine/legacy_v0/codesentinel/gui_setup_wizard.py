@@ -163,6 +163,15 @@ class GUISetupWizard:
         self.cron_var = tk.BooleanVar(value=False)
         self.git_hooks_var = tk.BooleanVar(value=True)  # Recommended by default
         self.ci_cd_var = tk.BooleanVar(value=False)
+        
+        # Validation flags for navigation locking
+        self.email_validated = False
+        self.slack_validated = True  # Slack doesn't require complex validation
+        self.github_api_validated = False
+        
+        # Add trace callbacks to reset validation when checkboxes change
+        self.email_var.trace('w', self.on_email_checkbox_change)
+        self.api_var.trace('w', self.on_api_checkbox_change)
 
     def get_or_create_var(self, var_name, var_type, default_value):
         """Get existing variable or create it with default value if it doesn't exist."""
@@ -242,6 +251,11 @@ class GUISetupWizard:
                                        command=self.cancel_wizard)
         self.cancel_button.pack(side=tk.RIGHT, padx=(0, 10))
 
+        # TESTING: Add reset button for development/testing
+        self.reset_button = ttk.Button(nav_frame, text="🔄 Reset", 
+                                      command=self.reset_wizard_state)
+        self.reset_button.pack(side=tk.LEFT, padx=(10, 0))
+
         # Initialize first step
         self.show_step(0)
 
@@ -257,9 +271,8 @@ class GUISetupWizard:
             self.step_label.config(text=f"Step {step_index + 1} of {len(self.steps)}: {self.steps[step_index]}")
             self.progress_var.set(step_index + 1)
 
-            # Clear current content
-            for widget in self.content_frame.winfo_children():
-                widget.destroy()
+            # Enhanced widget cleanup to prevent naming conflicts
+            self.cleanup_content_frame()
 
             # Show appropriate step content
             step_methods = [
@@ -278,17 +291,114 @@ class GUISetupWizard:
             # Call the step method
             step_methods[step_index]()
 
-            # Update navigation buttons
-            self.back_button.config(state=tk.NORMAL if step_index > 0 else tk.DISABLED)
-            if step_index == len(self.steps) - 1:
-                self.next_button.config(text="Finish", command=self.finish_wizard)
-            else:
-                self.next_button.config(text="Next", command=self.go_next)
+            # Update navigation buttons with validation checks
+            self.update_navigation_buttons(step_index)
+            
+            # Force canvas scroll region update to ensure content is visible
+            self.update_canvas_scroll_region()
                 
         except Exception as e:
             print(f"Error showing step {step_index}: {e}")
+            self.show_error_step(f"Failed to show step {step_index + 1}: {str(e)}")
             import traceback
             traceback.print_exc()
+
+    def update_canvas_scroll_region(self):
+        """Force update of canvas scroll region to make content visible."""
+        try:
+            # Force the scrollable frame to update its layout
+            self.scrollable_frame.update_idletasks()
+            
+            # Update the canvas scroll region
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+            
+            # Ensure the canvas is at the top
+            self.canvas.yview_moveto(0)
+        except Exception as e:
+            print(f"Warning: Could not update canvas scroll region: {e}")
+
+    def update_navigation_buttons(self, step_index):
+        """Update navigation buttons with validation checks."""
+        # Back button is always enabled (except on first step)
+        self.back_button.config(state=tk.NORMAL if step_index > 0 else tk.DISABLED)
+        
+        # Check if navigation should be locked
+        navigation_locked, lock_reason = self.check_navigation_lock(step_index)
+        
+        if step_index == len(self.steps) - 1:
+            # Final step - Finish button
+            if navigation_locked:
+                self.next_button.config(text=f"⚠️ {lock_reason}", state=tk.DISABLED)
+            else:
+                self.next_button.config(text="Finish", command=self.finish_wizard, state=tk.NORMAL)
+        else:
+            # Regular next button
+            if navigation_locked:
+                self.next_button.config(text=f"⚠️ {lock_reason}", state=tk.DISABLED)
+            else:
+                self.next_button.config(text="Next", command=self.go_next, state=tk.NORMAL)
+
+    def check_navigation_lock(self, step_index):
+        """Check if navigation should be locked due to required validations."""
+        # Step 5 (index 4) - Alert System: Check email and other integrations
+        if step_index == 4:
+            return self.check_alert_system_validation()
+        
+        # Step 7 (index 6) - GitHub Integration: Check GitHub API validation  
+        elif step_index == 6:
+            return self.check_github_integration_validation()
+        
+        # No locks for other steps
+        return False, ""
+
+    def check_alert_system_validation(self):
+        """Check if alert system requires validation before proceeding."""
+        # Check if email is selected but not validated
+        if hasattr(self, 'email_var') and self.email_var.get():
+            if not hasattr(self, 'email_validated') or not self.email_validated:
+                return True, "Validate email settings"
+        
+        # Check if Slack is selected but not configured
+        if hasattr(self, 'slack_var') and self.slack_var.get():
+            if not hasattr(self, 'slack_validated') or not self.slack_validated:
+                return True, "Configure Slack settings"
+        
+        return False, ""
+
+    def check_github_integration_validation(self):
+        """Check if GitHub integration requires validation before proceeding."""
+        # Check if GitHub API is selected but not validated
+        if hasattr(self, 'api_var') and self.api_var.get():
+            if not hasattr(self, 'github_api_validated') or not self.github_api_validated:
+                return True, "Validate GitHub API"
+        
+        return False, ""
+
+    def on_email_checkbox_change(self, *args):
+        """Reset email validation when checkbox state changes."""
+        if not self.email_var.get():
+            # If unchecked, mark as validated (no validation needed)
+            self.email_validated = True
+        else:
+            # If checked, require validation
+            self.email_validated = False
+        
+        # Update navigation buttons using root.after to prevent timing conflicts
+        self.root.after(10, lambda: self.update_navigation_buttons(self.current_step))
+
+    def on_api_checkbox_change(self, *args):
+        """Handle API checkbox state changes."""
+        if not self.api_var.get():
+            # If unchecked, mark as validated (no validation needed)
+            self.github_api_validated = True
+        else:
+            # If checked and we don't have validation yet, require it
+            # But preserve existing validation state if already validated
+            if not getattr(self, 'github_api_validated', False):
+                self.github_api_validated = False
+        
+        # Update navigation buttons using root.after to prevent timing conflicts
+        self.root.after(10, lambda: self.update_navigation_buttons(self.current_step))
 
     def show_welcome(self):
         """Show welcome screen."""
@@ -564,7 +674,14 @@ Click Next to begin the setup process.
         self.check_requirements()
 
         if self.requirements_result is None:
-            ttk.Label(frame, text="Checking system requirements...").pack(pady=20)
+            checking_frame = ttk.Frame(frame)
+            checking_frame.pack(pady=20)
+            
+            ttk.Label(checking_frame, text="🔍 Checking system requirements...", 
+                     font=('Arial', 10)).pack()
+            ttk.Label(checking_frame, text="This may take a moment while we verify your system setup.", 
+                     font=('Arial', 9), foreground='gray').pack(pady=(5, 0))
+            
             # Schedule check
             self.root.after(100, self.show_requirements_result)
         else:
@@ -862,9 +979,12 @@ Click Next to begin the setup process.
         import email.mime.text
         import threading
         
+        # Capture current step for navigation update
+        validation_step = self.current_step
+        
         def test_connection():
             try:
-                self.email_status_label.config(text="Testing connection...", foreground="blue")
+                self.email_status_label.config(text="🔗 Connecting to SMTP server...", foreground="blue")
                 self.root.update()
                 
                 # Get email configuration
@@ -879,10 +999,16 @@ Click Next to begin the setup process.
                     self.email_status_label.config(text="❌ Please fill all required fields", foreground="red")
                     return
                 
+                self.email_status_label.config(text="🔐 Authenticating with server...", foreground="blue")
+                self.root.update()
+                
                 # Test SMTP connection
                 server = smtplib.SMTP(smtp_server, smtp_port)
                 server.starttls()
                 server.login(username, password)
+                
+                self.email_status_label.config(text="📧 Sending test email...", foreground="blue")
+                self.root.update()
                 
                 # Send test email
                 msg = email.mime.text.MIMEText("CodeSentinel email test successful!")
@@ -893,10 +1019,21 @@ Click Next to begin the setup process.
                 server.send_message(msg)
                 server.quit()
                 
-                self.email_status_label.config(text="✅ Email test successful!", foreground="green")
+                # Mark email as validated
+                self.email_validated = True
+                
+                self.email_status_label.config(text="✅ Email test successful! Check your inbox.", foreground="green")
+                
+                # Update navigation buttons after successful validation
+                self.root.after(100, lambda: self.update_navigation_buttons(validation_step))
                 
             except Exception as e:
+                # Mark email as not validated on error
+                self.email_validated = False
                 self.email_status_label.config(text=f"❌ Error: {str(e)[:50]}...", foreground="red")
+                
+                # Update navigation buttons after failed validation
+                self.root.after(100, lambda: self.update_navigation_buttons(validation_step))
         
         # Run test in background thread to avoid UI freezing
         threading.Thread(target=test_connection, daemon=True).start()
@@ -907,9 +1044,12 @@ Click Next to begin the setup process.
         import urllib.parse
         import threading
         
+        # Capture current step for navigation update
+        validation_step = self.current_step
+        
         def validate_repo():
             try:
-                self.git_status_label.config(text="Validating repository...", foreground="blue")
+                self.git_status_label.config(text="🔍 Checking URL format...", foreground="blue")
                 self.root.update()
                 
                 github_url = self.github_url_var.get().strip()
@@ -923,11 +1063,17 @@ Click Next to begin the setup process.
                     self.git_status_label.config(text="❌ Please enter a valid GitHub URL", foreground="red")
                     return
                 
+                self.git_status_label.config(text="🌐 Connecting to GitHub...", foreground="blue")
+                self.root.update()
+                
                 # Test if repository exists and is accessible
                 result = subprocess.run(['git', 'ls-remote', '--heads', github_url], 
-                                      capture_output=True, text=True, timeout=10)
+                                      capture_output=True, text=True, timeout=15)
                 
                 if result.returncode == 0:
+                    self.git_status_label.config(text="📋 Analyzing repository...", foreground="blue")
+                    self.root.update()
+                    
                     # Parse repository info
                     lines = result.stdout.strip().split('\n')
                     branches = []
@@ -939,15 +1085,33 @@ Click Next to begin the setup process.
                                 branches.append(branch)
                     
                     branch_info = f" (branches: {', '.join(branches[:3])}" + ("..." if len(branches) > 3 else "") + ")"
+                    
+                    # Mark GitHub API as validated
+                    self.github_api_validated = True
+                    
                     self.git_status_label.config(text=f"✅ Repository accessible{branch_info}", foreground="green")
+                    
+                    # Update navigation buttons after successful validation
+                    self.root.after(100, lambda: self.update_navigation_buttons(validation_step))
                 else:
+                    # Mark GitHub API as not validated
+                    self.github_api_validated = False
                     error_msg = result.stderr.strip() if result.stderr else "Unknown error"
                     self.git_status_label.config(text=f"❌ Repository not accessible: {error_msg[:30]}...", foreground="red")
                     
+                    # Update navigation buttons after failed validation
+                    self.root.after(100, lambda: self.update_navigation_buttons(validation_step))
+                    
             except subprocess.TimeoutExpired:
+                # Mark GitHub API as not validated
+                self.github_api_validated = False
                 self.git_status_label.config(text="❌ Timeout: Repository unreachable", foreground="red")
+                self.root.after(100, lambda: self.update_navigation_buttons(validation_step))
             except Exception as e:
+                # Mark GitHub API as not validated
+                self.github_api_validated = False
                 self.git_status_label.config(text=f"❌ Error: {str(e)[:30]}...", foreground="red")
+                self.root.after(100, lambda: self.update_navigation_buttons(validation_step))
         
         # Run validation in background thread
         threading.Thread(target=validate_repo, daemon=True).start()
@@ -1298,35 +1462,83 @@ Click Next to begin the setup process.
 
     def show_github_integration(self):
         """Show GitHub integration setup."""
+        # Create main frame
         frame = ttk.Frame(self.content_frame)
         frame.pack(fill=tk.BOTH, expand=True)
 
+        # Add title
         ttk.Label(frame, text="GitHub Integration",
                  font=('Arial', 12, 'bold')).pack(pady=(0, 20))
 
+        # CRITICAL FIX: Always show repository setup first if not a git repo
         if not self.backend_wizard.is_git_repo:
+            ttk.Label(frame, text="Repository Setup Required", 
+                     font=('Arial', 11, 'bold'), foreground='orange').pack(pady=(0, 10))
+            ttk.Label(frame, text="Before configuring GitHub integration, you need to set up your Git repository. "
+                                "Complete the repository setup below, then GitHub features will be available.",
+                     wraplength=600).pack(pady=(0, 20))
             self.show_repository_setup(frame)
+            
+            # Show a preview of GitHub features that will be available after setup
+            preview_frame = ttk.LabelFrame(frame, text="GitHub Features (Available After Repository Setup)")
+            preview_frame.pack(fill=tk.X, pady=(20, 0))
+            
+            ttk.Label(preview_frame, text="✓ GitHub Copilot Integration", 
+                     font=('Arial', 9), foreground='gray').pack(anchor=tk.W, pady=2, padx=10)
+            ttk.Label(preview_frame, text="✓ GitHub API Integration", 
+                     font=('Arial', 9), foreground='gray').pack(anchor=tk.W, pady=2, padx=10)
+            ttk.Label(preview_frame, text="✓ Repository Features (templates, workflows)", 
+                     font=('Arial', 9), foreground='gray').pack(anchor=tk.W, pady=2, padx=10)
             return
 
-        ttk.Label(frame, text="Configure GitHub integration features.").pack(pady=(0, 20))
+        # If we have a git repo, show GitHub features
+        ttk.Label(frame, text="Configure GitHub integration features for your repository.",
+                 foreground='green').pack(pady=(0, 20))
 
         # GitHub features
         features_frame = ttk.LabelFrame(frame, text="GitHub Features")
         features_frame.pack(fill=tk.X, pady=(0, 20))
 
-        # Variables already initialized in init_all_gui_variables()
+        # GitHub Copilot Integration
         ttk.Checkbutton(features_frame, text="GitHub Copilot Integration (recommended)",
                        variable=self.copilot_var).pack(anchor=tk.W, pady=2)
+        
+        # GitHub API Integration - simplified without delayed command binding for now
         ttk.Checkbutton(features_frame, text="GitHub API Integration (advanced features)",
                        variable=self.api_var, command=self.toggle_api_config).pack(anchor=tk.W, pady=2)
+        
+        # Repository Features
         ttk.Checkbutton(features_frame, text="Repository Features (issue templates, workflows)",
                        variable=self.repo_var).pack(anchor=tk.W, pady=2)
 
         # API configuration (initially hidden)
         self.api_frame = ttk.LabelFrame(frame, text="GitHub API Configuration")
-        # Will be shown when API checkbox is selected
+        
+        # Initialize API config visibility immediately
+        if hasattr(self, 'api_var') and self.api_var.get():
+            self.show_api_config()
 
-        ttk.Label(frame, text=f"Repository: {self.backend_wizard.git_root}").pack(pady=(20, 0))
+        # Show repository information safely
+        try:
+            repo_path = getattr(self.backend_wizard, 'git_root', 'Unknown')
+            ttk.Label(frame, text=f"Repository: {repo_path}").pack(pady=(20, 0))
+        except Exception as e:
+            print(f"Warning: Could not display repository path: {e}")
+            ttk.Label(frame, text="Repository: (path not available)").pack(pady=(20, 0))
+        
+        # Force canvas update to ensure content is visible
+        self.root.after(10, self.update_canvas_scroll_region)
+
+    def initialize_api_config_visibility(self):
+        """Initialize API configuration visibility after page rendering is complete."""
+        # Safety check to ensure api_frame exists
+        if not hasattr(self, 'api_frame'):
+            return
+            
+        if hasattr(self, 'api_var') and self.api_var.get():
+            self.show_api_config()
+        else:
+            self.hide_api_config()
 
     def show_repository_setup(self, parent_frame):
         """Show comprehensive repository setup wizard for all scenarios."""
@@ -1707,6 +1919,9 @@ Click Next to begin the setup process.
             # Refresh backend wizard state
             self.root.after(0, lambda: setattr(self, 'backend_wizard', 
                 CodeSentinelSetupWizard(self.backend_wizard.install_location)))
+            
+            # CRITICAL: Refresh the current step to show updated content
+            self.root.after(100, lambda: self.refresh_current_step())
                 
         except Exception as e:
             self.log_repo_status(f"\n❌ Setup failed: {str(e)}")
@@ -1765,30 +1980,96 @@ Click Next to begin the setup process.
         subprocess.run(['git', 'fetch', 'origin'], capture_output=True, text=True, cwd=cwd, check=True)
         self.log_repo_status("   ✅ Successfully fetched from remote")
         
-        # Step 4: Handle merge strategy
-        self.log_repo_status(f"\n📋 Step 4: Synchronizing with {merge_strategy} strategy...")
-        result = subprocess.run(['git', 'rev-list', '--count', 'origin/main'], 
-                              capture_output=True, text=True, cwd=cwd)
+        # Step 4: Detect default branch and handle merge strategy
+        self.log_repo_status("\n📋 Step 4: Detecting default branch...")
         
-        if result.returncode == 0 and int(result.stdout.strip()) > 0:
-            if merge_strategy == "merge":
-                subprocess.run(['git', 'merge', 'origin/main', '--allow-unrelated-histories'], 
-                             capture_output=True, text=True, cwd=cwd, check=True)
-                self.log_repo_status("   ✅ Merged with remote history")
-            elif merge_strategy == "rebase":
-                subprocess.run(['git', 'rebase', 'origin/main'], 
-                             capture_output=True, text=True, cwd=cwd, check=True)
-                self.log_repo_status("   ✅ Rebased onto remote history")
+        # Get list of remote branches to find the default branch
+        branch_result = subprocess.run(['git', 'branch', '-r'], capture_output=True, text=True, cwd=cwd)
+        remote_branches = branch_result.stdout.strip().split('\n')
         
-        # Step 5: Push changes
-        self.log_repo_status("\n📋 Step 5: Pushing to GitHub...")
-        if merge_strategy == "force":
-            subprocess.run(['git', 'push', '-u', 'origin', 'main', '--force'], 
-                         capture_output=True, text=True, cwd=cwd, check=True)
+        # Find the default branch (try main, master, then first available)
+        default_branch = None
+        for branch in remote_branches:
+            branch = branch.strip().replace('origin/', '')
+            if branch in ['main', 'master']:
+                default_branch = branch
+                break
+        
+        if not default_branch and remote_branches:
+            # Use first available branch
+            default_branch = remote_branches[0].strip().replace('origin/', '')
+        
+        if not default_branch:
+            self.log_repo_status("   ⚠️  No remote branches found, skipping merge")
         else:
-            subprocess.run(['git', 'push', '-u', 'origin', 'main'], 
-                         capture_output=True, text=True, cwd=cwd, check=True)
-        self.log_repo_status("   ✅ Successfully pushed to GitHub")
+            self.log_repo_status(f"   🎯 Default branch detected: {default_branch}")
+            
+            # Check if remote branch has commits
+            self.log_repo_status(f"\n📋 Step 5: Synchronizing with {merge_strategy} strategy...")
+            result = subprocess.run(['git', 'rev-list', '--count', f'origin/{default_branch}'], 
+                                  capture_output=True, text=True, cwd=cwd)
+            
+            if result.returncode == 0 and int(result.stdout.strip()) > 0:
+                try:
+                    if merge_strategy == "merge":
+                        merge_result = subprocess.run(['git', 'merge', f'origin/{default_branch}', '--allow-unrelated-histories'], 
+                                     capture_output=True, text=True, cwd=cwd)
+                        if merge_result.returncode != 0:
+                            # Handle merge conflicts
+                            self.log_repo_status(f"   ⚠️  Merge conflicts detected:")
+                            self.log_repo_status(f"   {merge_result.stderr.strip()}")
+                            self.log_repo_status("   🔧 Attempting automatic conflict resolution...")
+                            
+                            # Try to auto-resolve by favoring local changes
+                            subprocess.run(['git', 'checkout', '--ours', '.'], capture_output=True, text=True, cwd=cwd)
+                            subprocess.run(['git', 'add', '.'], capture_output=True, text=True, cwd=cwd)
+                            subprocess.run(['git', 'commit', '--no-edit'], capture_output=True, text=True, cwd=cwd)
+                            self.log_repo_status("   ✅ Conflicts resolved (favoring local changes)")
+                        else:
+                            self.log_repo_status("   ✅ Merged with remote history")
+                            
+                    elif merge_strategy == "rebase":
+                        rebase_result = subprocess.run(['git', 'rebase', f'origin/{default_branch}'], 
+                                     capture_output=True, text=True, cwd=cwd)
+                        if rebase_result.returncode != 0:
+                            # Handle rebase conflicts
+                            self.log_repo_status(f"   ⚠️  Rebase conflicts detected, aborting rebase")
+                            subprocess.run(['git', 'rebase', '--abort'], capture_output=True, text=True, cwd=cwd)
+                            self.log_repo_status("   🔄 Falling back to merge strategy...")
+                            subprocess.run(['git', 'merge', f'origin/{default_branch}', '--allow-unrelated-histories'], 
+                                         capture_output=True, text=True, cwd=cwd, check=True)
+                            self.log_repo_status("   ✅ Merged with remote history (fallback)")
+                        else:
+                            self.log_repo_status("   ✅ Rebased onto remote history")
+                except subprocess.CalledProcessError as e:
+                    self.log_repo_status(f"   ❌ Synchronization failed: {e.stderr}")
+                    raise e
+            else:
+                self.log_repo_status("   ℹ️  Remote branch is empty, no merge needed")
+        
+        # Step 6: Push changes
+        self.log_repo_status(f"\n📋 Step 6: Pushing to GitHub...")
+        try:
+            if merge_strategy == "force":
+                push_result = subprocess.run(['git', 'push', '-u', 'origin', 'main', '--force'], 
+                             capture_output=True, text=True, cwd=cwd)
+            else:
+                # Use the detected default branch for push
+                target_branch = default_branch if default_branch else 'main'
+                push_result = subprocess.run(['git', 'push', '-u', 'origin', f'HEAD:{target_branch}'], 
+                             capture_output=True, text=True, cwd=cwd)
+            
+            if push_result.returncode != 0:
+                self.log_repo_status(f"   ⚠️  Push failed: {push_result.stderr}")
+                self.log_repo_status("   🔄 Trying force push...")
+                subprocess.run(['git', 'push', '-u', 'origin', 'HEAD', '--force'], 
+                             capture_output=True, text=True, cwd=cwd, check=True)
+                self.log_repo_status("   ✅ Force pushed to GitHub")
+            else:
+                self.log_repo_status("   ✅ Successfully pushed to GitHub")
+        except subprocess.CalledProcessError as e:
+            self.log_repo_status(f"   ❌ Push failed: {e.stderr}")
+            raise e
     
     def _setup_fresh_start_with_feedback(self):
         """Setup fresh repository with feedback."""
@@ -2118,6 +2399,9 @@ Click OK when you've completed these steps.
             self.show_api_config()
         else:
             self.hide_api_config()
+        
+        # Update navigation buttons
+        self.update_navigation_buttons(self.current_step)
 
     def show_api_config(self):
         """Show GitHub API configuration options."""
@@ -2169,14 +2453,14 @@ Click OK when you've completed these steps.
 
         ttk.Label(frame, text="Configure integration with your development environment.").pack(pady=(0, 20))
 
-        # Detect installed IDEs
-        detected_ides = self.detect_installed_ides()
-        
+        # CRITICAL FIX: Create UI immediately, detect IDEs asynchronously
         # IDE Support Section
         ide_frame = ttk.LabelFrame(frame, text="IDE Support")
         ide_frame.pack(fill=tk.X, pady=(0, 15))
 
-        # Create IDE variables
+        # Create IDE variables immediately (will be populated asynchronously)
+        # Always reset detection state when showing this step to allow re-detection
+        self.ide_detection_running = False
         self.ide_vars = {}
         
         # Define IDE configurations
@@ -2186,11 +2470,6 @@ Click OK when you've completed these steps.
                 'key': 'vscode',
                 'description': 'Lightweight, extensible code editor',
                 'extensions': ['CodeSentinel', 'Python', 'GitLens'],
-                'detection_paths': [
-                    'C:\\Users\\{}\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe',
-                    'C:\\Program Files\\Microsoft VS Code\\Code.exe',
-                    'C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe'
-                ],
                 'install_url': 'https://code.visualstudio.com/'
             },
             {
@@ -2198,10 +2477,6 @@ Click OK when you've completed these steps.
                 'key': 'visualstudio',
                 'description': 'Full-featured IDE for .NET and C++',
                 'extensions': ['CodeSentinel Extension'],
-                'detection_paths': [
-                    'C:\\Program Files\\Microsoft Visual Studio\\2022\\*\\Common7\\IDE\\devenv.exe',
-                    'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\*\\Common7\\IDE\\devenv.exe'
-                ],
                 'install_url': 'https://visualstudio.microsoft.com/'
             },
             {
@@ -2209,10 +2484,6 @@ Click OK when you've completed these steps.
                 'key': 'pycharm',
                 'description': 'Python-focused IDE by JetBrains',
                 'extensions': ['CodeSentinel Plugin'],
-                'detection_paths': [
-                    'C:\\Users\\{}\\AppData\\Local\\JetBrains\\Toolbox\\apps\\PyCharm-P\\*\\bin\\pycharm64.exe',
-                    'C:\\Program Files\\JetBrains\\PyCharm*\\bin\\pycharm64.exe'
-                ],
                 'install_url': 'https://www.jetbrains.com/pycharm/'
             },
             {
@@ -2220,10 +2491,6 @@ Click OK when you've completed these steps.
                 'key': 'intellij',
                 'description': 'Java IDE with multi-language support',
                 'extensions': ['CodeSentinel Plugin'],
-                'detection_paths': [
-                    'C:\\Users\\{}\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\*\\bin\\idea64.exe',
-                    'C:\\Program Files\\JetBrains\\IntelliJ IDEA*\\bin\\idea64.exe'
-                ],
                 'install_url': 'https://www.jetbrains.com/idea/'
             },
             {
@@ -2231,10 +2498,6 @@ Click OK when you've completed these steps.
                 'key': 'sublime',
                 'description': 'Fast, lightweight text editor',
                 'extensions': ['CodeSentinel Package'],
-                'detection_paths': [
-                    'C:\\Program Files\\Sublime Text*\\sublime_text.exe',
-                    'C:\\Users\\{}\\AppData\\Local\\Sublime Text*\\sublime_text.exe'
-                ],
                 'install_url': 'https://www.sublimetext.com/'
             },
             {
@@ -2242,9 +2505,6 @@ Click OK when you've completed these steps.
                 'key': 'atom',
                 'description': 'Hackable text editor (deprecated)',
                 'extensions': ['codesentinel-atom'],
-                'detection_paths': [
-                    'C:\\Users\\{}\\AppData\\Local\\atom\\atom.exe'
-                ],
                 'install_url': 'https://atom.io/'
             },
             {
@@ -2252,10 +2512,6 @@ Click OK when you've completed these steps.
                 'key': 'notepadpp',
                 'description': 'Enhanced notepad with syntax highlighting',
                 'extensions': ['CodeSentinel Plugin'],
-                'detection_paths': [
-                    'C:\\Program Files\\Notepad++\\notepad++.exe',
-                    'C:\\Program Files (x86)\\Notepad++\\notepad++.exe'
-                ],
                 'install_url': 'https://notepad-plus-plus.org/'
             },
             {
@@ -2263,35 +2519,114 @@ Click OK when you've completed these steps.
                 'key': 'eclipse',
                 'description': 'Java development environment',
                 'extensions': ['CodeSentinel Plugin'],
-                'detection_paths': [
-                    'C:\\eclipse\\eclipse.exe',
-                    'C:\\Program Files\\Eclipse\\*\\eclipse.exe'
-                ],
                 'install_url': 'https://www.eclipse.org/'
             }
         ]
 
-        # Display IDE options with detection status
+        # Store IDE configurations and frame for async update
+        self.ide_configs = ide_configs
+        self.ide_frame = ide_frame
+        
+        # Add a visual status indicator for IDE detection
+        self.ide_status_frame = ttk.Frame(ide_frame)
+        self.ide_status_frame.pack(fill=tk.X, pady=(10, 5), padx=10)
+        
+        self.ide_status_label = ttk.Label(self.ide_status_frame, text="🔍 Scanning system for installed IDEs...", 
+                                         font=('Arial', 9), foreground='blue')
+        self.ide_status_label.pack(side=tk.LEFT)
+        
+        # Add a simple progress indicator
+        self.ide_progress_label = ttk.Label(self.ide_status_frame, text="●", 
+                                           font=('Arial', 12), foreground='blue')
+        self.ide_progress_label.pack(side=tk.LEFT, padx=(10, 0))
+        
+        # Start progress animation
+        self.start_progress_animation()
+        
+        # Display IDE options immediately with "Detecting..." status
+        self.ide_widgets = {}
         for ide_config in ide_configs:
-            is_detected = ide_config['key'] in detected_ides
-            self.ide_vars[ide_config['key']] = tk.BooleanVar(value=is_detected)
+            self.ide_vars[ide_config['key']] = tk.BooleanVar(value=False)
             
             ide_row_frame = ttk.Frame(ide_frame)
             ide_row_frame.pack(fill=tk.X, pady=3, padx=10)
             
-            # Status indicator and checkbox
-            status_text = "✓ Detected" if is_detected else "Not detected"
-            status_color = "green" if is_detected else "orange"
-            
-            checkbox_text = f"{ide_config['name']} ({status_text})"
+            # Initial status while detecting - more user-friendly
+            checkbox_text = f"{ide_config['name']} (Scanning...)"
             checkbox = ttk.Checkbutton(ide_row_frame, text=checkbox_text,
                                      variable=self.ide_vars[ide_config['key']])
             checkbox.pack(side=tk.LEFT, anchor=tk.W)
             
-            if not is_detected:
-                install_btn = ttk.Button(ide_row_frame, text="Install Guide",
-                                       command=lambda config=ide_config: self.show_install_guide(config))
-                install_btn.pack(side=tk.RIGHT, padx=(10, 0))
+            # Placeholder for install button with helpful text
+            install_btn = ttk.Button(ide_row_frame, text="Please wait...", state="disabled")
+            install_btn.pack(side=tk.RIGHT, padx=(10, 0))
+            
+            # Store widgets for async update
+            self.ide_widgets[ide_config['key']] = {
+                'checkbox': checkbox,
+                'install_btn': install_btn,
+                'config': ide_config
+            }
+        
+        # Start async IDE detection with fallback
+        import threading
+        
+        # Always start detection since we reset the state
+        self.ide_detection_running = True
+        
+        # Start the detection thread
+        detection_thread = threading.Thread(target=self.detect_ides_async, daemon=True)
+        detection_thread.start()
+        
+        # Add a fallback timer in case detection fails or takes too long
+        def fallback_ide_update():
+            """Fallback to show installation guides if detection is taking too long."""
+            try:
+                if hasattr(self, 'ide_widgets') and self.ide_widgets:
+                    widgets_updated = 0
+                    for ide_key, widgets in self.ide_widgets.items():
+                        try:
+                            # Check if widgets still exist and are valid
+                            checkbox = widgets['checkbox']
+                            install_btn = widgets['install_btn']
+                            config = widgets['config']
+                            
+                            # Validate widget existence before accessing
+                            if not checkbox.winfo_exists() or not install_btn.winfo_exists():
+                                continue
+                            
+                            # Check if still showing "Scanning..." or similar 
+                            if any(word in checkbox.cget('text') for word in ["Scanning...", "Detecting...", "Please wait"]):
+                                # Update to show manual installation option
+                                checkbox.config(text=f"{config['name']} (Click to enable)")
+                                install_btn.config(
+                                    text="Install Guide", 
+                                    state="normal",
+                                    command=lambda c=config: self.show_install_guide(c)
+                                )
+                                widgets_updated += 1
+                        except (tk.TclError, AttributeError) as e:
+                            # Widget no longer exists or is invalid - skip silently
+                            continue
+                        except Exception as e:
+                            print(f"Warning: Fallback update failed for {ide_key}: {e}")
+                    
+                    # Only update status if we actually made changes
+                    if widgets_updated > 0:
+                        self.stop_progress_animation("⏱️ Scan timeout - manual configuration available")
+                        
+            except Exception as e:
+                print(f"Warning: Fallback IDE update failed: {e}")
+            finally:
+                # Reset detection state
+                self.ide_detection_running = False
+        
+        # Schedule fallback after 5 seconds (increased for better user experience)
+        try:
+            self.root.after(5000, fallback_ide_update)
+        except Exception as e:
+            print(f"Warning: Could not schedule IDE detection fallback: {e}")
+            self.ide_detection_running = False
         
         # Integration details
         details_frame = ttk.LabelFrame(frame, text="Integration Details")
@@ -2371,6 +2706,133 @@ Selected IDEs will receive:
                     continue
         
         return detected
+
+    def detect_ides_async(self):
+        """Detect IDEs asynchronously and update UI."""
+        try:
+            detected_ides = self.detect_installed_ides()
+            
+            # Update UI on main thread with safety checks
+            try:
+                if hasattr(self, 'root') and self.root and self.root.winfo_exists():
+                    self.root.after(0, lambda: self.update_ide_detection_results(detected_ides))
+                else:
+                    print("Warning: IDE detection completed but UI is no longer available")
+            except Exception as ui_error:
+                print(f"Warning: Could not update IDE detection UI: {ui_error}")
+                
+        except Exception as e:
+            print(f"Warning: IDE detection failed: {e}")
+            # Update UI to show detection failed, with safety checks
+            try:
+                if hasattr(self, 'root') and self.root and self.root.winfo_exists():
+                    self.root.after(0, lambda: self.update_ide_detection_results(set()))
+                else:
+                    print("Warning: IDE detection failed and UI is no longer available")
+            except Exception as ui_error:
+                print(f"Warning: Could not update IDE detection UI after failure: {ui_error}")
+        finally:
+            # Always reset detection state when complete
+            self.ide_detection_running = False
+    
+    def update_ide_detection_results(self, detected_ides):
+        """Update IDE UI with detection results."""
+        try:
+            # Safety checks before UI updates
+            if not hasattr(self, 'ide_widgets') or not self.ide_widgets:
+                print("Warning: IDE widgets not available for update")
+                return  # UI not ready yet
+                
+            if not hasattr(self, 'root') or not self.root:
+                print("Warning: Root window not available for IDE update")
+                return
+                
+            try:
+                # Check if root window still exists
+                self.root.winfo_exists()
+            except:
+                print("Warning: Root window no longer exists, skipping IDE update")
+                return
+                
+            for ide_key, widgets in self.ide_widgets.items():
+                try:
+                    # Validate widgets still exist before updating
+                    checkbox = widgets['checkbox']
+                    install_btn = widgets['install_btn']
+                    
+                    if not checkbox.winfo_exists() or not install_btn.winfo_exists():
+                        continue  # Skip if widgets no longer exist
+                    
+                    is_detected = ide_key in detected_ides
+                    config = widgets['config']
+                    
+                    # Update checkbox text and state
+                    status_text = "✓ Detected" if is_detected else "Not detected"
+                    checkbox_text = f"{config['name']} ({status_text})"
+                    checkbox.config(text=checkbox_text)
+                    
+                    # Update variable value for detected IDEs
+                    if is_detected and hasattr(self, 'ide_vars') and ide_key in self.ide_vars:
+                        self.ide_vars[ide_key].set(True)
+                    
+                    # Update install button
+                    if is_detected:
+                        install_btn.config(text="Detected", state="disabled")
+                    else:
+                        install_btn.config(
+                            text="Install Guide", 
+                            state="normal",
+                            command=lambda c=config: self.show_install_guide(c)
+                        )
+                except Exception as widget_error:
+                    print(f"Warning: Failed to update IDE widget {ide_key}: {widget_error}")
+                    continue
+            
+            # Stop progress animation and show completion status
+            detected_count = len(detected_ides)
+            total_count = len(self.ide_widgets)
+            if detected_count > 0:
+                self.stop_progress_animation(f"✅ Found {detected_count} of {total_count} IDEs installed")
+            else:
+                self.stop_progress_animation(f"✅ Scan complete - {total_count} IDEs checked")
+                    
+        except Exception as e:
+            print(f"Warning: Failed to update IDE detection results: {e}")
+            self.stop_progress_animation("⚠️ Detection completed with warnings")
+
+    def start_progress_animation(self):
+        """Start a simple progress animation for IDE detection."""
+        self.progress_animation_running = True
+        self.progress_dots = 0
+        self.animate_progress()
+    
+    def animate_progress(self):
+        """Animate the progress indicator."""
+        if not getattr(self, 'progress_animation_running', False):
+            return
+            
+        try:
+            if hasattr(self, 'ide_progress_label') and self.ide_progress_label.winfo_exists():
+                dots = "●" * (self.progress_dots % 4)
+                spaces = "  " * (3 - (self.progress_dots % 4))
+                self.ide_progress_label.config(text=f"{dots}{spaces}")
+                self.progress_dots += 1
+                
+                # Schedule next animation frame
+                self.root.after(500, self.animate_progress)
+        except Exception as e:
+            print(f"Warning: Progress animation error: {e}")
+    
+    def stop_progress_animation(self, final_message="✅ Scan complete"):
+        """Stop the progress animation and show final status."""
+        self.progress_animation_running = False
+        try:
+            if hasattr(self, 'ide_status_label') and self.ide_status_label.winfo_exists():
+                self.ide_status_label.config(text=final_message, foreground='green')
+            if hasattr(self, 'ide_progress_label') and self.ide_progress_label.winfo_exists():
+                self.ide_progress_label.config(text="✓", foreground='green')
+        except Exception as e:
+            print(f"Warning: Could not update progress status: {e}")
 
     def show_install_guide(self, ide_config):
         """Show installation guide for an IDE."""
@@ -2643,6 +3105,106 @@ Click Finish to apply these settings.
         text_widget.config(state=tk.DISABLED)
         text_widget.pack(fill=tk.BOTH, expand=True)
 
+    def cleanup_content_frame(self):
+        """Enhanced widget cleanup to prevent naming conflicts."""
+        try:
+            # Clear IDE widget references to prevent stale widget access
+            if hasattr(self, 'ide_widgets'):
+                self.ide_widgets = {}
+            
+            # Stop any running IDE detection to prevent callbacks on destroyed widgets
+            if hasattr(self, 'ide_detection_running'):
+                self.ide_detection_running = False
+            
+            # First, try to unbind any events from child widgets
+            for widget in self.content_frame.winfo_children():
+                try:
+                    # Unbind common events to prevent callbacks on destroyed widgets
+                    for event in ['<Button-1>', '<Button-2>', '<Button-3>', '<Key>', '<FocusIn>', '<FocusOut>']:
+                        try:
+                            widget.unbind(event)
+                        except:
+                            pass
+                except:
+                    pass
+                    
+                try:
+                    # For complex widgets, recursively clean up children
+                    if hasattr(widget, 'winfo_children'):
+                        for child in widget.winfo_children():
+                            try:
+                                child.destroy()
+                            except:
+                                pass
+                except:
+                    pass
+                    
+                try:
+                    # Finally destroy the widget
+                    widget.destroy()
+                except:
+                    pass
+                    
+            # Force update to ensure widgets are fully destroyed
+            self.content_frame.update_idletasks()
+            
+        except Exception as e:
+            print(f"Warning: Error during widget cleanup: {e}")
+            # Fallback: try simple destroy
+            try:
+                for widget in self.content_frame.winfo_children():
+                    widget.destroy()
+            except:
+                pass
+
+    def show_error_step(self, error_message):
+        """Show an error step when something goes wrong."""
+        try:
+            # Clear content safely
+            try:
+                for widget in self.content_frame.winfo_children():
+                    widget.destroy()
+            except:
+                pass
+                
+            # Create error display
+            error_frame = ttk.Frame(self.content_frame)
+            error_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+            
+            # Error icon and title
+            title_frame = ttk.Frame(error_frame)
+            title_frame.pack(fill=tk.X, pady=(0, 20))
+            
+            ttk.Label(title_frame, text="⚠️", font=('Arial', 24)).pack(side=tk.LEFT, padx=(0, 10))
+            ttk.Label(title_frame, text="Setup Error", font=('Arial', 16, 'bold')).pack(side=tk.LEFT)
+            
+            # Error message
+            ttk.Label(error_frame, text=error_message, 
+                     font=('Arial', 10), wraplength=500).pack(pady=(0, 20))
+            
+            # Instructions
+            ttk.Label(error_frame, 
+                     text="You can try to continue with the next step, go back to fix the issue, "
+                          "or restart the wizard by clicking 'Reset All Settings' below.",
+                     font=('Arial', 9), wraplength=500, foreground='gray').pack(pady=(0, 20))
+            
+            # Action buttons
+            button_frame = ttk.Frame(error_frame)
+            button_frame.pack(pady=10)
+            
+            ttk.Button(button_frame, text="Reset All Settings", 
+                      command=self.reset_wizard_state).pack(side=tk.LEFT, padx=(0, 10))
+            ttk.Button(button_frame, text="Try Current Step Again", 
+                      command=lambda: self.show_step(self.current_step)).pack(side=tk.LEFT)
+                      
+        except Exception as e:
+            print(f"Critical error in error display: {e}")
+            # Last resort: show basic message
+            try:
+                ttk.Label(self.content_frame, text=f"Error: {error_message}").pack()
+            except:
+                pass
+
     def go_next(self):
         """Go to next step."""
         try:
@@ -2665,20 +3227,110 @@ Click Finish to apply these settings.
         if messagebox.askyesno("Cancel Setup", "Are you sure you want to cancel the setup?"):
             self.root.quit()
 
+    def reset_wizard_state(self):
+        """Reset all wizard variables to initial state for testing."""
+        if messagebox.askyesno("Reset Wizard", "Reset all wizard settings to start fresh?\n\nThis will clear all your current selections."):
+            try:
+                # CRITICAL: Reinitialize backend wizard FIRST to get fresh state
+                self.backend_wizard = CodeSentinelSetupWizard(self.backend_wizard.install_location)
+                
+                # Reset step tracking
+                self.current_step = 0
+                
+                # CRITICAL: Reinitialize ALL GUI variables completely
+                self.init_all_gui_variables()
+                
+                # Clear any UI elements that might have state
+                self.clear_all_ui_state()
+                
+                # Reset configuration storage
+                self.config = {
+                    'install_location': str(self.backend_wizard.install_location),
+                    'alerts': {},
+                    'github': {},
+                    'ide': {},
+                    'optional': {}
+                }
+                
+                # Reset repository setup completion flag
+                self.repo_setup_completed = False
+                
+                # Force refresh the current step display
+                self.show_step(0)
+                
+                messagebox.showinfo("Reset Complete", "Wizard has been reset to initial state.\n\nAll variables cleared and ready for fresh testing!")
+                
+            except Exception as e:
+                messagebox.showerror("Reset Error", f"Error during reset: {str(e)}")
+    
+    def clear_all_ui_state(self):
+        """Clear all UI state elements that might persist."""
+        try:
+            # Clear status displays
+            if hasattr(self, 'email_status_label'):
+                self.email_status_label.config(text="")
+            if hasattr(self, 'git_status_label'):
+                self.git_status_label.config(text="")
+            if hasattr(self, 'repo_status_text'):
+                self.repo_status_text.delete(1.0, tk.END)
+            if hasattr(self, 'repo_status_frame'):
+                self.repo_status_frame.pack_forget()
+            if hasattr(self, 'setup_button'):
+                self.setup_button.config(text="🔧 Setup Repository Connection", state="normal")
+            
+            # Clear recipients listbox
+            if hasattr(self, 'recipients_listbox'):
+                self.recipients_listbox.delete(0, tk.END)
+            
+            # Hide email and slack config frames
+            if hasattr(self, 'email_frame'):
+                self.email_frame.pack_forget()
+            if hasattr(self, 'slack_frame'):
+                self.slack_frame.pack_forget()
+            if hasattr(self, 'api_frame'):
+                self.api_frame.pack_forget()
+            
+            # Clear any content frame children to force refresh
+            if hasattr(self, 'content_frame'):
+                for widget in self.content_frame.winfo_children():
+                    widget.destroy()
+                    
+        except Exception as e:
+            print(f"Warning: Error clearing UI state: {e}")
+    
+    def refresh_current_step(self):
+        """Refresh the current step display to reflect updated state."""
+        try:
+            self.show_step(self.current_step)
+        except Exception as e:
+            print(f"Warning: Error refreshing step: {e}")
+
     def finish_wizard(self):
         """Finish the setup wizard."""
         try:
+            # Disable finish button and show processing feedback
+            self.next_button.config(text="⏳ Finalizing setup...", state="disabled")
+            self.back_button.config(state="disabled")
+            
+            # Update UI to show processing
+            self.root.update()
+            
             # Apply configuration
             self.apply_configuration()
 
             # Show success message
             messagebox.showinfo("Setup Complete",
-                              "CodeSentinel has been successfully configured!\n\n"
+                              "🎉 CodeSentinel has been successfully configured!\n\n"
+                              "Your development environment is now enhanced with automated "
+                              "security monitoring and maintenance capabilities.\n\n"
                               "You can now use CodeSentinel in your development workflow.")
 
             self.root.quit()
 
         except Exception as e:
+            # Re-enable buttons on error
+            self.next_button.config(text="Finish", state="normal")
+            self.back_button.config(state="normal")
             messagebox.showerror("Setup Failed", f"Setup failed with error: {e}")
 
     def apply_configuration(self):

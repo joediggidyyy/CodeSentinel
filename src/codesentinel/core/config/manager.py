@@ -1,5 +1,5 @@
 """
-CodeSentinel v2.0 - Unified Configuration Manager
+CodeSentinel - Unified Configuration Manager
 
 Created by: joediggidyyy
 Architecture: SECURITY > EFFICIENCY > MINIMALISM

@@ -1,5 +1,5 @@
 """
-CodeSentinel v2.0 - Secure Credential Manager
+CodeSentinel - Secure Credential Manager
 
 Created by: joediggidyyy
 Architecture: SECURITY > EFFICIENCY > MINIMALISM
@@ -45,7 +45,7 @@ class SecureCredentialManager:
                     salt=salt,
                     iterations=100000,
                 )
-                self._encryption_key = kdf.derive(b"CodeSentinel-v2")
+                self._encryption_key = kdf.derive(b"CodeSentinel-1.0")
                 
                 # Store key securely
                 key_b64 = base64.urlsafe_b64encode(self._encryption_key).decode()
