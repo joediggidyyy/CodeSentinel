@@ -1,7 +1,7 @@
 # CodeSentinel Architecture Summary
 
 **Created by: joediggidyyy**  
-**Branch: feature/v2-reconstruction**  
+**Branch: main**  
 **Principle: SECURITY > EFFICIENCY > MINIMALISM**
 
 ## 🎯 Implementation Progress
