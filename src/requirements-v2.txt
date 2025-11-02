@@ -1,0 +1,17 @@
+# CodeSentinel v2.0 Requirements
+# Security-first dependencies for credential management and encryption
+
+# Core dependencies (existing)
+tkinter  # Built-in GUI framework
+pathlib  # Built-in path handling
+
+# New security dependencies
+keyring>=24.0.0  # Secure credential storage using Windows Credential Manager
+cryptography>=41.0.0  # Encryption for sensitive data
+PyYAML>=6.0  # YAML configuration file support
+requests>=2.31.0  # HTTP requests for API calls
+
+# Development dependencies (optional)
+pytest>=7.0.0  # Testing framework
+black>=23.0.0  # Code formatting
+mypy>=1.0.0  # Type checking
