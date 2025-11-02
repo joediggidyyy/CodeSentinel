@@ -1,0 +1,77 @@
+name: Migration Task
+description: Track tasks related to migrating the application to this repository
+title: "[Migration]: "
+labels: ["migration"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for tracking migration-related tasks.
+
+  - type: textarea
+    id: task
+    attributes:
+      label: Task Description
+      description: Describe the migration task that needs to be completed
+      placeholder: What needs to be migrated or set up?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What category does this migration task fall under?
+      options:
+        - Code Migration
+        - Documentation
+        - Configuration
+        - CI/CD
+        - Testing
+        - Infrastructure
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Task Checklist
+      description: List the specific steps needed to complete this task
+      placeholder: |
+        - [ ] Step 1
+        - [ ] Step 2
+        - [ ] Step 3
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this migration task?
+      options:
+        - Low
+        - Medium
+        - High
+        - Blocking
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List any dependencies or tasks that must be completed first
+      placeholder: This task depends on...
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any additional information about this migration task
+      placeholder: Additional context...
+    validations:
+      required: false
