@@ -68,7 +68,8 @@ setup(
     entry_points={
         "console_scripts": [
             "codesentinel=codesentinel.cli:main",
-            "codesentinel-setup=launch:launcher_main",
+            "codesentinel-setup=codesentinel.launcher:main",
+            "codesentinel-setup-gui=codesentinel.gui_launcher:main",  # Standalone dependency installer
         ],
     },
     include_package_data=True,

@@ -127,4 +127,6 @@ if __name__ == "__main__":
 # Entry point for console script
 def launcher_main():
     """Entry point for codesentinel-setup console script."""
-    return main()
+    import sys
+    # Ensure we can import from the current directory
+    sys.exit(main())

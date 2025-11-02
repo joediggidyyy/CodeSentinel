@@ -56,7 +56,8 @@ full = [
 
 [project.scripts]
 codesentinel = "codesentinel.cli:main"
-codesentinel-setup = "launch:launcher_main"
+codesentinel-setup = "codesentinel.launcher:main"
+codesentinel-setup-gui = "codesentinel.gui_launcher:main"
 
 [project.urls]
 Homepage = "https://github.com/joediggidyyy/CodeSentinel"
