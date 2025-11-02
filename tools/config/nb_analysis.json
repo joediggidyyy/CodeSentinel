@@ -1,0 +1,223 @@
+{
+  "path": "c:\\Users\\joedi\\OneDrive\\Documents\\edu\\UNC\\DATA730\\assignments\\unit-5-assignment-joediggidyyy\\DATA730_JoeWaller_assignment5.ipynb",
+  "cells": [
+    {
+      "cell": 1,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "Complete the exercises below For **Assignment #5**."
+    },
+    {
+      "cell": 2,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "In this exercise, we are building a logistic regression classification model. We'll work with the [Pima Indians Diabetes Database](https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database)"
+    },
+    {
+      "cell": 3,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "Load the `tidymodels` library. "
+    },
+    {
+      "cell": 4,
+      "cell_type": "code",
+      "language": null,
+      "lines": 1,
+      "first_line": "library(\"tidymodels\")"
+    },
+    {
+      "cell": 5,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "The data is located in your homework directory in the `diabetes.csv` file. Read in the data by running the following cell. We are \"splitting\" the data into training and testing sets. We will evaluate "
+    },
+    {
+      "cell": 6,
+      "cell_type": "code",
+      "language": null,
+      "lines": 11,
+      "first_line": "diabetes <- readr::read_csv(\"diabetes.csv\") |> mutate(Outcome = factor(Outcome))"
+    },
+    {
+      "cell": 7,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "Glimpse the `diabetes_train` table."
+    },
+    {
+      "cell": 8,
+      "cell_type": "code",
+      "language": null,
+      "lines": 1,
+      "first_line": "glimpse(diabetes_train)"
+    },
+    {
+      "cell": 9,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 3,
+      "first_line": "❓ Which variable is suitable as the \"outcome\" in a logistic regression model?\n"
+    },
+    {
+      "cell": 10,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "A suitable outcome variable represents whatever it is that is being measured/tested. Was the test positive? Should they be approved for a loan? In this case, do they have diabeetus?"
+    },
+    {
+      "cell": 11,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "❓ Navigate to [Kaggle page](https://www.kaggle.com/datasets/mathchi/diabetes-data-set) for this dataset. Find descriptions for the `Glucose` and `BMI` columns. Add these descriptions to the [Markdown "
+    },
+    {
+      "cell": 12,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 4,
+      "first_line": "| Column name | Description                                                             |\n"
+    },
+    {
+      "cell": 13,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "Make a bar chart showing the frequency of each \"outcome\" in the `Outcome` column from your `diabetes_train` data."
+    },
+    {
+      "cell": 14,
+      "cell_type": "code",
+      "language": null,
+      "lines": 6,
+      "first_line": "library(ggplot2)"
+    },
+    {
+      "cell": 15,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 3,
+      "first_line": "❓ Is the data balanced? I.e. do we have equal counts of each outcome?\n"
+    },
+    {
+      "cell": 16,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 2,
+      "first_line": "\n"
+    },
+    {
+      "cell": 17,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "Run the code below to create a table for plotting the predictors we will use in our model: `Glucose` and `BMI`. "
+    },
+    {
+      "cell": 18,
+      "cell_type": "code",
+      "language": null,
+      "lines": 9,
+      "first_line": "plot_df <- diabetes_train |>"
+    },
+    {
+      "cell": 19,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 4,
+      "first_line": "Using `plot_df`, make a chart showing the relationship of `Glucose` and `BMI` with `Outcome`. \n"
+    },
+    {
+      "cell": 20,
+      "cell_type": "code",
+      "language": null,
+      "lines": 3,
+      "first_line": "ggplot(plot_df, aes(x = Outcome, y = name)) +"
+    },
+    {
+      "cell": 21,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 3,
+      "first_line": "❓ What happens when you remove the `scales = 'free_x'` argument from the `facet_wrap` function?\n"
+    },
+    {
+      "cell": 22,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "I think I may have made an error, because there is no difference when I remove `scales = 'free_x'` from the code block."
+    },
+    {
+      "cell": 23,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 3,
+      "first_line": "Using your training data, build logistic regression model of `Outcome` with `BMI` and `Glucose` as predictors. \n"
+    },
+    {
+      "cell": 24,
+      "cell_type": "code",
+      "language": null,
+      "lines": 5,
+      "first_line": "mod <- logistic_reg() |> set_engine(\"glm\")"
+    },
+    {
+      "cell": 25,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 1,
+      "first_line": "Using `augment` with your fitted model and the `diabetes_test` data as arguments, create a new dataset called `diabetes_test_wPred` that is the `diabetes_test` table including predictions from your mo"
+    },
+    {
+      "cell": 26,
+      "cell_type": "code",
+      "language": null,
+      "lines": 1,
+      "first_line": "diabetes_test_wPred <- augment(mod_fit, new_data = diabetes_test)"
+    },
+    {
+      "cell": 27,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 3,
+      "first_line": "Run the code below to generate a confusion matrix for your model predictions. \n"
+    },
+    {
+      "cell": 28,
+      "cell_type": "code",
+      "language": null,
+      "lines": 5,
+      "first_line": "diabetes_test_wPred <- augment(mod_fit, new_data = diabetes_test)"
+    },
+    {
+      "cell": 29,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 6,
+      "first_line": "❓ Based on the confusion matrix above, \n"
+    },
+    {
+      "cell": 30,
+      "cell_type": "markdown",
+      "language": null,
+      "lines": 4,
+      "first_line": "67 individuals have diabetes.\n"
+    },
+    {
+      "cell": 31,
+      "cell_type": "code",
+      "language": null,
+      "lines": 0,
+      "first_line": ""
+    }
+  ],
+  "total_cells": 31
+}

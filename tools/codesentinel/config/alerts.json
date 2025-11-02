@@ -1,0 +1,32 @@
+{
+  "enabled": true,
+  "channels": {
+    "console": {
+      "enabled": true
+    },
+    "file": {
+      "enabled": true,
+      "log_file": "tools/monitoring/alerts.log"
+    },
+    "email": {
+      "enabled": false,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "",
+      "password": "",
+      "from_email": "",
+      "to_emails": []
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": "",
+      "channel": "#maintenance-alerts"
+    }
+  },
+  "alert_rules": {
+    "critical_security_issues": true,
+    "task_failures": true,
+    "performance_degradation": true,
+    "dependency_vulnerabilities": true
+  }
+}

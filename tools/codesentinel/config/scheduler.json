@@ -1,0 +1,44 @@
+{
+  "description": "Configuration for UNC Maintenance Scheduler",
+  "version": "2.0.0",
+  "schedules": {
+    "daily": {
+      "execution_order": [
+        "change_detection",
+        "startup_audit",
+        "formatting",
+        "r_formatting",
+        "testing",
+        "reporting"
+      ],
+      "enabled": true,
+      "cron_expression": "0 2 * * *",
+      "timezone": "America/New_York"
+    },
+    "weekly": {
+      "execution_order": [
+        "weekly_maintenance"
+      ],
+      "enabled": true,
+      "cron_expression": "0 3 * * 1",
+      "timezone": "America/New_York"
+    },
+    "monthly": {
+      "execution_order": [
+        "monthly_maintenance"
+      ],
+      "enabled": true,
+      "cron_expression": "0 4 1 * *",
+      "timezone": "America/New_York"
+    }
+  },
+  "task_timeout_seconds": 1800,
+  "fail_fast": true,
+  "continue_on_error": false,
+  "log_level": "INFO",
+  "notifications": {
+    "enabled": false,
+    "email_on_failure": false,
+    "slack_webhook_url": null
+  }
+}

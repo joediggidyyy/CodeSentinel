@@ -1,0 +1,418 @@
+{
+  "DATA710\\LiveSessions\\Week4\\DATA710_LiveSession_09-10-2025.ipynb": {
+    "mtime": 1757560258,
+    "size": 387
+  },
+  "DATA720\\Assignments\\Unit-1-5-Basic-Data-Types-and-Variables.ipynb": {
+    "mtime": 1755790303,
+    "size": 11122
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_Assignment.ipynb": {
+    "mtime": 1755805243,
+    "size": 9555
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_Functions.ipynb": {
+    "mtime": 1755804295,
+    "size": 1741
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_Functions_JoeWaller.ipynb": {
+    "mtime": 1755825916,
+    "size": 2545
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_JoeWaller_ProgrammingExercise.ipynb": {
+    "mtime": 1755827404,
+    "size": 14671
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_Lists.ipynb": {
+    "mtime": 1755802173,
+    "size": 2626
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_Lists_JoeWaller.ipynb": {
+    "mtime": 1755825281,
+    "size": 3857
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_Strings.ipynb": {
+    "mtime": 1755792592,
+    "size": 1894
+  },
+  "DATA720\\Assignments\\Unit1\\Unit1_Strings_JoeWaller.ipynb": {
+    "mtime": 1755824999,
+    "size": 3026
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_Assignment (1).ipynb": {
+    "mtime": 1756754081,
+    "size": 2880
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_Assignment.ipynb": {
+    "mtime": 1756696528,
+    "size": 2444
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_JoeWaller_Assignment.ipynb": {
+    "mtime": 1756777575,
+    "size": 23113
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_JoeWaller_Comprehensions.ipynb": {
+    "mtime": 1757994927,
+    "size": 7304
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_JoeWaller_File_I_O.ipynb": {
+    "mtime": 1756664986,
+    "size": 4740
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_JoeWaller_For_Loops.ipynb": {
+    "mtime": 1756661825,
+    "size": 10059
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_JoeWaller_Sets.ipynb": {
+    "mtime": 1756676769,
+    "size": 18080
+  },
+  "DATA720\\Assignments\\Unit2_Comprehensions.ipynb": {
+    "mtime": 1756680810,
+    "size": 1882
+  },
+  "DATA720\\Assignments\\Unit3\\unit3_assignment_copy.ipynb": {
+    "mtime": 1756779363,
+    "size": 5474
+  },
+  "DATA720\\Assignments\\Unit3\\unit3_JoeWaller_assignment.ipynb": {
+    "mtime": 1757055008,
+    "size": 282392
+  },
+  "DATA720\\Assignments\\Unit3\\unit3_JoeWaller_scatters_and_lines.ipynb": {
+    "mtime": 1756995823,
+    "size": 223757
+  },
+  "DATA720\\Assignments\\Unit4\\DATA720_JoeWaller_unit4_assignment.ipynb": {
+    "mtime": 1757996455,
+    "size": 13918
+  },
+  "DATA720\\Assignments\\Unit4\\unit4_assignment.ipynb": {
+    "mtime": 1757439436,
+    "size": 6721
+  },
+  "DATA720\\Assignments\\Unit5\\Unit5_Assignment_corrected.ipynb": {
+    "mtime": 1757638698,
+    "size": 17883
+  },
+  "DATA720\\Notebooks\\Unit1\\Unit-1-3-Jupyter-Notebook-Basics.ipynb": {
+    "mtime": 1755790308,
+    "size": 5518
+  },
+  "DATA720\\Notebooks\\Unit1\\Unit-1-6-Strings-and-String-Methods.ipynb": {
+    "mtime": 1755790298,
+    "size": 23189
+  },
+  "DATA720\\Notebooks\\Unit1\\Unit-1-7-Lists-and-List-Methods.ipynb": {
+    "mtime": 1755790288,
+    "size": 18768
+  },
+  "DATA720\\Notebooks\\Unit1\\Unit-1-8-Tuples.ipynb": {
+    "mtime": 1755790284,
+    "size": 10293
+  },
+  "DATA720\\Notebooks\\Unit1\\Unit-1-9-Functions.ipynb": {
+    "mtime": 1757994927,
+    "size": 18601
+  },
+  "DATA720\\Notebooks\\Unit2\\Unit-2-4-1-File-I-O.ipynb": {
+    "mtime": 1756434790,
+    "size": 13087
+  },
+  "DATA720\\Notebooks\\Unit2\\Unit2_File_I_O.ipynb": {
+    "mtime": 1756435732,
+    "size": 2127
+  },
+  "DATA720\\Notebooks\\Unit2\\Unit2_For_Loops.ipynb": {
+    "mtime": 1756404541,
+    "size": 3106
+  },
+  "DATA720\\Notebooks\\Unit2\\Unit2_Sets.ipynb": {
+    "mtime": 1756670193,
+    "size": 2063
+  },
+  "DATA720\\Notebooks\\Unit3\\unit3_advanced_plotting.ipynb": {
+    "mtime": 1756875505,
+    "size": 1608043
+  },
+  "DATA720\\Notebooks\\Unit3\\unit3_advanced_techniques.ipynb": {
+    "mtime": 1757004446,
+    "size": 68707
+  },
+  "DATA720\\Notebooks\\Unit3\\unit3_basic_plotting.ipynb": {
+    "mtime": 1756875510,
+    "size": 345417
+  },
+  "DATA720\\Notebooks\\Unit3\\unit3_intermediate_plotting.ipynb": {
+    "mtime": 1756875459,
+    "size": 225723
+  },
+  "DATA720\\Notebooks\\Unit3\\unit3_JoeWaller_advanced_techniques.ipynb": {
+    "mtime": 1757009452,
+    "size": 202802
+  },
+  "DATA720\\Notebooks\\Unit3\\unit3_scatters_and_lines.ipynb": {
+    "mtime": 1756876558,
+    "size": 4508
+  },
+  "DATA720\\Notebooks\\Unit4\\unit4_intro_to_classes.ipynb": {
+    "mtime": 1757389167,
+    "size": 41265
+  },
+  "DATA720\\Notebooks\\Unit4\\unit4_magic_functions.ipynb": {
+    "mtime": 1757389172,
+    "size": 12264
+  },
+  "DATA720\\Notebooks\\Unit4\\unit4_subclasses.ipynb": {
+    "mtime": 1757389177,
+    "size": 23144
+  },
+  "DATA720\\Notebooks\\Unit5\\Unit-5-2-Numpy-Arrays.ipynb": {
+    "mtime": 1757994927,
+    "size": 24125
+  },
+  "DATA720\\Notebooks\\Unit5\\Unit-5-3-Two-D-Numpy-Arrays.ipynb": {
+    "mtime": 1757994927,
+    "size": 24759
+  },
+  "DATA720\\Notebooks\\Unit5\\Unit-5-4-Boolean-Selectors-Copy1.ipynb": {
+    "mtime": 1757638597,
+    "size": 25884
+  },
+  "DATA720\\Notebooks\\Unit5\\Unit-5-5-Ndarray.ipynb": {
+    "mtime": 1757994927,
+    "size": 9266
+  },
+  "DATA720\\Notebooks\\Unit5\\Unit-5-6-Broadcasting.ipynb": {
+    "mtime": 1757638633,
+    "size": 6322
+  },
+  "DATA720\\Notebooks\\Unit5\\Unit-5-7-scipy.ipynb": {
+    "mtime": 1757638653,
+    "size": 3977
+  },
+  "DATA720\\Notebooks\\Unit5\\Unit-5-8-scikit-learn.ipynb": {
+    "mtime": 1757638657,
+    "size": 6235
+  },
+  "DATA730\\assignments\\test.ipynb": {
+    "mtime": 1758001909,
+    "size": 506
+  },
+  "DATA730\\assignments\\assignment2-JoeWaller.ipynb": {
+    "mtime": 1758001904,
+    "size": 333886
+  },
+  "DATA730\\assignments\\assignment1-JoeWaller.ipynb": {
+    "mtime": 1758001901,
+    "size": 10783
+  },
+  "DATA730\\assignments\\assignment3-JoeWaller.ipynb": {
+    "mtime": 1758001907,
+    "size": 677350
+  },
+  "DATA730\\assignments\\unit-4-assignment-joediggidyyy\\Unit2_JoeWaller_File_I_O.ipynb": {
+    "mtime": 1756664986,
+    "size": 4740
+  },
+  "DATA730\\assignments\\unit-4-assignment-joediggidyyy\\assignment4.ipynb": {
+    "mtime": 1758001913,
+    "size": 12154
+  },
+  "DATA730\\assignments\\unit-4-assignment-joediggidyyy\\DATA730_JoeWaller_assignment4.ipynb": {
+    "mtime": 1758007611,
+    "size": 74446
+  },
+  "DATA730\\lecture-notebooks\\01-data-wrangling-and-viz\\in-class-exercises\\dplyr_practice.ipynb": {
+    "mtime": 1757560969,
+    "size": 5327
+  },
+  "DATA730\\lecture-notebooks\\01-data-wrangling-and-viz\\in-class-exercises\\geom_bar_practice.ipynb": {
+    "mtime": 1757560969,
+    "size": 2016
+  },
+  "DATA730\\lecture-notebooks\\00-jupyter-lab\\lectures\\00_dr-who.ipynb": {
+    "mtime": 1757994927,
+    "size": 708458
+  },
+  "DATA730\\lecture-notebooks\\01-data-wrangling-and-viz\\in-class-exercises\\geom_point_practice.ipynb": {
+    "mtime": 1757560969,
+    "size": 3152
+  },
+  "DATA730\\lecture-notebooks\\01-data-wrangling-and-viz\\lectures\\00_intro-to-tidyverse.ipynb": {
+    "mtime": 1757994927,
+    "size": 1605466
+  },
+  "DATA730\\lecture-notebooks\\01-data-wrangling-and-viz\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 4679
+  },
+  "DATA730\\lecture-notebooks\\02-simple-linear-models\\in-class-exercises\\estimating-parameters.ipynb": {
+    "mtime": 1757560969,
+    "size": 6383
+  },
+  "DATA730\\lecture-notebooks\\02-simple-linear-models\\lectures\\00_continuous-explanatory-variable.ipynb": {
+    "mtime": 1757994927,
+    "size": 546115
+  },
+  "DATA730\\lecture-notebooks\\02-simple-linear-models\\lectures\\01_categorical-explanatory-predictor.ipynb": {
+    "mtime": 1757994927,
+    "size": 817415
+  },
+  "DATA730\\lecture-notebooks\\03-multiple-regression\\in-class-exercises\\multiple-regression.ipynb": {
+    "mtime": 1757560969,
+    "size": 5940
+  },
+  "DATA730\\lecture-notebooks\\02-simple-linear-models\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 675094
+  },
+  "DATA730\\lecture-notebooks\\04-logistic-regression\\in-class-exercises\\simple-logistic-regression-model.ipynb": {
+    "mtime": 1757560969,
+    "size": 5180
+  },
+  "DATA730\\lecture-notebooks\\03-multiple-regression\\lectures\\00_one-categorical-one-continuous-predictor.ipynb": {
+    "mtime": 1757994927,
+    "size": 6308
+  },
+  "DATA730\\lecture-notebooks\\03-multiple-regression\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 675566
+  },
+  "DATA730\\lecture-notebooks\\05-scikit-learn\\in-class-exercises\\scikit-learn-api.ipynb": {
+    "mtime": 1757560969,
+    "size": 8353
+  },
+  "DATA730\\lecture-notebooks\\04-logistic-regression\\lectures\\00_logistic-regression.ipynb": {
+    "mtime": 1757994927,
+    "size": 390299
+  },
+  "DATA730\\lecture-notebooks\\05-scikit-learn\\lectures\\00_linear-regression.ipynb": {
+    "mtime": 1757560969,
+    "size": 63309
+  },
+  "DATA730\\lecture-notebooks\\04-logistic-regression\\lectures\\live-session.ipynb": {
+    "mtime": 1757902097,
+    "size": 308723
+  },
+  "DATA730\\lecture-notebooks\\05-scikit-learn\\lectures\\01_logistic-regression.ipynb": {
+    "mtime": 1757560969,
+    "size": 4111
+  },
+  "DATA730\\lecture-notebooks\\05-scikit-learn\\lectures\\live-session.ipynb": {
+    "mtime": 1757994927,
+    "size": 366465
+  },
+  "DATA730\\lecture-notebooks\\06-virtual-sampling\\lectures\\00_virtual-sampling-clt.ipynb": {
+    "mtime": 1757560969,
+    "size": 342523
+  },
+  "DATA730\\lecture-notebooks\\06-virtual-sampling\\in-class-exercises\\exploring-virtual-samples.ipynb": {
+    "mtime": 1757560969,
+    "size": 8877
+  },
+  "DATA730\\lecture-notebooks\\07-bootstrap-resampling\\in-class-exercises\\confidence-intervals.ipynb": {
+    "mtime": 1757560969,
+    "size": 6555
+  },
+  "DATA730\\lecture-notebooks\\06-virtual-sampling\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 100682
+  },
+  "DATA730\\lecture-notebooks\\08-hypothesis-testing\\in-class-exercises\\one-test-practice.ipynb": {
+    "mtime": 1757994927,
+    "size": 7900
+  },
+  "DATA730\\lecture-notebooks\\07-bootstrap-resampling\\lectures\\00_coin-confidence-interval.ipynb": {
+    "mtime": 1757560969,
+    "size": 3238
+  },
+  "DATA730\\lecture-notebooks\\08-hypothesis-testing\\lectures\\00_only-one-test-example.ipynb": {
+    "mtime": 1757560969,
+    "size": 142810
+  },
+  "DATA730\\lecture-notebooks\\08-hypothesis-testing\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 715164
+  },
+  "DATA730\\lecture-notebooks\\09-inference-for-regression\\in-class-exercises\\revisiting-the-voles-dataset.ipynb": {
+    "mtime": 1757560969,
+    "size": 6703
+  },
+  "DATA730\\lecture-notebooks\\09-inference-for-regression\\lectures\\00_regression-coefficient-conf-int.ipynb": {
+    "mtime": 1757994927,
+    "size": 1924853
+  },
+  "DATA730\\lecture-notebooks\\10-decision-trees\\in-class-exercises\\hotel-bookings-model.ipynb": {
+    "mtime": 1757560969,
+    "size": 5174
+  },
+  "DATA730\\lecture-notebooks\\09-inference-for-regression\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 334126
+  },
+  "DATA730\\lecture-notebooks\\10-decision-trees\\lectures\\01_random-forest-scikit-learn.ipynb": {
+    "mtime": 1757994927,
+    "size": 43497
+  },
+  "DATA730\\lecture-notebooks\\10-decision-trees\\lectures\\00_random-forest-tidymodels.ipynb": {
+    "mtime": 1757994927,
+    "size": 933028
+  },
+  "DATA730\\lecture-notebooks\\11-nonlinear-fits\\in-class-exercises\\nonlinear-modelling1.ipynb": {
+    "mtime": 1757560969,
+    "size": 3907
+  },
+  "DATA730\\lecture-notebooks\\11-nonlinear-fits\\in-class-exercises\\nonlinear-modelling2.ipynb": {
+    "mtime": 1757560969,
+    "size": 2054
+  },
+  "DATA730\\lecture-notebooks\\10-decision-trees\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 7121
+  },
+  "DATA730\\lecture-notebooks\\11-nonlinear-fits\\lectures\\drawdata.ipynb": {
+    "mtime": 1757560969,
+    "size": 4324
+  },
+  "DATA730\\lecture-notebooks\\11-nonlinear-fits\\lectures\\00_polynomial-and-spline-models.ipynb": {
+    "mtime": 1757994927,
+    "size": 458251
+  },
+  "DATA730\\lecture-notebooks\\GettingStarted.ipynb": {
+    "mtime": 1757560969,
+    "size": 1013
+  },
+  "DATA730\\lecture-notebooks\\12-evaluating-model-performance\\in-class-exercises\\kfold-cv.ipynb": {
+    "mtime": 1757560969,
+    "size": 5550
+  },
+  "DATA730\\lecture-notebooks\\11-nonlinear-fits\\lectures\\live-session.ipynb": {
+    "mtime": 1757994927,
+    "size": 2284620
+  },
+  "DATA730\\lecture-notebooks\\12-evaluating-model-performance\\lectures\\live-session.ipynb": {
+    "mtime": 1757560969,
+    "size": 1663780
+  },
+  "DATA730\\live_sessions\\live-session.ipynb": {
+    "mtime": 1756945230,
+    "size": 674628
+  },
+  "DATA730\\assignments\\test2.ipynb": {
+    "mtime": 1757359130,
+    "size": 0
+  },
+  "quarantine\\DATA730_assignments_test2.ipynb": {
+    "mtime": 1757998005,
+    "size": 119
+  },
+  "DATA720\\Assignments\\Unit1\\Unit-1-5-Basic-Data-Types-and-Variables.ipynb": {
+    "mtime": 1755790303,
+    "size": 11122
+  },
+  "DATA720\\Assignments\\Unit2\\Unit2_Comprehensions.ipynb": {
+    "mtime": 1756680810,
+    "size": 1882
+  }
+}

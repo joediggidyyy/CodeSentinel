@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "channels": {
+    "console": {
+      "enabled": true
+    },
+    "file": {
+      "enabled": true,
+      "log_file": "tools/codesentinel/alerts.log"
+    },
+    "email": {
+      "enabled": false
+    },
+    "slack": {
+      "enabled": false
+    }
+  },
+  "alert_rules": {
+    "critical_security_issues": true,
+    "task_failures": true,
+    "dependency_vulnerabilities": true
+  }
+}
