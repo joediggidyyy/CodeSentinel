@@ -65,10 +65,65 @@ class ConfigManager:
         """
         try:
             if data is not None:
-                self.config = data
+                # Work on a shallow copy to avoid mutating caller's dict
+                self.config = dict(data)
+
+            # Sanitize secrets before writing to disk (security patch v1.0.1)
+            def _prune_secrets(cfg: Dict[str, Any]) -> Dict[str, Any]:
+                try:
+                    # Top-level alerts.email shape
+                    alerts = cfg.get("alerts")
+                    if isinstance(alerts, dict):
+                        # Newer shape: alerts -> email
+                        email_cfg = alerts.get("email")
+                        if isinstance(email_cfg, dict) and "password" in email_cfg:
+                            email_cfg = email_cfg.copy()
+                            email_cfg.pop("password", None)
+                            alerts["email"] = email_cfg
+
+                        # Newer shape: alerts -> slack
+                        slack_cfg = alerts.get("slack")
+                        if isinstance(slack_cfg, dict) and "access_token" in slack_cfg:
+                            slack_cfg = slack_cfg.copy()
+                            slack_cfg.pop("access_token", None)
+                            alerts["slack"] = slack_cfg
+
+                    # Legacy shape: alerts -> channels -> email/slack
+                    channels = alerts.get("channels") if isinstance(alerts, dict) else None
+                    if isinstance(channels, dict):
+                        if isinstance(channels.get("email"), dict):
+                            email_ch = channels["email"].copy()
+                            email_ch.pop("password", None)
+                            channels["email"] = email_ch
+                        if isinstance(channels.get("slack"), dict):
+                            slack_ch = channels["slack"].copy()
+                            # Do not remove webhook here (runtime requires it); tokens removed
+                            slack_ch.pop("access_token", None)
+                            channels["slack"] = slack_ch
+
+                    # GitHub tokens
+                    github = cfg.get("github")
+                    if isinstance(github, dict):
+                        gh = github.copy()
+                        gh.pop("access_token", None)
+                        gh.pop("token", None)
+                        cfg["github"] = gh
+                except Exception:
+                    # Best-effort; never fail save due to pruning
+                    pass
+                return cfg
+
+            self.config = _prune_secrets(self.config)
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.config_path, 'w') as f:
                 json.dump(self.config, f, indent=2)
+            # Best-effort: restrict permissions on POSIX systems to owner-only
+            try:
+                if os.name != 'nt':
+                    os.chmod(self.config_path, 0o600)
+            except Exception:
+                # Do not fail save due to permission set errors
+                pass
         except Exception as e:
             raise Exception(f"Could not save config to {self.config_path}: {e}")
 

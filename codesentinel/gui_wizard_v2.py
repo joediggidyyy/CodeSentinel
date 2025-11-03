@@ -26,10 +26,12 @@ import shutil
 import sys
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+import webbrowser
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Callable
 
 from .utils.config import ConfigManager
+from . import __version__ as CS_VERSION
 
 
 class ScrollableFrame(ttk.Frame):
@@ -79,7 +81,8 @@ class WizardApp:
 
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("CodeSentinel Setup Wizard")
+        # Window title with subtle attribution and version
+        self.root.title(f"CodeSentinel Setup Wizard v{CS_VERSION} — by joediggidy")
         self.root.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.root.resizable(True, True)
         self._center()
@@ -140,6 +143,13 @@ class WizardApp:
         self.header.pack(fill="x", padx=20, pady=(16, 8))
         ttk.Label(self.header, text="CodeSentinel Setup Wizard", style='Title.TLabel').pack()
         ttk.Label(self.header, text="SECURITY > EFFICIENCY > MINIMALISM", font=('Arial', 9), foreground=self.colors['info']).pack(pady=(2, 0))
+        # Subtle attribution and version line
+        ttk.Label(
+            self.header,
+            text=f"by joediggidy • v{CS_VERSION}",
+            font=('Arial', 8),
+            foreground='#666666'
+        ).pack(pady=(2, 0))
         
         # Progress bar
         progress_frame = ttk.Frame(self.root)
@@ -372,22 +382,12 @@ class WizardApp:
         
         ttk.Label(start_frame, text=start_text, font=('Arial', 9), 
                  justify="left", foreground="#333333").pack(anchor="w")
-        
-        return f
-        
-        start_text = (
-            "This wizard will help you configure CodeSentinel for your project.\n\n"
-            "Configuration includes:\n\n"
-            "1. Project location and GitHub setup\n"
-            "2. Alert channel preferences\n"
-            "3. IDE integration options\n"
-            "4. GitHub Copilot integration\n"
-            "5. Optional automation features\n\n"
-            "Click 'Next' to begin configuration."
-        )
-        
-        ttk.Label(start_frame, text=start_text, font=('Arial', 9), 
-                 justify="left", foreground="#333333").pack(anchor="w")
+
+        # Repository link (clickable)
+        repo_url = "https://github.com/joediggidy/CodeSentinel"
+        link = ttk.Label(start_frame, text="View repository on GitHub", foreground=self.colors['info'], cursor="hand2")
+        link.pack(anchor="w", pady=(8, 0))
+        link.bind("<Button-1>", lambda e, url=repo_url: webbrowser.open_new(url))
         
         return f
 
@@ -673,20 +673,30 @@ class WizardApp:
         try:
             import json
             import urllib.request
-            
+            from urllib.parse import urlparse
+
             webhook_url = self.slack_url_var.get().strip()
-            
+
             if not webhook_url:
                 self.slack_status.config(text="❌ Webhook URL required", foreground=self.colors['error'])
                 self.validations['slack'] = False
                 self._update_nav_state()
                 return
-            
+
+            # Basic allowlist validation to prevent SSRF: only allow Slack webhooks
+            parsed = urlparse(webhook_url)
+            host = (parsed.hostname or "").lower()
+            if not (parsed.scheme == "https" and host and (host == "hooks.slack.com" or host.endswith(".slack.com")) and "/services/" in parsed.path):
+                self.slack_status.config(text="❌ Invalid Slack webhook URL", foreground=self.colors['error'])
+                self.validations['slack'] = False
+                self._update_nav_state()
+                return
+
             # Test webhook with a test message
             data = json.dumps({"text": "CodeSentinel test message"}).encode('utf-8')
             req = urllib.request.Request(webhook_url, data=data, headers={'Content-Type': 'application/json'})
             response = urllib.request.urlopen(req, timeout=10)
-            
+
             if response.status == 200:
                 self.slack_status.config(text="✓ Webhook valid", foreground=self.colors['success'])
                 self.validations['slack'] = True
@@ -1330,6 +1340,38 @@ class WizardApp:
                                     yscrollcommand=text_scrollbar.set)
         self.summary_text.pack(side="left", fill="both", expand=True)
         text_scrollbar.config(command=self.summary_text.yview)
+
+        # Footer area with repo link and attribution (Polymath venture)
+        footer = ttk.Frame(f)
+        footer.pack(fill="x", pady=(8, 0))
+        repo_url = "https://github.com/joediggidy/CodeSentinel"
+        repo_link = ttk.Label(footer, text="View repository on GitHub", foreground=self.colors['info'], cursor="hand2")
+        repo_link.pack(anchor="w")
+        repo_link.bind("<Button-1>", lambda e, url=repo_url: webbrowser.open_new(url))
+
+        # Optional thumbnail + tagline
+        tagline_row = ttk.Frame(footer)
+        tagline_row.pack(fill="x", pady=(6, 0))
+        try:
+            # Try to locate a local thumbnail image if present
+            from pathlib import Path as _P
+            _here = _P(__file__).resolve().parent
+            candidate_paths = [
+                _here / "assets" / "polymath.png",
+                _here.parent / "docs" / "polymath.png",
+            ]
+            self._polymath_img = None
+            for _p in candidate_paths:
+                if _p.exists():
+                    self._polymath_img = tk.PhotoImage(file=str(_p))
+                    break
+            if self._polymath_img is not None:
+                img_label = ttk.Label(tagline_row, image=self._polymath_img)
+                img_label.pack(side="left", padx=(0, 8))
+        except Exception:
+            # Image optional; proceed without it
+            self._polymath_img = None
+        ttk.Label(tagline_row, text="a Polymath venture", font=('Arial', 8, 'italic'), foreground="#666666").pack(side="left")
 
         def collect():
             """Generate formatted summary of configuration."""

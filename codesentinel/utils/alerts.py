@@ -6,12 +6,14 @@ Handles sending alerts through various channels (email, Slack, console, file).
 """
 
 import json
+import os
 import smtplib
 import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from urllib.parse import urlparse
 
 try:
     import requests
@@ -70,6 +72,26 @@ class AlertManager:
 
         return results
 
+    def _is_valid_slack_webhook(self, url: str) -> bool:
+        """Basic allowlist validation for Slack webhook URLs to prevent SSRF.
+
+        Accept only HTTPS webhooks to Slack domains.
+        """
+        try:
+            parsed = urlparse(url)
+            if parsed.scheme != "https":
+                return False
+            # Typical Slack webhook hosts are hooks.slack.com (and regional variants)
+            host = (parsed.hostname or "").lower()
+            if not host:
+                return False
+            if not (host == "hooks.slack.com" or host.endswith(".slack.com")):
+                return False
+            # Path should include /services/
+            return "/services/" in parsed.path
+        except Exception:
+            return False
+
     def _send_console_alert(self, title: str, message: str, severity: str) -> bool:
         """Send alert to console."""
         severity_colors = {
@@ -112,17 +134,32 @@ class AlertManager:
         try:
             # Create message
             msg = MIMEMultipart()
-            msg['From'] = config.get('from_email', config.get('username', ''))
-            msg['To'] = ', '.join(config.get('to_emails', []))
+            from_email = config.get('from_email', config.get('username', os.getenv('CODESENTINEL_EMAIL_USERNAME', '')))
+            to_emails = config.get('to_emails', [])
+            msg['From'] = from_email
+            msg['To'] = ', '.join(to_emails)
             msg['Subject'] = f"[CodeSentinel] {severity.upper()}: {title}"
 
             body = f"Severity: {severity.upper()}\n\n{message}"
             msg.attach(MIMEText(body, 'plain'))
 
             # Send email
-            server = smtplib.SMTP(config['smtp_server'], config['smtp_port'])
+            smtp_server = config.get('smtp_server')
+            smtp_port = config.get('smtp_port', 587)
+            username = config.get('username') or os.getenv('CODESENTINEL_EMAIL_USERNAME')
+            password = config.get('password') or os.getenv('CODESENTINEL_EMAIL_PASSWORD')
+
+            if not all([smtp_server, username, password, from_email, to_emails]):
+                self.logger.error("Email configuration incomplete (consider using CODESENTINEL_EMAIL_* env vars)")
+                return False
+
+            # Narrow types after validation
+            username = str(username)
+            password = str(password)
+
+            server = smtplib.SMTP(smtp_server, smtp_port)
             server.starttls()
-            server.login(config['username'], config['password'])
+            server.login(username, password)
             server.send_message(msg)
             server.quit()
 
@@ -144,6 +181,10 @@ class AlertManager:
             return False
 
         try:
+            webhook = config.get('webhook_url') or os.getenv('CODESENTINEL_SLACK_WEBHOOK', '')
+            if not self._is_valid_slack_webhook(webhook):
+                self.logger.error("Invalid Slack webhook URL. Refusing to send (potential SSRF).")
+                return False
             # Use simple text markers instead of emojis
             prefix_map = {
                 'info': '[INFO]',
@@ -161,7 +202,7 @@ class AlertManager:
             }
 
             response = requests.post(
-                config['webhook_url'],
+                webhook,
                 json=slack_message,
                 timeout=10
             )
@@ -206,9 +247,17 @@ class AlertManager:
         config = self.config_manager.get('alerts.channels.email', {})
 
         try:
-            server = smtplib.SMTP(config['smtp_server'], config['smtp_port'])
+            smtp_server = config.get('smtp_server')
+            smtp_port = config.get('smtp_port', 587)
+            username = config.get('username') or os.getenv('CODESENTINEL_EMAIL_USERNAME')
+            password = config.get('password') or os.getenv('CODESENTINEL_EMAIL_PASSWORD')
+            if not all([smtp_server, username, password]):
+                return False
+            username = str(username)
+            password = str(password)
+            server = smtplib.SMTP(smtp_server, smtp_port)
             server.starttls()
-            server.login(config['username'], config['password'])
+            server.login(username, password)
             server.quit()
             return True
         except Exception:
@@ -222,9 +271,12 @@ class AlertManager:
         config = self.config_manager.get('alerts.channels.slack', {})
 
         try:
+            webhook = config.get('webhook_url') or os.getenv('CODESENTINEL_SLACK_WEBHOOK', '')
+            if not self._is_valid_slack_webhook(webhook):
+                return False
             test_message = {"text": "CodeSentinel test message"}
             response = requests.post(
-                config['webhook_url'],
+                webhook,
                 json=test_message,
                 timeout=10
             )
