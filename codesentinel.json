@@ -1,0 +1,82 @@
+{
+  "install_location": "C:\\Users\\joedi\\Documents\\CodeSentinel",
+  "alerts": {
+    "console": {
+      "enabled": true
+    },
+    "file": {
+      "enabled": true,
+      "log_file": "codesentinel.log"
+    },
+    "email": {
+      "enabled": false,
+      "smtp_server": "",
+      "smtp_port": 587,
+      "username": "",
+      "password": "",
+      "from_email": "",
+      "to_emails": []
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": "",
+      "channel": "#maintenance-alerts"
+    }
+  },
+  "github": {
+    "mode": "connect",
+    "repo_url": "",
+    "create": false,
+    "enabled": false,
+    "access_token": ""
+  },
+  "ide": {
+    "VS Code": {
+      "detected": true,
+      "enabled": true
+    },
+    "Visual Studio": {
+      "detected": false,
+      "enabled": false
+    },
+    "PyCharm": {
+      "detected": true,
+      "enabled": true
+    },
+    "IntelliJ IDEA": {
+      "detected": false,
+      "enabled": false
+    },
+    "RStudio": {
+      "detected": true,
+      "enabled": true
+    },
+    "Sublime Text": {
+      "detected": false,
+      "enabled": false
+    },
+    "Atom": {
+      "detected": false,
+      "enabled": false
+    },
+    "Notepad++": {
+      "detected": false,
+      "enabled": false
+    },
+    "Eclipse": {
+      "detected": false,
+      "enabled": false
+    }
+  },
+  "copilot": {
+    "enabled": false,
+    "install_vscode_extension": false,
+    "generate_instructions": true,
+    "enable_agent_mode": true
+  },
+  "optional": {
+    "scheduler": false,
+    "git_hooks": true,
+    "ci": false
+  }
+}

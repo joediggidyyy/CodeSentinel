@@ -45,11 +45,11 @@ function Test-Step {
     Write-Log "Testing: $Name" -Color Yellow
     try {
         $result = & $Action
-        Write-Log "✓ PASS: $Name" -Color Green
+        Write-Log "PASS: $Name" -Color Green
         return @{Success = $true; Result = $result}
     }
     catch {
-        Write-Log "✗ FAIL: $Name - $($_.Exception.Message)" -Color Red
+        Write-Log "FAIL: $Name - $($_.Exception.Message)" -Color Red
         return @{Success = $false; Error = $_.Exception.Message}
     }
 }
@@ -154,7 +154,7 @@ $result = Test-Step "Check installed packages" {
     
     # Check for CodeSentinel
     if ($packages -match "codesentinel") {
-        Write-Log "✓ CodeSentinel package found"
+        Write-Log "CodeSentinel package found"
     } else {
         throw "CodeSentinel package not found in pip list"
     }
@@ -170,7 +170,7 @@ $result = Test-Step "Check codesentinel command" {
     if ($LASTEXITCODE -ne 0) {
         throw "codesentinel command not available: $output"
     }
-    Write-Log "✓ codesentinel command works"
+    Write-Log "codesentinel command works"
 }
 $TestResults.Steps += $result
 $TestResults.Total++
@@ -182,7 +182,7 @@ $result = Test-Step "Check codesentinel-setup command" {
     if ($null -eq $command) {
         throw "codesentinel-setup command not found"
     }
-    Write-Log "✓ codesentinel-setup command available"
+    Write-Log "codesentinel-setup command available"
 }
 $TestResults.Steps += $result
 $TestResults.Total++
@@ -214,7 +214,7 @@ foreach ($dep in $requiredDeps) {
         if ($LASTEXITCODE -ne 0) {
             throw "Dependency $dep not available: $output"
         }
-        Write-Log "✓ $dep is available"
+        Write-Log "$dep is available"
     }
     $TestResults.Steps += $result
     $TestResults.Total++
@@ -245,7 +245,7 @@ Write-Log $summary
 Add-Content -Path $ReportFile -Value $summary
 
 if ($TestResults.Failed -eq 0) {
-    Write-Log "✓ ALL TESTS PASSED - Installation successful!" -Color Green
+    Write-Log "ALL TESTS PASSED - Installation successful!" -Color Green
     Write-Log ""
     Write-Log "Next steps:" -Color Yellow
     Write-Log "  1. Run: codesentinel-setup-gui" -Color Cyan
@@ -253,7 +253,7 @@ if ($TestResults.Failed -eq 0) {
     Write-Log "  3. Test: codesentinel !!!!" -Color Cyan
     $exitCode = 0
 } else {
-    Write-Log "✗ SOME TESTS FAILED - Check logs for details" -Color Red
+    Write-Log "SOME TESTS FAILED - Check logs for details" -Color Red
     $exitCode = 1
 }
 
