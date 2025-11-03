@@ -88,7 +88,7 @@ def main():
     
     try:
         # Import after path setup
-        from codesentinel.ui.setup.wizard import main as wizard_main
+        from codesentinel.gui_wizard_v2 import main as wizard_main
         wizard_main()
         return 0
     

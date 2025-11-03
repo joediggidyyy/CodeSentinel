@@ -7,14 +7,24 @@ CLI entry point for CodeSentinel operations.
 
 import argparse
 import sys
+import atexit
 from pathlib import Path
 from typing import Optional
 
 from ..core import CodeSentinel
+from ..utils.process_monitor import start_monitor, stop_monitor
 
 
 def main():
     """Main CLI entry point."""
+    # Start low-cost process monitor daemon (checks every 60 seconds)
+    try:
+        monitor = start_monitor(check_interval=60, enabled=True)
+        atexit.register(stop_monitor)  # Ensure cleanup on exit
+    except Exception as e:
+        # Don't fail if monitor can't start (e.g., missing psutil)
+        print(f"Warning: Process monitor not started: {e}", file=sys.stderr)
+    
     # Quick trigger: allow '!!!!' as an alias for interactive dev audit
     if any(arg == '!!!!' for arg in sys.argv[1:]):
         # Replace all '!!!!' tokens with 'dev-audit'
@@ -120,6 +130,10 @@ Examples:
     dev_audit_parser = subparsers.add_parser('dev-audit', help='Run development audit')
     dev_audit_parser.add_argument(
         '--silent', action='store_true', help='Run brief audit suitable for CI/alerts')
+    dev_audit_parser.add_argument(
+        '--agent', action='store_true', help='Export audit context for AI agent remediation (requires GitHub Copilot)')
+    dev_audit_parser.add_argument(
+        '--export', type=str, help='Export audit results to JSON file')
 
     args = parser.parse_args()
 
@@ -215,8 +229,59 @@ Examples:
 
         elif args.command == 'dev-audit':
             interactive = not getattr(args, 'silent', False)
+            agent_mode = getattr(args, 'agent', False)
+            export_path = getattr(args, 'export', None)
+            
+            if agent_mode:
+                # Export comprehensive context for AI agent
+                print("Generating audit context for AI agent...")
+                agent_context = codesentinel.dev_audit.get_agent_context()
+                
+                if export_path:
+                    import json as _json
+                    with open(export_path, 'w') as f:
+                        _json.dump(agent_context, f, indent=2)
+                    print(f"Agent context exported to: {export_path}")
+                else:
+                    # Print guidance for agent
+                    print("\n" + "=" * 60)
+                    print(agent_context['agent_guidance'])
+                    print("\n" + "=" * 60)
+                    print("\nAudit Results Summary:")
+                    import json as _json
+                    print(_json.dumps(agent_context['remediation_context']['summary'], indent=2))
+                    
+                    print("\n" + "=" * 60)
+                    print("AGENT REMEDIATION MODE")
+                    print("=" * 60)
+                    print("\nThis audit has detected issues that require intelligent remediation.")
+                    print("An AI agent (GitHub Copilot) can now analyze these findings and build")
+                    print("a remediation pipeline while respecting all persistent policies.\n")
+                    
+                    # Output structured data for agent to consume
+                    print("\n@agent Here is the comprehensive audit context:")
+                    print(_json.dumps(agent_context, indent=2))
+                    
+                    print("\n\nPlease analyze the audit findings and propose a remediation plan.")
+                    print("Remember: All actions must be non-destructive and preserve features.")
+                
+                return
+            
             results = codesentinel.run_dev_audit(interactive=interactive)
             if interactive:
+                # Check if there are issues and offer agent mode
+                total_issues = results.get('summary', {}).get('total_issues', 0)
+                if total_issues > 0:
+                    print("\n" + "=" * 60)
+                    print(f"🤖 AGENT REMEDIATION AVAILABLE")
+                    print("=" * 60)
+                    print(f"\nThe audit detected {total_issues} issues.")
+                    print("\nIf you have GitHub Copilot integrated, you can run:")
+                    print("  codesentinel !!!! --agent")
+                    print("\nThis will provide comprehensive context for the AI agent to")
+                    print("intelligently build a remediation pipeline while respecting")
+                    print("all security, efficiency, and minimalism principles.")
+                
                 print("\nInteractive dev audit completed.")
                 print("A brief audit is running in the background; results will arrive via alerts.")
             else:

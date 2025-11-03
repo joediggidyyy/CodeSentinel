@@ -10,6 +10,7 @@ import json
 import logging
 import subprocess
 import sys
+import atexit
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 from ..utils.config import ConfigManager
 from ..utils.alerts import AlertManager
 from ..utils.scheduler import MaintenanceScheduler
+from ..utils.process_monitor import start_monitor, stop_monitor
 from .dev_audit import DevAudit
 
 
@@ -54,6 +56,32 @@ class CodeSentinel:
             self.version = __import__('codesentinel').__version__
         except Exception:
             self.version = "unknown"
+        
+        # Initialize dev_audit for agent-driven remediation
+        self._dev_audit_instance = None
+        
+        # Start process monitor daemon (PERMANENT CORE FUNCTION)
+        # This is a low-cost background daemon that prevents orphan processes
+        try:
+            check_interval = self.config.get('process_monitor', {}).get('check_interval', 60)
+            enabled = self.config.get('process_monitor', {}).get('enabled', True)
+            self.process_monitor = start_monitor(check_interval=check_interval, enabled=enabled)
+            atexit.register(stop_monitor)
+            logging.debug(f"Process monitor started (interval: {check_interval}s)")
+        except Exception as e:
+            logging.warning(f"Process monitor could not start: {e}")
+            self.process_monitor = None
+
+    @property
+    def dev_audit(self) -> DevAudit:
+        """Get or create DevAudit instance."""
+        if self._dev_audit_instance is None:
+            self._dev_audit_instance = DevAudit(
+                project_root=Path.cwd(),
+                alert_manager=self.alert_manager,
+                config_manager=self.config_manager
+            )
+        return self._dev_audit_instance
 
     def _find_config(self) -> Path:
         """Find the configuration file."""
@@ -297,12 +325,9 @@ class CodeSentinel:
         Returns:
             Dict with audit results.
         """
-        auditor = DevAudit(project_root=Path.cwd(),
-                           alert_manager=self.alert_manager,
-                           config_manager=self.config_manager)
         if interactive:
-            return auditor.run_interactive()
-        return auditor.run_brief()
+            return self.dev_audit.run_interactive()
+        return self.dev_audit.run_brief()
 
 
 __all__ = ['CodeSentinel']

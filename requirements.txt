@@ -3,6 +3,7 @@
 
 # Core dependencies
 pathlib2>=2.3.0; python_version < "3.4"  # For pathlib compatibility
+psutil>=5.8.0  # For process monitoring and orphan detection
 
 # Alert system dependencies
 requests>=2.25.0  # For Slack webhooks and HTTP requests
