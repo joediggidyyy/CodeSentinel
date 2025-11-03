@@ -16,6 +16,7 @@ from tkinter import ttk, messagebox, scrolledtext
 import threading
 import os
 from pathlib import Path
+import shutil
 
 class CodeSentinelSetupWizard:
     """Main setup wizard for CodeSentinel installation."""
@@ -48,7 +49,7 @@ class CodeSentinelSetupWizard:
         
         title_label = ttk.Label(
             header_frame, 
-            text="🛡️ CodeSentinel Setup Wizard",
+            text="CodeSentinel Setup Wizard",
             font=("Segoe UI", 18, "bold")
         )
         title_label.pack()
@@ -75,11 +76,11 @@ class CodeSentinelSetupWizard:
         welcome_text = ttk.Label(
             welcome_frame,
             text="Welcome to CodeSentinel! This wizard will:\n\n"
-                 "1. 🔍 Check your system requirements\n"
-                 "2. 📦 Install required dependencies (PyYAML, keyring, cryptography)\n"
-                 "3. ⚙️ Install CodeSentinel package\n"
-                 "4. 🚀 Launch the project configuration wizard\n\n"
-                 "Click 'Start Installation' to begin!",
+                 "1. Check your system requirements\n"
+                 "2. Install required dependencies (PyYAML, keyring, cryptography)\n"
+                 "3. Install CodeSentinel package\n"
+                 "4. Launch the project configuration wizard\n\n"
+                 "This wizard will automatically verify and install prerequisites. No action is required.",
             font=("Segoe UI", 10)
         )
         welcome_text.pack()
@@ -114,17 +115,9 @@ class CodeSentinelSetupWizard:
         )
         self.log_text.pack(fill="both", expand=True)
         
-        # Buttons
+        # Buttons (no Start button; flow is automatic)
         button_frame = ttk.Frame(self.root)
         button_frame.pack(fill="x", padx=20, pady=20)
-        
-        self.install_button = ttk.Button(
-            button_frame,
-            text="🚀 Start Installation",
-            command=self.start_installation,
-            style="Accent.TButton"
-        )
-        self.install_button.pack(side="left")
         
         self.close_button = ttk.Button(
             button_frame,
@@ -141,6 +134,9 @@ class CodeSentinelSetupWizard:
             state="disabled"
         )
         self.next_button.pack(side="right", padx=(0, 10))
+
+        # Auto-start after UI renders
+        self.root.after(300, self.start_installation)
         
     def log_message(self, message):
         """Add a message to the log."""
@@ -155,7 +151,7 @@ class CodeSentinelSetupWizard:
         
     def start_installation(self):
         """Start the installation process."""
-        self.install_button.config(state="disabled")
+        # Ensure progress bar runs (no manual buttons in automatic flow)
         self.progress_bar.start()
         
         # Start installation in a separate thread
@@ -166,78 +162,94 @@ class CodeSentinelSetupWizard:
     def run_installation(self):
         """Run the complete installation process."""
         try:
-            self.log_message("🛡️ CodeSentinel Setup Wizard Started")
+            self.log_message("CodeSentinel Setup Wizard Started")
             self.log_message("=" * 50)
             
             # Step 1: Check Python version
             self.update_status("Checking Python version...")
-            self.log_message("\n🐍 Checking Python version...")
+            self.log_message("\nChecking Python version...")
             
             python_version = sys.version_info
             if python_version >= (3, 7):
-                self.log_message(f"✅ Python {python_version.major}.{python_version.minor}.{python_version.micro} - Compatible")
+                self.log_message(f"✓ Python {python_version.major}.{python_version.minor}.{python_version.micro} - Compatible")
             else:
-                self.log_message(f"❌ Python {python_version.major}.{python_version.minor}.{python_version.micro} - Requires Python 3.7+")
+                self.log_message(f"✗ Python {python_version.major}.{python_version.minor}.{python_version.micro} - Requires Python 3.7+")
                 self.installation_failed("Python 3.7+ required")
                 return
             
             # Step 2: Check tkinter
             self.update_status("Checking GUI support...")
-            self.log_message("\n🖼️ Checking GUI support...")
+            self.log_message("\nChecking GUI support...")
             try:
                 import tkinter
-                self.log_message("✅ tkinter - Available")
+                self.log_message("✓ tkinter - Available")
             except ImportError:
-                self.log_message("❌ tkinter - Missing (required for GUI)")
+                self.log_message("✗ tkinter - Missing (required for GUI)")
                 
-            # Step 3: Install dependencies
+            # Step 3: Install dependencies (skip if already satisfied)
             self.update_status("Installing dependencies...")
-            self.log_message("\n📦 Installing required dependencies...")
+            self.log_message("\nInstalling required dependencies...")
             
-            required_packages = ["PyYAML", "keyring", "cryptography"]
-            for package in required_packages:
-                if not self.install_package(package):
-                    self.installation_failed(f"Failed to install {package}")
-                    return
+            required_packages = [
+                ("PyYAML", "yaml"),
+                ("keyring", "keyring"),
+                ("cryptography", "cryptography")
+            ]
+            all_present = True
+            import importlib.util as _ilutil
+            for pkg_name, import_name in required_packages:
+                if _ilutil.find_spec(import_name) is None:
+                    all_present = False
+                    if not self.install_package(pkg_name):
+                        self.installation_failed(f"Failed to install {pkg_name}")
+                        return
+                else:
+                    self.log_message(f"✓ {pkg_name} already installed")
             
-            # Step 4: Install CodeSentinel package
+            # Step 4: Install CodeSentinel package (skip if already installed)
             self.update_status("Installing CodeSentinel...")
-            self.log_message("\n🛡️ Installing CodeSentinel package...")
+            self.log_message("\nInstalling CodeSentinel package...")
             
             # Check if we're in a CodeSentinel source directory
             current_dir = Path(__file__).parent
-            if (current_dir / "setup.py").exists() and (current_dir / "codesentinel").exists():
-                # Development installation from source
-                self.log_message("📁 Found CodeSentinel source directory - installing from source...")
-                result = subprocess.run([
-                    sys.executable, "-m", "pip", "install", "-e", "."
-                ], capture_output=True, text=True, cwd=current_dir)
-            else:
-                # Production installation from PyPI (when available)
-                self.log_message("🌐 Installing CodeSentinel from PyPI...")
-                result = subprocess.run([
-                    sys.executable, "-m", "pip", "install", "codesentinel"
-                ], capture_output=True, text=True)
+            result = None
+            try:
+                import codesentinel  # type: ignore
+                self.log_message("✓ CodeSentinel already installed")
+            except Exception:
+                if (current_dir / "setup.py").exists() and (current_dir / "codesentinel").exists():
+                    # Development installation from source
+                    self.log_message("Found CodeSentinel source directory - installing from source...")
+                    result = subprocess.run([
+                        sys.executable, "-m", "pip", "install", "-e", "."
+                    ], capture_output=True, text=True, cwd=current_dir)
+                else:
+                    # Production installation from PyPI (when available)
+                    self.log_message("Installing CodeSentinel from PyPI...")
+                    result = subprocess.run([
+                        sys.executable, "-m", "pip", "install", "codesentinel"
+                    ], capture_output=True, text=True)
             
-            if result.returncode == 0:
-                self.log_message("✅ CodeSentinel package installed successfully")
-            else:
-                self.log_message(f"❌ Failed to install CodeSentinel package")
-                self.log_message(f"Error: {result.stderr}")
-                
-                # If PyPI installation failed, suggest manual installation
-                if not (current_dir / "setup.py").exists():
-                    self.log_message("\n💡 Suggestion:")
-                    self.log_message("  1. Download the full CodeSentinel source code")
-                    self.log_message("  2. Extract to a directory")
-                    self.log_message("  3. Run setup_wizard.py from that directory")
-                
-                self.installation_failed("CodeSentinel package installation failed")
-                return
+            if result is not None:
+                if result.returncode == 0:
+                    self.log_message("✓ CodeSentinel package installed successfully")
+                else:
+                    self.log_message(f"✗ Failed to install CodeSentinel package")
+                    self.log_message(f"Error: {result.stderr}")
+                    
+                    # If PyPI installation failed, suggest manual installation
+                    if not (current_dir / "setup.py").exists():
+                        self.log_message("\nSuggestion:")
+                        self.log_message("  1. Download the full CodeSentinel source code")
+                        self.log_message("  2. Extract to a directory")
+                        self.log_message("  3. Run setup_wizard.py from that directory")
+                    
+                    self.installation_failed("CodeSentinel package installation failed")
+                    return
             
             # Step 5: Verify installation
             self.update_status("Verifying installation...")
-            self.log_message("\n🔍 Verifying installation...")
+            self.log_message("\nVerifying installation...")
             
             try:
                 # Test entry points
@@ -246,37 +258,37 @@ class CodeSentinelSetupWizard:
                 ], capture_output=True, text=True)
                 
                 if result.returncode == 0:
-                    self.log_message("✅ CodeSentinel package verification successful")
+                    self.log_message("✓ CodeSentinel package verification successful")
                 else:
-                    self.log_message("❌ Package verification failed")
+                    self.log_message("✗ Package verification failed")
                     self.installation_failed("Package verification failed")
                     return
                 
             except Exception as e:
-                self.log_message(f"❌ Verification error: {e}")
+                self.log_message(f"✗ Verification error: {e}")
                 self.installation_failed("Verification failed")
                 return
             
-            # Success!
+            # Success or already satisfied
             self.installation_complete()
             
         except Exception as e:
-            self.log_message(f"\n💥 Installation error: {e}")
+            self.log_message(f"\nInstallation error: {e}")
             self.installation_failed(str(e))
     
     def install_package(self, package):
         """Install a single package."""
-        self.log_message(f"🔧 Installing {package}...")
+        self.log_message(f"Installing {package}...")
         
         result = subprocess.run([
             sys.executable, "-m", "pip", "install", package
         ], capture_output=True, text=True)
         
         if result.returncode == 0:
-            self.log_message(f"✅ {package} installed successfully")
+            self.log_message(f"✓ {package} installed successfully")
             return True
         else:
-            self.log_message(f"❌ Failed to install {package}")
+            self.log_message(f"✗ Failed to install {package}")
             self.log_message(f"Error: {result.stderr}")
             return False
     
@@ -285,46 +297,106 @@ class CodeSentinelSetupWizard:
         self.progress_bar.stop()
         self.update_status("Installation complete!")
         
-        self.log_message("\n🎉 Installation completed successfully!")
+        self.log_message("\nInstallation completed successfully!")
         self.log_message("\nCodeSentinel is now installed and ready to use.")
         self.log_message("\nAvailable commands:")
         self.log_message("  codesentinel-setup     - Project setup wizard")
         self.log_message("  codesentinel           - Main CLI interface")
-        self.log_message("\nClick 'Launch Project Setup' to configure your first project!")
+        self.log_message("\nNext steps:")
+        self.log_message("  • You may close this window.")
+        self.log_message("  • Launching the CodeSentinel project setup in a moment...")
         
-        self.install_button.config(text="✅ Complete", state="disabled")
         self.next_button.config(state="normal")
         self.close_button.config(state="normal")
+
+        # Automatically advance to project setup shortly after success
+        # Give the UI a brief moment so users can read the success line
+        self.root.after(1500, self.launch_project_setup)
         
     def installation_failed(self, error):
         """Handle installation failure."""
         self.progress_bar.stop()
         self.update_status(f"Installation failed: {error}")
         
-        self.install_button.config(text="❌ Failed", state="disabled")
         self.close_button.config(state="normal")
         
     def launch_project_setup(self):
         """Launch the project setup wizard."""
         try:
-            self.log_message("\n🚀 Launching project setup wizard...")
-            
-            # Launch the project setup
-            subprocess.Popen([sys.executable, "-c", "from codesentinel.launcher import main; main()"])
-            
-            # Close this wizard
+            self.log_message("\nLaunching project setup wizard...")
+
+            # Resolve best available setup command
+            cmd, desc = self._resolve_setup_command()
+            if not cmd:
+                raise RuntimeError(
+                    "No setup command found. Try running 'codesentinel-setup' or 'python -m codesentinel.cli setup' manually."
+                )
+
+            self.log_message(f"Using: {desc}")
+            # Launch detached so the setup can continue even if this window closes
+            subprocess.Popen(cmd)
+
+            # Close this wizard after launching
             self.root.destroy()
             
         except Exception as e:
             messagebox.showerror(
                 "Launch Error",
                 f"Could not launch project setup: {e}\n\n"
-                "You can run it manually:\ncodesentinel-setup"
+                "You can run it manually:\n"
+                "  - codesentinel-setup\n"
+                "  - codesentinel-setup-gui\n"
+                "  - python -m codesentinel.cli setup --gui"
             )
+
+    def _resolve_setup_command(self):
+        """Return (cmd_list, description) for the best available setup entry.
+
+        Preference order:
+        1) codesentinel-setup-gui (if on PATH)
+        2) codesentinel-setup (CLI)
+        3) python -m codesentinel.cli setup --gui
+        4) python -m codesentinel.cli setup
+        5) python launch.py (repo-local fallback)
+        """
+        # 1) Prefer dedicated GUI entry point if present
+        if shutil.which("codesentinel-setup-gui"):
+            return (["codesentinel-setup-gui"], "codesentinel-setup-gui (GUI)")
+
+        # 2) Fallback to generic setup entry point
+        if shutil.which("codesentinel-setup"):
+            return (["codesentinel-setup"], "codesentinel-setup (CLI)")
+
+        # 3) Module invocation (GUI flag)
+        # Even if GUI isn't implemented, attempting this keeps behavior consistent
+        returncode = None
+        try:
+            # Quick import probe to see if module exists
+            __import__("codesentinel.cli")
+            return ([sys.executable, "-m", "codesentinel.cli", "setup", "--gui"],
+                    "python -m codesentinel.cli setup --gui")
+        except Exception:
+            returncode = 1
+
+        # 4) Non-GUI module invocation
+        try:
+            __import__("codesentinel.cli")
+            return ([sys.executable, "-m", "codesentinel.cli", "setup"],
+                    "python -m codesentinel.cli setup")
+        except Exception:
+            pass
+
+        # 5) Repo-local launcher fallback (when running from source tree)
+        current_dir = Path(__file__).parent
+        launch_py = current_dir / "launch.py"
+        if launch_py.exists():
+            return ([sys.executable, str(launch_py)], "local launch.py")
+
+        return (None, "")
 
 def main():
     """Main entry point."""
-    print("🛡️ CodeSentinel Setup Wizard")
+    print("CodeSentinel Setup Wizard")
     print("=" * 30)
     print("Starting GUI installation wizard...")
     
@@ -332,10 +404,10 @@ def main():
         app = CodeSentinelSetupWizard()
         app.root.mainloop()
     except KeyboardInterrupt:
-        print("\n❌ Setup cancelled by user")
+        print("\n✗ Setup cancelled by user")
         return 1
     except Exception as e:
-        print(f"❌ Setup failed: {e}")
+        print(f"✗ Setup failed: {e}")
         return 1
     
     return 0

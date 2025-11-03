@@ -144,18 +144,19 @@ class AlertManager:
             return False
 
         try:
-            emoji_map = {
-                'info': ':information_source:',
-                'warning': ':warning:',
-                'error': ':x:',
-                'critical': ':fire:'
+            # Use simple text markers instead of emojis
+            prefix_map = {
+                'info': '[INFO]',
+                'warning': '[WARNING]',
+                'error': '[ERROR]',
+                'critical': '[CRITICAL]'
             }
 
-            emoji = emoji_map.get(severity, ':bell:')
+            prefix = prefix_map.get(severity, '[ALERT]')
             slack_message = {
                 "channel": config.get('channel', '#general'),
                 "username": config.get('username', 'CodeSentinel'),
-                "text": f"{emoji} *{title}*\n{message}",
+                "text": f"{prefix} *{title}*\n{message}",
                 "mrkdwn": True
             }
 

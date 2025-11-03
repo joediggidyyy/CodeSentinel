@@ -396,7 +396,7 @@ class LocationPage(BasePage):
             self.next_button.config(state="normal")
         elif mode == "standalone" and is_git_repo:
             self.selection_info.config(text=f"Location: {location}")
-            self.update_status(self.status_label, "ℹ️ Location is a Git repository (will install as standalone)", "info")
+            self.update_status(self.status_label, "Location is a Git repository (will install as standalone)", "info")
             self.next_button.config(state="normal")
         else:
             self.selection_info.config(text=f"Location: {location}")

@@ -236,18 +236,26 @@ class DependencyInstallerGUI:
         # Show informational message about next steps
         root = tk.Tk()
         root.withdraw()  # Hide the root window
-        
-        messagebox.showinfo(
-            "CodeSentinel Setup",
-            "✅ Ready for CodeSentinel setup!\n\n"
-            "Next steps:\n"
-            "1. Navigate to your project directory\n"
-            "2. Run: codesentinel-setup\n\n"
-            "Or to create a new CodeSentinel project:\n"
-            "1. Create a new directory for your project\n"
-            "2. Run: codesentinel-setup in that directory"
-        )
+        # Destroy the temporary root BEFORE launching the main wizard to avoid multiple Tk roots
         root.destroy()
+        
+        try:
+            # Prefer the new modular wizard if available
+            try:
+                from .gui_wizard_v2 import main as wizard_main
+                wizard_main()
+            except Exception:
+                from .gui_project_setup import main as project_setup_main
+                project_setup_main()
+        except Exception as e:
+            messagebox.showerror(
+                "CodeSentinel Setup",
+                "Could not launch the project setup wizard.\n\n"
+                f"Error: {e}\n\n"
+                "You can run it manually later with:\n"
+                "  - codesentinel-setup-gui\n"
+                "  - python -m codesentinel.cli setup --gui"
+            )
     
     def launch_main_wizard(self):
         """Show completion message with next steps."""
@@ -291,18 +299,26 @@ def launch_wizard_directly():
     """Show next steps when dependencies are available."""
     root = tk.Tk()
     root.withdraw()  # Hide the root window
-    
-    messagebox.showinfo(
-        "CodeSentinel Ready!",
-        "✅ All dependencies are available!\n\n"
-        "Next steps:\n"
-        "1. Navigate to your project directory\n"
-        "2. Run: codesentinel-setup\n\n"
-        "Or to create a new CodeSentinel project:\n"
-        "1. Create a new directory for your project\n"
-        "2. Run: codesentinel-setup in that directory"
-    )
+    # Destroy the temporary root BEFORE launching the main wizard to avoid multiple Tk roots
     root.destroy()
+    
+    try:
+        # Prefer the new modular wizard if available
+        try:
+            from .gui_wizard_v2 import main as wizard_main
+            wizard_main()
+        except Exception as e:
+            from .gui_project_setup import main as project_setup_main
+            project_setup_main()
+    except Exception as e:
+        messagebox.showerror(
+            "CodeSentinel Setup",
+            "Could not launch the project setup wizard.\n\n"
+            f"Error: {e}\n\n"
+            "You can run it manually later with:\n"
+            "  - codesentinel-setup-gui\n"
+            "  - python -m codesentinel.cli setup --gui"
+        )
 
 def main():
     """Main entry point for GUI launcher."""

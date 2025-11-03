@@ -1,8 +1,8 @@
-# 🛡️ CodeSentinel - Quick Start
+# CodeSentinel - Quick Start
 
 ## Security-First Automated Maintenance and Monitoring
 
-## 🚀 Installation Options
+## Installation Options
 
 ### Option 1: From Source Code (Current)
 
@@ -29,16 +29,16 @@ This installs PyYAML, keyring, cryptography without requiring source code.
 
 ### setup_wizard.py (Source Installation)
 
-1. ✅ Checks system requirements (Python 3.7+)
-2. 📦 Installs dependencies (PyYAML, keyring, cryptography)  
-3. ⚙️ Installs CodeSentinel from source (`pip install -e .`)
-4. 🚀 Launches project configuration
+1. ✓ Checks system requirements (Python 3.7+)
+2. ✓ Installs dependencies (PyYAML, keyring, cryptography)  
+3. ✓ Installs CodeSentinel from source (`pip install -e .`)
+4. ✓ Launches project configuration
 
 ### install_codesentinel.py (Standalone)
 
-1. ✅ Checks system requirements (Python 3.7+)
-2. 📦 Installs dependencies only
-3. 💡 Provides next steps for manual setup
+1. ✓ Checks system requirements (Python 3.7+)
+2. ✓ Installs dependencies only
+3. ✓ Provides next steps for manual setup
 
 ## Manual Installation
 

@@ -15,16 +15,22 @@ from ..core import CodeSentinel
 
 def main():
     """Main CLI entry point."""
+    # Quick trigger: allow '!!!!' as an alias for interactive dev audit
+    if any(arg == '!!!!' for arg in sys.argv[1:]):
+        # Replace all '!!!!' tokens with 'dev-audit'
+        sys.argv = [sys.argv[0]] + ['dev-audit' if a == '!!!!' else a for a in sys.argv[1:]]
     parser = argparse.ArgumentParser(
         description="CodeSentinel - Automated Maintenance & Security Monitoring",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+      epilog="""
 Examples:
   codesentinel status                    # Show current status
   codesentinel scan                      # Run security scan
   codesentinel maintenance daily         # Run daily maintenance
   codesentinel alert "Test message"      # Send test alert
   codesentinel schedule start            # Start maintenance scheduler
+  codesentinel dev-audit                 # Run interactive development audit
+  codesentinel !!!!                      # Quick trigger for dev-audit
         """
     )
 
@@ -110,6 +116,11 @@ Examples:
         help='Run non-interactive setup'
     )
 
+    # Development audit command
+    dev_audit_parser = subparsers.add_parser('dev-audit', help='Run development audit')
+    dev_audit_parser.add_argument(
+        '--silent', action='store_true', help='Run brief audit suitable for CI/alerts')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -152,8 +163,24 @@ Examples:
 
         elif args.command == 'alert':
             print(f"Sending alert: {args.title}")
-            # Note: This would need access to alert manager
-            print("Alert sent successfully")
+            channels = args.channels
+            try:
+                result = codesentinel.alert_manager.send_alert(
+                    title=args.title,
+                    message=args.message,
+                    severity=args.severity,
+                    channels=channels
+                )
+                # Summarize results
+                succeeded = [k for k, v in (result or {}).items() if v]
+                failed = [k for k, v in (result or {}).items() if not v]
+                if succeeded:
+                    print(f"Alert sent via: {', '.join(succeeded)}")
+                if failed:
+                    print(f"Channels failed: {', '.join(failed)}")
+            except Exception as _e:
+                print(f"Alert failed: {_e}", file=sys.stderr)
+                sys.exit(1)
 
         elif args.command == 'schedule':
             if args.action == 'start':
@@ -172,9 +199,30 @@ Examples:
         elif args.command == 'setup':
             print("Launching setup wizard...")
             if args.gui:
-                print("GUI setup not yet implemented - use terminal setup")
+                try:
+                    # Prefer the new modular wizard
+                    try:
+                        from ..gui_wizard_v2 import main as wizard_main
+                        wizard_main()
+                    except Exception:
+                        from ..gui_project_setup import main as project_setup_main
+                        project_setup_main()
+                except Exception as e:
+                    print(f"Failed to launch GUI setup: {e}")
+                    sys.exit(1)
             else:
-                print("Terminal setup not yet implemented - use setup_wizard.py")
+                print("Terminal setup not yet implemented - use setup_wizard.py or --gui")
+
+        elif args.command == 'dev-audit':
+            interactive = not getattr(args, 'silent', False)
+            results = codesentinel.run_dev_audit(interactive=interactive)
+            if interactive:
+                print("\nInteractive dev audit completed.")
+                print("A brief audit is running in the background; results will arrive via alerts.")
+            else:
+                import json as _json
+                print(_json.dumps(results.get('summary', {}), indent=2))
+            return
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
