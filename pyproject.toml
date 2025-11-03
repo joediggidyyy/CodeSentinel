@@ -11,7 +11,7 @@ name = "codesentinel"
 version = "1.0.0"
 description = "Automated Maintenance & Security Monitoring"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.13"
 authors = [
     {name = "joediggidyyy", email = "joediggidy3@gmail.com"},
@@ -23,7 +23,6 @@ keywords = ["security", "monitoring", "maintenance", "automation", "alerts"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.13",
@@ -67,8 +66,12 @@ Issues = "https://github.com/joediggidyyy/CodeSentinel/issues"
 Changelog = "https://github.com/joediggidyyy/CodeSentinel/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["codesentinel"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["codesentinel*", "tools*"]
+exclude = ["tests*", "test_install_env*", "quarantine_legacy_archive*"]
 
 [tool.setuptools.package-data]
 codesentinel = ["*.md", "*.txt", "*.json"]
