@@ -48,8 +48,16 @@ class ProjectSetupWizard:
     def _build_ui(self):
         header = ttk.Frame(self.root)
         header.pack(fill="x", padx=16, pady=16)
-        ttk.Label(header, text="CodeSentinel Project Setup Wizard", font=("Segoe UI", 16, "bold")).pack()
-        ttk.Label(header, text="Guided configuration for a new or existing project.", foreground="gray").pack(pady=(4, 0))
+        ttk.Label(
+            header,
+            text="CodeSentinel Project Setup Wizard",
+            font=("Segoe UI", 16, "bold"),
+        ).pack()
+        ttk.Label(
+            header,
+            text="Guided configuration for a new or existing project.",
+            foreground="gray",
+        ).pack(pady=(4, 0))
 
         main = ttk.Frame(self.root)
         main.pack(fill="both", expand=True, padx=16, pady=(0, 12))
@@ -59,25 +67,39 @@ class ProjectSetupWizard:
         dir_frame.pack(fill="x")
         dir_row = ttk.Frame(dir_frame)
         dir_row.pack(fill="x")
-        ttk.Entry(dir_row, textvariable=self.project_dir).pack(side="left", fill="x", expand=True)
-        ttk.Button(dir_row, text="Browse...", command=self._choose_directory).pack(side="left", padx=(8, 0))
-        ttk.Label(dir_frame, textvariable=self.git_status, foreground="gray").pack(anchor="w", pady=(6, 0))
+        ttk.Entry(dir_row, textvariable=self.project_dir).pack(
+            side="left", fill="x", expand=True
+        )
+        ttk.Button(dir_row, text="Browse...", command=self._choose_directory).pack(
+            side="left", padx=(8, 0)
+        )
+        ttk.Label(dir_frame, textvariable=self.git_status, foreground="gray").pack(
+            anchor="w", pady=(6, 0)
+        )
 
         # Actions
         actions = ttk.Frame(main)
         actions.pack(fill="x", pady=(12, 0))
-        self.init_git_btn = ttk.Button(actions, text="Initialize Git", command=self._init_git)
+        self.init_git_btn = ttk.Button(
+            actions, text="Initialize Git", command=self._init_git
+        )
         self.init_git_btn.pack(side="left")
-        ttk.Button(actions, text="Create Config", command=self._create_config).pack(side="left", padx=(8, 0))
+        ttk.Button(actions, text="Create Config", command=self._create_config).pack(
+            side="left", padx=(8, 0)
+        )
 
         # Footer
         footer = ttk.Frame(self.root)
         footer.pack(fill="x", padx=16, pady=16)
         ttk.Button(footer, text="Close", command=self.root.destroy).pack(side="right")
-        ttk.Button(footer, text="Finish", command=self._finish).pack(side="right", padx=(0, 8))
+        ttk.Button(footer, text="Finish", command=self._finish).pack(
+            side="right", padx=(0, 8)
+        )
 
     def _choose_directory(self):
-        selected = filedialog.askdirectory(initialdir=self.project_dir.get() or str(Path.home()))
+        selected = filedialog.askdirectory(
+            initialdir=self.project_dir.get() or str(Path.home())
+        )
         if selected:
             self.project_dir.set(selected)
             self._update_git_status()
@@ -95,11 +117,15 @@ class ProjectSetupWizard:
     def _init_git(self):
         path = Path(self.project_dir.get())
         try:
-            result = subprocess.run(["git", "init"], cwd=str(path), capture_output=True, text=True)
+            result = subprocess.run(
+                ["git", "init"], cwd=str(path), capture_output=True, text=True
+            )
             if result.returncode == 0:
                 messagebox.showinfo("Git", "Repository initialized successfully.")
             else:
-                messagebox.showwarning("Git", f"Git init failed:\n{result.stderr.strip()}")
+                messagebox.showwarning(
+                    "Git", f"Git init failed:\n{result.stderr.strip()}"
+                )
         except FileNotFoundError:
             messagebox.showwarning("Git", "Git is not installed or not on PATH.")
         finally:
@@ -128,7 +154,10 @@ class ProjectSetupWizard:
                 cm.save_config(cm._create_default_config())
             except Exception:
                 pass
-        messagebox.showinfo("Setup Complete", "CodeSentinel project setup is complete. You can now run 'codesentinel' or enable scheduled maintenance.")
+        messagebox.showinfo(
+            "Setup Complete",
+            "CodeSentinel project setup is complete. You can now run 'codesentinel' or enable scheduled maintenance.",
+        )
         self.root.destroy()
 
 

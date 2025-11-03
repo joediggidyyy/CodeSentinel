@@ -7,7 +7,7 @@ import os
 import sys
 
 # Add the codesentinel package to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from codesentinel.utils.config import ConfigManager
 
@@ -18,7 +18,7 @@ class TestConfigManager(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
-        self.config_file = os.path.join(self.temp_dir, 'test_config.json')
+        self.config_file = os.path.join(self.temp_dir, "test_config.json")
         self.cm = ConfigManager(config_file=self.config_file)
 
     def tearDown(self):
@@ -41,8 +41,8 @@ class TestConfigManager(unittest.TestCase):
     def test_save_and_load_config(self):
         """Test saving and loading configuration."""
         test_config = {
-            'alerts': {'email': 'test@example.com'},
-            'maintenance': {'schedule': 'daily'}
+            "alerts": {"email": "test@example.com"},
+            "maintenance": {"schedule": "daily"},
         }
 
         self.cm.save_config(test_config)
@@ -53,13 +53,11 @@ class TestConfigManager(unittest.TestCase):
     def test_validate_config_valid(self):
         """Test config validation with valid config."""
         valid_config = {
-            'alerts': {
-                'email': {'enabled': True, 'smtp_server': 'smtp.example.com'},
-                'slack': {'enabled': False}
+            "alerts": {
+                "email": {"enabled": True, "smtp_server": "smtp.example.com"},
+                "slack": {"enabled": False},
             },
-            'maintenance': {
-                'schedule': 'daily'
-            }
+            "maintenance": {"schedule": "daily"},
         }
 
         is_valid, errors = self.cm.validate_config(valid_config)
@@ -69,9 +67,7 @@ class TestConfigManager(unittest.TestCase):
     def test_validate_config_invalid(self):
         """Test config validation with invalid config."""
         invalid_config = {
-            'alerts': {
-                'email': {'enabled': True}  # Missing required smtp_server
-            }
+            "alerts": {"email": {"enabled": True}}  # Missing required smtp_server
         }
 
         is_valid, errors = self.cm.validate_config(invalid_config)
@@ -79,5 +75,5 @@ class TestConfigManager(unittest.TestCase):
         self.assertGreater(len(errors), 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

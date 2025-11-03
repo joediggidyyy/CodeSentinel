@@ -30,10 +30,15 @@ class AlertManager:
             config_manager: Configuration manager instance.
         """
         self.config_manager = config_manager
-        self.logger = logging.getLogger('AlertManager')
+        self.logger = logging.getLogger("AlertManager")
 
-    def send_alert(self, title: str, message: str, severity: str = 'info',
-                   channels: Optional[List[str]] = None):
+    def send_alert(
+        self,
+        title: str,
+        message: str,
+        severity: str = "info",
+        channels: Optional[List[str]] = None,
+    ):
         """
         Send alert through configured channels.
 
@@ -43,23 +48,25 @@ class AlertManager:
             severity: Alert severity ('info', 'warning', 'error', 'critical').
             channels: List of channels to send to. If None, uses all enabled channels.
         """
-        config = self.config_manager.get('alerts.channels', {})
+        config = self.config_manager.get("alerts.channels", {})
 
         if channels is None:
-            channels = [ch for ch, cfg in config.items() if cfg.get('enabled', False)]
+            channels = [ch for ch, cfg in config.items() if cfg.get("enabled", False)]
 
         self.logger.info(f"Sending {severity} alert: {title}")
 
         results = {}
         for channel in channels:
             try:
-                if channel == 'console':
-                    results[channel] = self._send_console_alert(title, message, severity)
-                elif channel == 'file':
+                if channel == "console":
+                    results[channel] = self._send_console_alert(
+                        title, message, severity
+                    )
+                elif channel == "file":
                     results[channel] = self._send_file_alert(title, message, severity)
-                elif channel == 'email':
+                elif channel == "email":
                     results[channel] = self._send_email_alert(title, message, severity)
-                elif channel == 'slack':
+                elif channel == "slack":
                     results[channel] = self._send_slack_alert(title, message, severity)
                 else:
                     self.logger.warning(f"Unknown alert channel: {channel}")
@@ -73,14 +80,14 @@ class AlertManager:
     def _send_console_alert(self, title: str, message: str, severity: str) -> bool:
         """Send alert to console."""
         severity_colors = {
-            'info': '\033[94m',     # Blue
-            'warning': '\033[93m',  # Yellow
-            'error': '\033[91m',    # Red
-            'critical': '\033[95m'  # Magenta
+            "info": "\033[94m",  # Blue
+            "warning": "\033[93m",  # Yellow
+            "error": "\033[91m",  # Red
+            "critical": "\033[95m",  # Magenta
         }
 
-        color = severity_colors.get(severity, '\033[94m')
-        reset = '\033[0m'
+        color = severity_colors.get(severity, "\033[94m")
+        reset = "\033[0m"
 
         print(f"{color}[{severity.upper()}] {title}{reset}")
         print(f"{color}{message}{reset}")
@@ -90,12 +97,14 @@ class AlertManager:
 
     def _send_file_alert(self, title: str, message: str, severity: str) -> bool:
         """Send alert to log file."""
-        config = self.config_manager.get('alerts.channels.file', {})
-        log_file = config.get('log_file', 'codesentinel.log')
+        config = self.config_manager.get("alerts.channels.file", {})
+        log_file = config.get("log_file", "codesentinel.log")
 
         try:
-            with open(log_file, 'a') as f:
-                timestamp = json.dumps({'timestamp': None}, default=str)[1:-1].split('"')[1]
+            with open(log_file, "a") as f:
+                timestamp = json.dumps({"timestamp": None}, default=str)[1:-1].split(
+                    '"'
+                )[1]
                 f.write(f"[{timestamp}] [{severity.upper()}] {title}: {message}\n")
             return True
         except Exception as e:
@@ -104,25 +113,25 @@ class AlertManager:
 
     def _send_email_alert(self, title: str, message: str, severity: str) -> bool:
         """Send alert via email."""
-        config = self.config_manager.get('alerts.channels.email', {})
+        config = self.config_manager.get("alerts.channels.email", {})
 
-        if not config.get('enabled', False):
+        if not config.get("enabled", False):
             return False
 
         try:
             # Create message
             msg = MIMEMultipart()
-            msg['From'] = config.get('from_email', config.get('username', ''))
-            msg['To'] = ', '.join(config.get('to_emails', []))
-            msg['Subject'] = f"[CodeSentinel] {severity.upper()}: {title}"
+            msg["From"] = config.get("from_email", config.get("username", ""))
+            msg["To"] = ", ".join(config.get("to_emails", []))
+            msg["Subject"] = f"[CodeSentinel] {severity.upper()}: {title}"
 
             body = f"Severity: {severity.upper()}\n\n{message}"
-            msg.attach(MIMEText(body, 'plain'))
+            msg.attach(MIMEText(body, "plain"))
 
             # Send email
-            server = smtplib.SMTP(config['smtp_server'], config['smtp_port'])
+            server = smtplib.SMTP(config["smtp_server"], config["smtp_port"])
             server.starttls()
-            server.login(config['username'], config['password'])
+            server.login(config["username"], config["password"])
             server.send_message(msg)
             server.quit()
 
@@ -138,32 +147,30 @@ class AlertManager:
             self.logger.error("requests library not available for Slack alerts")
             return False
 
-        config = self.config_manager.get('alerts.channels.slack', {})
+        config = self.config_manager.get("alerts.channels.slack", {})
 
-        if not config.get('enabled', False):
+        if not config.get("enabled", False):
             return False
 
         try:
             # Use simple text markers instead of emojis
             prefix_map = {
-                'info': '[INFO]',
-                'warning': '[WARNING]',
-                'error': '[ERROR]',
-                'critical': '[CRITICAL]'
+                "info": "[INFO]",
+                "warning": "[WARNING]",
+                "error": "[ERROR]",
+                "critical": "[CRITICAL]",
             }
 
-            prefix = prefix_map.get(severity, '[ALERT]')
+            prefix = prefix_map.get(severity, "[ALERT]")
             slack_message = {
-                "channel": config.get('channel', '#general'),
-                "username": config.get('username', 'CodeSentinel'),
+                "channel": config.get("channel", "#general"),
+                "username": config.get("username", "CodeSentinel"),
                 "text": f"{prefix} *{title}*\n{message}",
-                "mrkdwn": True
+                "mrkdwn": True,
             }
 
             response = requests.post(
-                config['webhook_url'],
-                json=slack_message,
-                timeout=10
+                config["webhook_url"], json=slack_message, timeout=10
             )
 
             return response.status_code == 200
@@ -182,33 +189,41 @@ class AlertManager:
         Returns:
             Dict with test results.
         """
-        result = {'channel': channel, 'success': False, 'message': ''}
+        result = {"channel": channel, "success": False, "message": ""}
 
         try:
-            if channel == 'email':
+            if channel == "email":
                 success = self._test_email_config()
-                result['success'] = success
-                result['message'] = 'Email configuration test successful' if success else 'Email test failed'
-            elif channel == 'slack':
+                result["success"] = success
+                result["message"] = (
+                    "Email configuration test successful"
+                    if success
+                    else "Email test failed"
+                )
+            elif channel == "slack":
                 success = self._test_slack_config()
-                result['success'] = success
-                result['message'] = 'Slack configuration test successful' if success else 'Slack test failed'
+                result["success"] = success
+                result["message"] = (
+                    "Slack configuration test successful"
+                    if success
+                    else "Slack test failed"
+                )
             else:
-                result['message'] = f"Testing not supported for channel: {channel}"
+                result["message"] = f"Testing not supported for channel: {channel}"
 
         except Exception as e:
-            result['message'] = f"Test failed: {e}"
+            result["message"] = f"Test failed: {e}"
 
         return result
 
     def _test_email_config(self) -> bool:
         """Test email configuration."""
-        config = self.config_manager.get('alerts.channels.email', {})
+        config = self.config_manager.get("alerts.channels.email", {})
 
         try:
-            server = smtplib.SMTP(config['smtp_server'], config['smtp_port'])
+            server = smtplib.SMTP(config["smtp_server"], config["smtp_port"])
             server.starttls()
-            server.login(config['username'], config['password'])
+            server.login(config["username"], config["password"])
             server.quit()
             return True
         except Exception:
@@ -219,14 +234,12 @@ class AlertManager:
         if requests is None:
             return False
 
-        config = self.config_manager.get('alerts.channels.slack', {})
+        config = self.config_manager.get("alerts.channels.slack", {})
 
         try:
             test_message = {"text": "CodeSentinel test message"}
             response = requests.post(
-                config['webhook_url'],
-                json=test_message,
-                timeout=10
+                config["webhook_url"], json=test_message, timeout=10
             )
             return response.status_code == 200
         except Exception:

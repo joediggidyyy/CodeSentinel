@@ -27,4 +27,4 @@ __license__ = "MIT"
 from .core import CodeSentinel
 from .cli import main
 
-__all__ = ['CodeSentinel', 'main', '__version__', '__author__', '__license__']
+__all__ = ["CodeSentinel", "main", "__version__", "__author__", "__license__"]

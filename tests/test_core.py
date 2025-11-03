@@ -6,7 +6,7 @@ import sys
 import os
 
 # Add the codesentinel package to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from codesentinel.core import CodeSentinel
 
@@ -23,20 +23,24 @@ class TestCodeSentinel(unittest.TestCase):
         self.assertIsInstance(self.cs, CodeSentinel)
         self.assertEqual(self.cs.version, "1.0.0")
 
-    @patch('codesentinel.core.subprocess.run')
+    @patch("codesentinel.core.subprocess.run")
     def test_run_security_scan(self, mock_subprocess):
         """Test security scan execution."""
-        mock_subprocess.return_value = MagicMock(returncode=0, stdout="Security scan completed")
+        mock_subprocess.return_value = MagicMock(
+            returncode=0, stdout="Security scan completed"
+        )
 
         result = self.cs.run_security_scan()
 
         self.assertTrue(result)
         mock_subprocess.assert_called_once()
 
-    @patch('codesentinel.core.subprocess.run')
+    @patch("codesentinel.core.subprocess.run")
     def test_run_maintenance_tasks(self, mock_subprocess):
         """Test maintenance tasks execution."""
-        mock_subprocess.return_value = MagicMock(returncode=0, stdout="Maintenance completed")
+        mock_subprocess.return_value = MagicMock(
+            returncode=0, stdout="Maintenance completed"
+        )
 
         result = self.cs.run_maintenance_tasks()
 
@@ -48,10 +52,10 @@ class TestCodeSentinel(unittest.TestCase):
         status = self.cs.get_status()
 
         self.assertIsInstance(status, dict)
-        self.assertIn('version', status)
-        self.assertIn('status', status)
-        self.assertEqual(status['version'], "1.0.0")
+        self.assertIn("version", status)
+        self.assertIn("status", status)
+        self.assertEqual(status["version"], "1.0.0")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

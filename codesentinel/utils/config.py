@@ -22,10 +22,14 @@ class ConfigManager:
             config_path: Path to the configuration file.
         """
         # Backward-compat: some tests pass config_file=...
-        if config_path is None and 'config_file' in kwargs:
-            config_path = kwargs.get('config_file')
+        if config_path is None and "config_file" in kwargs:
+            config_path = kwargs.get("config_file")
 
-        self.config_path = Path(config_path) if config_path is not None else Path.cwd() / 'codesentinel.json'
+        self.config_path = (
+            Path(config_path)
+            if config_path is not None
+            else Path.cwd() / "codesentinel.json"
+        )
         # Legacy attribute for backward compatibility with tests
         self.config_file = str(self.config_path)
         self.config = {}
@@ -40,7 +44,7 @@ class ConfigManager:
         """
         try:
             if self.config_path.exists():
-                with open(self.config_path, 'r') as f:
+                with open(self.config_path, "r") as f:
                     self.config = json.load(f)
                 self.config_loaded = True
             else:
@@ -67,7 +71,7 @@ class ConfigManager:
             if data is not None:
                 self.config = data
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.config_path, 'w') as f:
+            with open(self.config_path, "w") as f:
                 json.dump(self.config, f, indent=2)
         except Exception as e:
             raise Exception(f"Could not save config to {self.config_path}: {e}")
@@ -94,33 +98,31 @@ class ConfigManager:
                     "console": {"enabled": True},
                     "file": {"enabled": True, "log_file": "codesentinel.log"},
                     "email": {"enabled": False},
-                    "slack": {"enabled": False}
+                    "slack": {"enabled": False},
                 },
                 "alert_rules": {
                     "critical_security_issues": True,
                     "task_failures": True,
-                    "dependency_vulnerabilities": True
-                }
+                    "dependency_vulnerabilities": True,
+                },
             },
             "github": {
                 "copilot": {"enabled": False},
                 "api": {"enabled": False},
-                "repository": {"enabled": False}
+                "repository": {"enabled": False},
             },
-            "ide": {
-                "vscode": {"enabled": False}
-            },
+            "ide": {"vscode": {"enabled": False}},
             "maintenance": {
                 "daily": {"enabled": True, "schedule": "09:00"},
                 "weekly": {"enabled": True, "schedule": "Monday 10:00"},
-                "monthly": {"enabled": True, "schedule": "1st 11:00"}
+                "monthly": {"enabled": True, "schedule": "1st 11:00"},
             },
             "logging": {
                 "level": "INFO",
                 "file": "codesentinel.log",
                 "max_size": "10MB",
-                "retention": "30 days"
-            }
+                "retention": "30 days",
+            },
         }
 
     def _ensure_defaults(self) -> None:
@@ -130,7 +132,9 @@ class ConfigManager:
         policies persist even if the config was created by an older version.
         """
         # Insert policy defaults if missing
-        if "policy" not in self.config or not isinstance(self.config.get("policy"), dict):
+        if "policy" not in self.config or not isinstance(
+            self.config.get("policy"), dict
+        ):
             self.config.setdefault("policy", {})
         policy = self.config["policy"]
         policy.setdefault("non_destructive", True)
@@ -139,7 +143,9 @@ class ConfigManager:
         policy.setdefault("principles", ["SECURITY", "EFFICIENCY", "MINIMALISM"])
 
         # Dev audit trigger defaults
-        if "dev_audit" not in self.config or not isinstance(self.config.get("dev_audit"), dict):
+        if "dev_audit" not in self.config or not isinstance(
+            self.config.get("dev_audit"), dict
+        ):
             self.config.setdefault("dev_audit", {})
         da = self.config["dev_audit"]
         triggers = da.get("trigger_tokens") or ["!!!!"]
@@ -159,7 +165,7 @@ class ConfigManager:
         Returns:
             Configuration value or default.
         """
-        keys = key.split('.')
+        keys = key.split(".")
         value = self.config
 
         for k in keys:
@@ -178,7 +184,7 @@ class ConfigManager:
             key: Configuration key (dot-separated for nested keys).
             value: Value to set.
         """
-        keys = key.split('.')
+        keys = key.split(".")
         config = self.config
 
         # Navigate to the parent of the target key
@@ -190,7 +196,9 @@ class ConfigManager:
         # Set the value
         config[keys[-1]] = value
 
-    def validate_config(self, data: Optional[Dict[str, Any]] = None) -> Tuple[bool, List[str]]:
+    def validate_config(
+        self, data: Optional[Dict[str, Any]] = None
+    ) -> Tuple[bool, List[str]]:
         """
         Validate configuration.
 
@@ -207,9 +215,9 @@ class ConfigManager:
             return False, ["Configuration must be a dictionary"]
 
         # Minimal validation matching tests' expectations
-        alerts = cfg.get('alerts', {})
-        if 'email' in alerts and alerts['email'].get('enabled'):
-            if not alerts['email'].get('smtp_server'):
+        alerts = cfg.get("alerts", {})
+        if "email" in alerts and alerts["email"].get("enabled"):
+            if not alerts["email"].get("smtp_server"):
                 errors.append("Email alerts enabled but 'smtp_server' missing")
 
         return len(errors) == 0, errors

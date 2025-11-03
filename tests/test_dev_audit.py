@@ -16,9 +16,9 @@ class TestDevAudit(unittest.TestCase):
         cs = CodeSentinel()
         results = cs.run_dev_audit(interactive=False)
         self.assertIsInstance(results, dict)
-        self.assertIn('summary', results)
-        self.assertIn('security', results)
+        self.assertIn("summary", results)
+        self.assertIn("security", results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
