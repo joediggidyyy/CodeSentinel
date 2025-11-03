@@ -1,115 +1,270 @@
-# CodeSentinel Installation Pipeline Documentation
+# CodeSentinel Installation Guide
 
 ## Overview
 
-CodeSentinel now has a comprehensive installation pipeline that handles all dependencies, PATH configuration, and provides multiple installation methods.
+CodeSentinel v1.0.0 provides multiple installation methods to suit different use cases, from quick pip installation to development setup from source.
 
-## Installation Components
+## Requirements
 
-### Core Installers
-
-1. **`install.py`** - Main enhanced installer with 8-step process:
-   - Python version checking (3.13+)
-   - Automatic pip installation via ensurepip
-   - Core dependency validation
-   - Requirements installation
-   - Package installation in development mode
-   - PATH configuration
-   - Installation testing
-   - Usage instructions
-
-2. **`install.bat`** (Windows) and **`install.sh`** (Unix) - Platform-specific wrappers
-
-3. **`check_dependencies.py`** - Standalone dependency checker with:
-   - Python version validation
-   - pip availability checking
-   - Core module verification (20 modules)
-   - Required package checking (requests, schedule)
-   - Optional package detection (pytest, mypy, black, flake8)
-   - Build tool verification (setuptools, wheel)
-   - System tool detection (git, python)
-   - Multiple output formats (normal, quiet, JSON)
-
-### Configuration Tools
-
-4. **`tools/codesentinel/path_configurator.py`** - Comprehensive PATH management:
-   - Automatic scripts directory detection
-   - Current session PATH configuration
-   - Permanent setup instructions for all shells
-   - Platform-specific handling (Windows/Unix)
-
-5. **`tools/codesentinel/gui_setup_wizard.py`** - GUI configuration wizard (tkinter-based)
-
-### Requirements Management
-
-6. **`requirements.txt`** - Core runtime dependencies:
-   - requests>=2.25.0 (HTTP/Slack alerts)
-   - schedule>=1.1.0 (automation)
-   - pathlib2>=2.3.0 (Python <3.4 compatibility)
-
-7. **`requirements-dev.txt`** - Development dependencies:
-   - Testing: pytest, pytest-cov, pytest-mock
-   - Code quality: flake8, black, mypy
-   - Documentation: sphinx, sphinx-rtd-theme
-   - Build tools: twine, wheel, setuptools
+- **Python:** 3.13+ (tested on 3.13 and 3.14)
+- **Operating Systems:** Windows, Linux, macOS
+- **Dependencies:** psutil (installed automatically)
 
 ## Installation Methods
 
-### Method 1: Enhanced Installer (Recommended)
+### Method 1: Install from PyPI (Recommended)
+
+For users who want to use CodeSentinel as a tool:
 
 ```bash
-python install.py
+pip install codesentinel
 ```
 
-- Handles all dependencies automatically
-- Configures PATH
-- Provides comprehensive error messages
-- Tests installation completion
+Verify installation:
 
-### Method 2: Platform-Specific Scripts
+```bash
+codesentinel status
+```
+
+### Method 2: Install from Source (Development)
+
+For contributors or users who want the latest features:
+
+```bash
+# Clone the repository
+git clone https://github.com/joediggidyyy/CodeSentinel.git
+cd CodeSentinel
+
+# Create virtual environment (recommended)
+python -m venv .venv
+
+# Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# Unix/Linux/macOS:
+source .venv/bin/activate
+
+# Install in editable mode
+pip install -e .
+```
+
+### Method 3: Install from GitHub Release
+
+For specific versions:
+
+```bash
+# Download wheel from GitHub releases
+pip install https://github.com/joediggidyyy/CodeSentinel/releases/download/v1.0.0-beta.1/codesentinel-1.0.0-py3-none-any.whl
+```
+
+Or download and install locally:
+
+```bash
+# Download .whl file from https://github.com/joediggidyyy/CodeSentinel/releases
+pip install codesentinel-1.0.0-py3-none-any.whl
+```
+
+## Configuration
+
+### Quick Setup Wizard
+
+Launch the GUI configuration wizard:
+
+```bash
+codesentinel-setup-gui
+```
+
+Or use platform-specific wrappers:
+
+- **Windows:** Double-click `setup_wizard.bat`
+- **Unix/Linux/macOS:** Run `./setup_wizard.sh`
+
+The wizard guides you through:
+
+1. Repository path selection
+2. Alert configuration (email, Slack, GitHub)
+3. Process monitoring setup
+4. Security settings
+
+### Manual Configuration
+
+Create `codesentinel.json` in your project root:
+
+```json
+{
+  "repository": {
+    "path": "/path/to/your/project",
+    "name": "ProjectName"
+  },
+  "alerts": {
+    "email": {
+      "enabled": false,
+      "smtp_server": "",
+      "smtp_port": 587,
+      "from_address": "",
+      "to_address": "",
+      "password": ""
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": ""
+    },
+    "github": {
+      "enabled": false,
+      "owner": "",
+      "repo": "",
+      "token": ""
+    }
+  },
+  "process_monitor": {
+    "enabled": false,
+    "check_interval": 300
+  }
+}
+```
+
+## Post-Installation
+
+### Verify Installation
+
+```bash
+# Check version and commands
+codesentinel status
+
+# View help
+codesentinel --help
+```
+
+### Run First Audit
+
+```bash
+# Interactive development audit
+codesentinel !!!!
+
+# Or with agent-friendly output
+codesentinel !!!! --agent
+```
+
+### Configure Your Project
+
+```bash
+# Launch GUI wizard for full configuration
+codesentinel-setup-gui
+
+# Or launch project setup
+codesentinel-setup
+```
+
+## Command Reference
+
+### Main CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `codesentinel status` | Show system status and available commands |
+| `codesentinel !!!!` | Run interactive development audit |
+| `codesentinel !!!! --agent` | Run audit with agent-friendly output |
+| `codesentinel-setup` | Launch project setup wizard |
+| `codesentinel-setup-gui` | Launch GUI configuration wizard |
+
+### Development Commands
+
+```bash
+# Run tests
+python run_tests.py
+
+# Or use pytest directly
+pytest tests/
+
+# Run with coverage
+pytest --cov=codesentinel tests/
+```
+
+## Troubleshooting
+
+### Import Errors
+
+If you see `ModuleNotFoundError: No module named 'codesentinel'`:
+
+```bash
+# Verify installation
+pip list | grep codesentinel
+
+# Reinstall if needed
+pip install --force-reinstall codesentinel
+```
+
+### Permission Errors
+
+On Unix/Linux/macOS, you may need to make scripts executable:
+
+```bash
+chmod +x setup_wizard.sh install.sh
+```
+
+### Virtual Environment Issues
+
+Ensure your virtual environment is activated:
 
 ```bash
 # Windows
-install.bat
+.venv\Scripts\activate
 
 # Unix/Linux/macOS
-chmod +x install.sh
-./install.sh
+source .venv/bin/activate
 ```
 
-### Method 3: Dependency Check First
+### Python Version Issues
+
+CodeSentinel requires Python 3.13+:
 
 ```bash
-# Check system readiness
-python check_dependencies.py
+# Check your Python version
+python --version
 
-# If all clear, run installer
-python install.py
+# Use specific Python version if needed
+python3.13 -m pip install codesentinel
 ```
 
-### Method 4: Manual Installation
+## Upgrading
+
+### From PyPI
 
 ```bash
-pip install -e .
-python tools/codesentinel/path_configurator.py
+pip install --upgrade codesentinel
 ```
 
-## Dependency Resolution
+### From Source
 
-### Automatic pip Installation
+```bash
+cd CodeSentinel
+git pull origin main
+pip install -e . --upgrade
+```
 
-The installer now uses Python's built-in `ensurepip` module to automatically install pip if it's missing, resolving the primary blocking issue.
+## Uninstallation
 
-### Core Dependency Matrix
+```bash
+pip uninstall codesentinel
+```
 
-| Component | Package | Required | Auto-Install | Fallback |
-|-----------|---------|----------|--------------|----------|
-| HTTP/Alerts | requests | Yes | Yes | Manual |
-| Scheduling | schedule | No | Yes | Limited functionality |
-| GUI | tkinter | No | Built-in | CLI only |
-| Testing | pytest | No | Dev only | unittest |
-| Formatting | black | No | Dev only | Manual |
-| Linting | flake8 | No | Dev only | Manual |
+Configuration files in your project directories are not removed automatically.
+
+## Next Steps
+
+After installation:
+
+1. **Read the [QUICKSTART.md](QUICKSTART.md)** for basic usage
+2. **Configure alerts** using `codesentinel-setup-gui`
+3. **Run your first audit** with `codesentinel !!!!`
+4. **Set up process monitoring** in the GUI wizard
+5. **Review the [README.md](README.md)** for full feature documentation
+
+## Support
+
+- **Issues:** <https://github.com/joediggidyyy/CodeSentinel/issues>
+- **Security:** See [SECURITY.md](SECURITY.md)
+- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### Build Dependencies
 
