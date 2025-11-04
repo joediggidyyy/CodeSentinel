@@ -82,7 +82,7 @@ class WizardApp:
     def __init__(self):
         self.root = tk.Tk()
         # Window title with subtle attribution and version
-        self.root.title(f"CodeSentinel Setup Wizard v{CS_VERSION} — by joediggidy")
+        self.root.title(f"CodeSentinel Setup Wizard v{CS_VERSION} — by Polymath")
         self.root.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.root.resizable(True, True)
         self._center()
@@ -146,7 +146,7 @@ class WizardApp:
         # Subtle attribution and version line
         ttk.Label(
             self.header,
-            text=f"by joediggidy • v{CS_VERSION}",
+            text=f"by Polymath • v{CS_VERSION}",
             font=('Arial', 8),
             foreground='#666666'
         ).pack(pady=(2, 0))
@@ -180,6 +180,16 @@ class WizardApp:
         
         self.back_btn = ttk.Button(self.footer, text="← Back", command=self._back)
         self.back_btn.pack(side="right", padx=(0, 8))
+        
+        # Bottom margin with small centered 'joediggidy' attribution
+        self.bottom_margin = ttk.Frame(self.root)
+        self.bottom_margin.pack(fill="x", padx=20, pady=(0, 8))
+        ttk.Label(
+            self.bottom_margin,
+            text="joediggidy",
+            font=('Arial', 7),
+            foreground='#999999'
+        ).pack(anchor="center")
 
     def _clear_body(self):
         for w in self.body.winfo_children():
