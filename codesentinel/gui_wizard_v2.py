@@ -1359,11 +1359,16 @@ class WizardApp:
         repo_link.pack(anchor="w")
         repo_link.bind("<Button-1>", lambda e, url=repo_url: webbrowser.open_new(url))
 
-        # Optional thumbnail + tagline
-        tagline_row = ttk.Frame(footer)
-        tagline_row.pack(fill="x", pady=(6, 0))
+        # Centered thumbnail + tagline
+        venture_container = ttk.Frame(footer)
+        venture_container.pack(anchor="center", pady=(6, 0))
+        
+        # Caption above thumbnail
+        ttk.Label(venture_container, text="a Polymath venture", 
+                 font=('Arial', 8, 'italic'), foreground="#666666").pack(anchor="center", pady=(0, 2))
+        
+        # Thumbnail (scaled down)
         try:
-            # Try to locate a local thumbnail image if present
             from pathlib import Path as _P
             _here = _P(__file__).resolve().parent
             candidate_paths = [
@@ -1373,15 +1378,17 @@ class WizardApp:
             self._polymath_img = None
             for _p in candidate_paths:
                 if _p.exists():
-                    self._polymath_img = tk.PhotoImage(file=str(_p))
+                    # Load and scale down the image
+                    full_img = tk.PhotoImage(file=str(_p))
+                    # Subsample by factor of 2 (reduce to 50% size)
+                    self._polymath_img = full_img.subsample(2, 2)
                     break
             if self._polymath_img is not None:
-                img_label = ttk.Label(tagline_row, image=self._polymath_img)
-                img_label.pack(side="left", padx=(0, 8))
+                img_label = ttk.Label(venture_container, image=self._polymath_img)
+                img_label.pack(anchor="center")
         except Exception:
             # Image optional; proceed without it
             self._polymath_img = None
-        ttk.Label(tagline_row, text="a Polymath venture", font=('Arial', 8, 'italic'), foreground="#666666").pack(side="left")
 
         def collect():
             """Generate formatted summary of configuration."""
