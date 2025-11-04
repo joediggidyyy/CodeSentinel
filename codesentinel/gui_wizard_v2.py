@@ -81,8 +81,8 @@ class WizardApp:
 
     def __init__(self):
         self.root = tk.Tk()
-        # Window title with subtle attribution and version
-        self.root.title(f"CodeSentinel Setup Wizard v{CS_VERSION} — by Polymath")
+        # Window title shows product name and version only
+        self.root.title(f"CodeSentinel Setup Wizard v{CS_VERSION}")
         self.root.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.root.resizable(True, True)
         self._center()
