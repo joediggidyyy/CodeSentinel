@@ -1390,10 +1390,12 @@ class WizardApp:
             for _p in candidate_paths:
                 if _p.exists():
                     full_img = tk.PhotoImage(file=str(_p))
-                    # Compute resize factors to target ~80x100px bounding box
-                    width_scale = max(1, int(round(full_img.width() / 80)))
-                    height_scale = max(1, int(round(full_img.height() / 100)))
-                    self._polymath_img = full_img.subsample(width_scale, height_scale)  # type: ignore
+                    target_w, target_h = 50, 40
+                    # Determine scaling factor to keep aspect ratio within target bounds
+                    width_factor = max(1, (full_img.width() + target_w - 1) // target_w)
+                    height_factor = max(1, (full_img.height() + target_h - 1) // target_h)
+                    scale = max(width_factor, height_factor)
+                    self._polymath_img = full_img.subsample(scale, scale)  # type: ignore
                     break
             if self._polymath_img is not None:
                 img_label = ttk.Label(venture_container, image=self._polymath_img)
