@@ -181,9 +181,16 @@ class WizardApp:
         self.back_btn = ttk.Button(self.footer, text="← Back", command=self._back)
         self.back_btn.pack(side="right", padx=(0, 8))
         
-        # Bottom margin reserved for future messaging (currently empty to avoid clipping)
+        # Bottom margin branding (suppressed on summary step)
         self.bottom_margin = ttk.Frame(self.root)
         self.bottom_margin.pack(fill="x", padx=20, pady=(0, 8))
+        self.bottom_brand = ttk.Label(
+            self.bottom_margin,
+            text="",
+            font=('Arial', 7),
+            foreground='#999999'
+        )
+        self.bottom_brand.pack(anchor="center")
 
     def _clear_body(self):
         for w in self.body.winfo_children():
@@ -209,6 +216,12 @@ class WizardApp:
         self.back_btn.state(["!disabled"] if idx > 0 else ["disabled"])
         is_last = idx == len(self.steps) - 1
         self.next_btn.config(text="Finish" if is_last else "Next →")
+
+        # Update bottom branding visibility
+        if is_last:
+            self.bottom_brand.config(text="")
+        else:
+            self.bottom_brand.config(text="joediggidyyy")
         
         # Update navigation state after UI is ready
         self.root.after(50, self._update_nav_state)
