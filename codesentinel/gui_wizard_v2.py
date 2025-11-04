@@ -1389,10 +1389,11 @@ class WizardApp:
             self._polymath_img = None
             for _p in candidate_paths:
                 if _p.exists():
-                    # Load and scale image to ~50% area (linear ~0.71x) using zoom/subsample
                     full_img = tk.PhotoImage(file=str(_p))
-                    # Approximate sqrt(0.5) with 5/7 ≈ 0.714 (area ≈ 0.51)
-                    self._polymath_img = full_img.zoom(5, 5).subsample(7, 7)  # type: ignore
+                    # Compute resize factors to target ~80x100px bounding box
+                    width_scale = max(1, int(round(full_img.width() / 80)))
+                    height_scale = max(1, int(round(full_img.height() / 100)))
+                    self._polymath_img = full_img.subsample(width_scale, height_scale)  # type: ignore
                     break
             if self._polymath_img is not None:
                 img_label = ttk.Label(venture_container, image=self._polymath_img)
