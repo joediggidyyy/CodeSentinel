@@ -125,6 +125,9 @@ testpaths = [
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+norecursedirs = [
+    "quarantine_legacy_archive",
+]
 
 [tool.coverage.run]
 source = ["codesentinel"]

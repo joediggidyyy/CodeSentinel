@@ -500,7 +500,10 @@ RECOMMENDED APPROACH:
 
     def _efficiency_checks(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         suggestions: List[str] = []
+        verified_false_positives: List[Dict[str, Any]] = []
+        root = self.project_root
         
+        # Repository size efficiency
         if metrics.get("scan_limited"):
             suggestions.append("Repository large; consider excluding artifacts from repo")
         
@@ -508,7 +511,6 @@ RECOMMENDED APPROACH:
             suggestions.append("Large files detected; consider Git LFS or pruning")
         
         # Check for redundant wizard implementations
-        root = self.project_root
         wizard_files = []
         if (root / "setup_wizard.py").exists():
             wizard_files.append("setup_wizard.py")
@@ -517,16 +519,203 @@ RECOMMENDED APPROACH:
         if (root / "src" / "codesentinel" / "ui" / "setup" / "wizard.py").exists():
             wizard_files.append("src/codesentinel/ui/setup/wizard.py")
         if len(wizard_files) > 1:
-            suggestions.append(f"Multiple wizard implementations detected: {', '.join(wizard_files)} (consolidate to one)")
+            suggestion = f"Multiple wizard implementations detected: {', '.join(wizard_files)} (consolidate to one)"
+            fp_result = self._verify_false_positive_efficiency(root, "multiple_wizards", wizard_files)
+            if fp_result["is_false_positive"]:
+                verified_false_positives.append({
+                    "suggestion": suggestion,
+                    "reason": fp_result["reason"]
+                })
+            else:
+                suggestions.append(suggestion)
 
         # Check for __pycache__ in root
         if (root / "__pycache__").exists():
             suggestions.append("__pycache__ in root directory (add to .gitignore and clean up)")
 
+        # Check for duplicate implementations (core efficiency concern)
+        self._check_duplicate_implementations(root, suggestions, verified_false_positives)
+        
+        # Check for unused imports and dead code indicators
+        self._check_code_efficiency(root, suggestions, metrics)
+        
+        # Check for performance anti-patterns
+        self._check_performance_patterns(root, suggestions, metrics)
+        
+        # Check for import optimization opportunities
+        self._check_import_efficiency(root, suggestions, verified_false_positives)
+
         return {
             "suggestions": suggestions,
+            "verified_false_positives": verified_false_positives,
             "issues": len(suggestions),
         }
+
+    def _check_duplicate_implementations(self, root: Path, suggestions: List[str], verified_fps: List[Dict[str, Any]]) -> None:
+        """Check for duplicate/redundant code implementations."""
+        # Check for duplicate launcher files
+        launchers = []
+        if (root / "launcher.py").exists():
+            launchers.append("launcher.py")
+        if (root / "codesentinel" / "launcher.py").exists():
+            launchers.append("codesentinel/launcher.py")
+        if (root / "codesentinel" / "gui_launcher.py").exists():
+            launchers.append("codesentinel/gui_launcher.py")
+        
+        if len(launchers) > 1:
+            # Verify if these serve different purposes
+            try:
+                purposes_differ = False
+                if "launcher.py" in launchers and "gui_launcher.py" in launchers:
+                    # CLI vs GUI launchers - different purposes
+                    purposes_differ = True
+                
+                if purposes_differ:
+                    verified_fps.append({
+                        "suggestion": f"Multiple launcher files: {', '.join(launchers)}",
+                        "reason": "Different launcher types serve distinct purposes (CLI vs GUI)"
+                    })
+                else:
+                    suggestions.append(f"Duplicate launcher implementations: {', '.join(launchers)} (consolidate)")
+            except Exception:
+                suggestions.append(f"Multiple launcher files detected: {', '.join(launchers)}")
+        
+        # Check for duplicate config/setup files
+        config_files = []
+        for name in ["config.py", "configuration.py", "settings.py"]:
+            if (root / name).exists():
+                config_files.append(name)
+            if (root / "codesentinel" / name).exists():
+                config_files.append(f"codesentinel/{name}")
+        
+        if len(config_files) > 1:
+            suggestions.append(f"Multiple config implementations: {', '.join(config_files)} (consolidate)")
+
+    def _check_code_efficiency(self, root: Path, suggestions: List[str], metrics: Dict[str, Any]) -> None:
+        """Check for code efficiency issues."""
+        # Look for common inefficiency patterns in Python files
+        py_files_checked = 0
+        max_check = 50
+        
+        long_functions = []
+        complex_files = []
+        
+        for py_file in root.rglob("*.py"):
+            if any(skip in py_file.parts for skip in [".venv", "venv", "__pycache__", "quarantine_legacy_archive"]):
+                continue
+            
+            if py_files_checked >= max_check:
+                break
+            
+            try:
+                content = py_file.read_text(errors="ignore")
+                lines = content.split('\n')
+                
+                # Check for very long functions (> 150 lines)
+                in_function = False
+                func_start = 0
+                func_name = ""
+                for i, line in enumerate(lines):
+                    if re.match(r'^\s*def\s+\w+', line):
+                        if in_function and (i - func_start > 150):
+                            long_functions.append(f"{py_file.relative_to(root)}:{func_name} ({i - func_start} lines)")
+                        in_function = True
+                        func_start = i
+                        match = re.search(r'def\s+(\w+)', line)
+                        func_name = match.group(1) if match else "unknown"
+                    elif in_function and re.match(r'^\S', line) and line.strip() and not line.strip().startswith('#'):
+                        in_function = False
+                
+                # Check for files with high complexity indicators
+                if len(lines) > 500:
+                    # Count nested blocks
+                    max_indent = max((len(line) - len(line.lstrip())) // 4 for line in lines if line.strip())
+                    if max_indent > 5:
+                        complex_files.append(f"{py_file.relative_to(root)} ({len(lines)} lines, nesting: {max_indent})")
+                
+                py_files_checked += 1
+            except Exception:
+                continue
+        
+        if long_functions:
+            suggestions.append(f"Long functions detected (consider refactoring): {', '.join(long_functions[:3])}")
+        
+        if complex_files:
+            suggestions.append(f"High complexity files detected: {', '.join(complex_files[:3])}")
+
+    def _check_performance_patterns(self, root: Path, suggestions: List[str], metrics: Dict[str, Any]) -> None:
+        """Check for performance anti-patterns."""
+        # Check for synchronous code in async contexts, blocking I/O, etc.
+        perf_issues = []
+        
+        for py_file in list(root.rglob("*.py"))[:30]:  # Sample first 30 files
+            if any(skip in py_file.parts for skip in [".venv", "venv", "__pycache__", "quarantine_legacy_archive"]):
+                continue
+            
+            try:
+                content = py_file.read_text(errors="ignore")
+                
+                # Check for N+1 query patterns in loops
+                if re.search(r'for\s+\w+\s+in\s+.*:\s*\n\s+.*\.(get|query|fetch|read)\(', content):
+                    perf_issues.append(f"{py_file.relative_to(root)}: Potential N+1 pattern")
+                
+                # Check for inefficient string concatenation in loops
+                if re.search(r'for\s+.*:\s*\n\s+\w+\s*\+=\s*["\']', content):
+                    perf_issues.append(f"{py_file.relative_to(root)}: String concatenation in loop")
+                
+            except Exception:
+                continue
+        
+        if perf_issues:
+            suggestions.append(f"Performance patterns to review: {', '.join(perf_issues[:2])}")
+
+    def _check_import_efficiency(self, root: Path, suggestions: List[str], verified_fps: List[Dict[str, Any]]) -> None:
+        """Check for import efficiency issues."""
+        # Check for circular import risks
+        import_graph: Dict[str, List[str]] = {}
+        
+        for py_file in list(root.rglob("*.py"))[:50]:
+            if any(skip in py_file.parts for skip in [".venv", "venv", "__pycache__", "quarantine_legacy_archive"]):
+                continue
+            
+            try:
+                content = py_file.read_text(errors="ignore")
+                imports = re.findall(r'from\s+([\w.]+)\s+import', content)
+                imports.extend(re.findall(r'import\s+([\w.]+)', content))
+                
+                module_name = str(py_file.relative_to(root)).replace('\\', '.').replace('/', '.').replace('.py', '')
+                import_graph[module_name] = imports
+            except Exception:
+                continue
+        
+        # Basic circular dependency detection
+        circular_risks = []
+        for module, imports in list(import_graph.items())[:20]:
+            for imp in imports:
+                if imp in import_graph and module.split('.')[0] in str(import_graph.get(imp, [])):
+                    circular_risks.append(f"{module} <-> {imp}")
+        
+        if circular_risks:
+            suggestions.append(f"Potential circular import risks: {', '.join(circular_risks[:2])}")
+
+    def _verify_false_positive_efficiency(self, root: Path, check_type: str, context: Any = None) -> Dict[str, Any]:
+        """
+        Verify if an efficiency suggestion is a false positive through contextual analysis.
+        Does NOT whitelist - still reports the finding but marks it as verified FP.
+        """
+        if check_type == "multiple_wizards" and context:
+            wizard_files = context
+            # Check if wizards serve different purposes (CLI vs GUI)
+            has_cli_wizard = any("setup_wizard" in f for f in wizard_files)
+            has_gui_wizard = any("gui_wizard" in f for f in wizard_files)
+            
+            if has_cli_wizard and has_gui_wizard:
+                return {
+                    "is_false_positive": True,
+                    "reason": "Separate CLI and GUI wizards serve different user interaction patterns"
+                }
+        
+        return {"is_false_positive": False, "reason": None}
 
     def _minimalism_checks(self, root: Path, metrics: Dict[str, Any]) -> Dict[str, Any]:
         violations: List[str] = []
@@ -692,6 +881,14 @@ RECOMMENDED APPROACH:
             print(f"  - {s}")
         if not results["efficiency"]["suggestions"]:
             print("  - No suggestions")
+        
+        # Report verified false positives for efficiency
+        eff_fps = results["efficiency"].get("verified_false_positives", [])
+        if eff_fps:
+            print("\nEfficiency - Verified False Positives:")
+            for fp in eff_fps:
+                print(f"  ✓ {fp['suggestion']}")
+                print(f"    Reason: {fp['reason']}")
         
         print("\nMinimalism Violations:")
         for v in results["minimalism"]["violations"]:
