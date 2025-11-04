@@ -181,15 +181,9 @@ class WizardApp:
         self.back_btn = ttk.Button(self.footer, text="← Back", command=self._back)
         self.back_btn.pack(side="right", padx=(0, 8))
         
-        # Bottom margin with small centered 'joediggidy' attribution
+        # Bottom margin reserved for future messaging (currently empty to avoid clipping)
         self.bottom_margin = ttk.Frame(self.root)
         self.bottom_margin.pack(fill="x", padx=20, pady=(0, 8))
-        ttk.Label(
-            self.bottom_margin,
-            text="joediggidy",
-            font=('Arial', 7),
-            foreground='#999999'
-        ).pack(anchor="center")
 
     def _clear_body(self):
         for w in self.body.winfo_children():
