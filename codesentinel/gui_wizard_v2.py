@@ -842,9 +842,8 @@ class WizardApp:
         self._update_nav_state()
 
     def _step_ide(self):
-        # Use a scrollable frame to prevent content from occluding footer/navigation
-        sf = ScrollableFrame(self.body)
-        f = sf.inner
+        # Compact, non-scroll implementation to avoid occluding footer
+        f = ttk.Frame(self.body)
         
         # Compact header
         ttk.Label(f, text="Configure integration with your development environment.", 
@@ -852,7 +851,12 @@ class WizardApp:
         
         # IDE Support Section
         ide_frame = ttk.LabelFrame(f, text="🔍 Detected IDEs", padding=10)
-        ide_frame.pack(fill="both", expand=True, pady=(0, 6))
+        # Do not expand to avoid pushing into footer; allow wrapping into two columns
+        ide_frame.pack(fill="x", expand=False, pady=(0, 6))
+        grid_frame = ttk.Frame(ide_frame)
+        grid_frame.pack(fill="x", expand=False)
+        grid_frame.columnconfigure(0, weight=1)
+        grid_frame.columnconfigure(1, weight=1)
         
         # Define IDE configurations with detection commands
         ide_configs = [
@@ -977,7 +981,7 @@ class WizardApp:
         statuses = {}
         self.ide_vars = {}  # Store checkbox variables
         
-        for config in ide_configs:
+        for idx, config in enumerate(ide_configs):
             found = False
             
             # First try PATH-based detection
@@ -1000,9 +1004,10 @@ class WizardApp:
             
             statuses[config['key']] = found
             
-            # Create IDE row - more compact
-            ide_row = ttk.Frame(ide_frame)
-            ide_row.pack(fill="x", pady=2)
+            # Create IDE cell in a 2-column grid to reduce height
+            row, col = divmod(idx, 2)
+            ide_row = ttk.Frame(grid_frame)
+            ide_row.grid(row=row, column=col, sticky="nsew", padx=(0, 6) if col == 0 else (6, 0), pady=2)
             
             # Checkbox for selection (default: enabled if detected)
             self.ide_vars[config['key']] = tk.BooleanVar(value=found)
@@ -1032,7 +1037,7 @@ class WizardApp:
             
             # Description - more compact
             ttk.Label(left_frame, text=f"  {config['description']}", 
-                     font=('Arial', 8), foreground='gray').pack(anchor="w", padx=(20, 0), pady=(0, 2))
+                     font=('Arial', 8), foreground='gray').pack(anchor="w", padx=(20, 0))
             
             # Right side: Download button for not detected IDEs
             if not found:
@@ -1041,7 +1046,7 @@ class WizardApp:
                     webbrowser.open(url)
                 
                 ttk.Button(ide_row, text="Download", 
-                          command=open_url).pack(side="right", padx=(10, 0))
+                          command=open_url).pack(side="right", padx=(6, 0))
         
         # Store IDE detection results and selections
         def collect():
@@ -1066,7 +1071,7 @@ class WizardApp:
             foreground='gray'
         ).pack(anchor="w")
 
-        return sf
+        return f
 
     def _step_copilot(self):
         """GitHub Copilot integration configuration."""
