@@ -842,7 +842,9 @@ class WizardApp:
         self._update_nav_state()
 
     def _step_ide(self):
-        f = ttk.Frame(self.body)
+        # Use a scrollable frame to prevent content from occluding footer/navigation
+        sf = ScrollableFrame(self.body)
+        f = sf.inner
         
         # Compact header
         ttk.Label(f, text="Configure integration with your development environment.", 
@@ -1053,14 +1055,18 @@ class WizardApp:
             self.data["ide"] = ide_data
         
         f.collect = collect  # type: ignore
-        
+
         # Compact note about installation
         note_frame = ttk.Frame(f)
         note_frame.pack(fill="x", pady=(8, 0))
-        ttk.Label(note_frame, text="ℹ️ IDE integration files will be created during final installation.", 
-                 font=('Arial', 8), foreground='gray').pack(anchor="w")
-        
-        return f
+        ttk.Label(
+            note_frame,
+            text="ℹ️ IDE integration files will be created during final installation.",
+            font=('Arial', 8),
+            foreground='gray'
+        ).pack(anchor="w")
+
+        return sf
 
     def _step_copilot(self):
         """GitHub Copilot integration configuration."""
@@ -1378,10 +1384,10 @@ class WizardApp:
             self._polymath_img = None
             for _p in candidate_paths:
                 if _p.exists():
-                    # Load and scale down the image
+                    # Load and scale image to ~50% area (linear ~0.71x) using zoom/subsample
                     full_img = tk.PhotoImage(file=str(_p))
-                    # Subsample by factor of 2 (reduce to 50% size)
-                    self._polymath_img = full_img.subsample(2, 2)
+                    # Approximate sqrt(0.5) with 5/7 ≈ 0.714 (area ≈ 0.51)
+                    self._polymath_img = full_img.zoom(5, 5).subsample(7, 7)  # type: ignore
                     break
             if self._polymath_img is not None:
                 img_label = ttk.Label(venture_container, image=self._polymath_img)
