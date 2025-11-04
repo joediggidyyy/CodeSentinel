@@ -18,7 +18,12 @@ import re
 import json
 import threading
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
+
+try:  # Python 3.11+
+    import tomllib  # type: ignore[attr-defined]
+except ModuleNotFoundError:  # pragma: no cover - fallback for older interpreters
+    tomllib = None  # type: ignore
 
 
 class DevAudit:
@@ -98,6 +103,30 @@ class DevAudit:
                     "Consider adding file to .gitignore if contains secrets"
                 ],
                 "priority": "critical"
+            })
+        for finding in security.get("attack_surface_findings", []):
+            description = finding["issue"]
+            hints.append({
+                "file": finding["file"],
+                "issue": description,
+                "line": finding.get("line"),
+                "suggested_actions": [
+                    finding.get("recommendation", "Review implementation for hardening opportunities"),
+                    "Assess user-provided inputs for sanitization",
+                    "Document mitigation or refactor to safer alternative"
+                ],
+                "priority": "high"
+            })
+        for alert in security.get("dependency_alerts", []):
+            hints.append({
+                "file": alert["file"],
+                "issue": alert["issue"],
+                "suggested_actions": [
+                    alert.get("recommendation", "Review dependency security posture"),
+                    "Pin versions to known-good releases",
+                    "Schedule dependency vulnerability scans (pip-audit, osv-scanner)"
+                ],
+                "priority": "medium"
             })
         return hints
 
@@ -417,9 +446,11 @@ RECOMMENDED APPROACH:
                         # Verify if this is a false positive
                         fp_result = self._verify_false_positive_security(p, content, pat)
                         if fp_result["is_false_positive"]:
-                            finding["verified_false_positive"] = True
-                            finding["reason"] = fp_result["reason"]
-                            verified_false_positives.append(finding)
+                            verified_false_positives.append({
+                                **finding,
+                                "verified_false_positive": True,
+                                "reason": fp_result["reason"]
+                            })
                         else:
                             findings.append(finding)
                         
@@ -432,10 +463,15 @@ RECOMMENDED APPROACH:
             if len(findings) + len(verified_false_positives) >= max_hits:
                 break
 
+        attack_surface_findings = self._scan_attack_surfaces(root, limit_scan)
+        dependency_alerts = self._analyze_dependency_security(root)
+
         return {
             "secrets_findings": findings,
             "verified_false_positives": verified_false_positives,
-            "issues": len(findings),
+            "attack_surface_findings": attack_surface_findings,
+            "dependency_alerts": dependency_alerts,
+            "issues": len(findings) + len(attack_surface_findings) + len(dependency_alerts),
         }
 
     def _verify_false_positive_security(self, file_path: Path, content: str, pattern: re.Pattern) -> Dict[str, Any]:
@@ -497,6 +533,179 @@ RECOMMENDED APPROACH:
         
         # Not a verified false positive
         return {"is_false_positive": False, "reason": None}
+
+    def _scan_attack_surfaces(self, root: Path, limit_scan: bool) -> List[Dict[str, Any]]:
+        """Scan repository for potential attack surface indicators."""
+        findings: List[Dict[str, Any]] = []
+        max_files = 160 if not limit_scan else 60
+        max_findings = 50 if not limit_scan else 15
+
+        high_risk_patterns: List[Tuple[re.Pattern, str, str]] = [
+            (re.compile(r"subprocess\.(run|Popen)\([^)]*shell\s*=\s*True", re.IGNORECASE),
+             "Subprocess shell execution detected",
+             "Avoid shell=True to reduce command injection risk"),
+            (re.compile(r"os\.system\(", re.IGNORECASE),
+             "os.system usage detected",
+             "Replace with subprocess.run without shell or dedicated APIs"),
+            (re.compile(r"eval\(", re.IGNORECASE),
+             "eval usage detected",
+             "Avoid eval; use safer parsing or explicit dispatch"),
+            (re.compile(r"exec\(", re.IGNORECASE),
+             "exec usage detected",
+             "exec executes arbitrary code; review necessity"),
+            (re.compile(r"requests\.(get|post|put|delete|patch|head)\(\s*['\"]http://", re.IGNORECASE),
+             "HTTP request without TLS",
+             "Prefer HTTPS endpoints or explicitly document non-TLS usage"),
+            (re.compile(r"pickle\.(load|loads)\(", re.IGNORECASE),
+             "Insecure pickle deserialization",
+             "Validate sources or switch to safer serialization (json, msgpack)"),
+            (re.compile(r"yaml\.load\(", re.IGNORECASE),
+             "yaml.load without SafeLoader",
+             "Use yaml.safe_load to prevent arbitrary object construction"),
+            (re.compile(r"tempfile\.mktemp\(", re.IGNORECASE),
+             "Insecure temporary file pattern",
+             "Use NamedTemporaryFile or mkstemp for safer temp files"),
+        ]
+
+        files_scanned = 0
+        for py_file in root.rglob("*.py"):
+            if files_scanned >= max_files:
+                break
+            if any(skip in py_file.parts for skip in [".venv", "venv", "__pycache__", "build", "dist", "quarantine_legacy_archive", "test_install_env", "quarantine"]):
+                continue
+
+            try:
+                content = py_file.read_text(errors="ignore")
+            except Exception:
+                continue
+
+            files_scanned += 1
+            for pattern, issue, recommendation in high_risk_patterns:
+                for match in pattern.finditer(content):
+                    line_no = content.count("\n", 0, match.start()) + 1
+                    findings.append({
+                        "file": str(py_file.relative_to(root)),
+                        "line": line_no,
+                        "issue": issue,
+                        "recommendation": recommendation,
+                    })
+                    if len(findings) >= max_findings:
+                        return findings
+
+        return findings
+
+    def _analyze_dependency_security(self, root: Path) -> List[Dict[str, Any]]:
+        """Analyze dependency definitions for potential security risks."""
+        alerts: List[Dict[str, Any]] = []
+        requirement_files = ["requirements.txt", "requirements-dev.txt"]
+        specifiers = {"==", "<=", ">=", "~=", "!=", "<", ">"}
+
+        for req_name in requirement_files:
+            req_path = root / req_name
+            if not req_path.exists():
+                continue
+
+            unpinned: List[str] = []
+            insecure_sources: List[str] = []
+            try:
+                for raw_line in req_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+                    line = raw_line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    lowered = line.lower()
+                    if lowered.startswith("git+") and "http://" in lowered:
+                        insecure_sources.append(line)
+                    if not any(spec in line for spec in specifiers):
+                        unpinned.append(line)
+            except Exception:
+                continue
+
+            if unpinned or insecure_sources:
+                alert: Dict[str, Any] = {
+                    "file": str(req_path.relative_to(root)),
+                    "issue": "Dependency hygiene warning",
+                    "details": {},
+                    "recommendation": "Pin versions and prefer secure sources (https or PyPI releases)",
+                }
+                if unpinned:
+                    alert["details"]["unpinned"] = unpinned[:10]
+                if insecure_sources:
+                    alert["details"]["insecure_sources"] = insecure_sources[:10]
+                alerts.append(alert)
+
+        # Inspect pyproject dependencies for unpinned entries
+        pyproject = root / "pyproject.toml"
+        if pyproject.exists():
+            try:
+                content_bytes = pyproject.read_bytes()
+                content_text = content_bytes.decode("utf-8", errors="ignore")
+                if tomllib:
+                    data = tomllib.loads(content_text)
+                    project_block = data.get("project", {}) if isinstance(data, dict) else {}
+                    dependency_sets: List[Tuple[str, List[Any]]] = []
+                    deps = project_block.get("dependencies", []) if isinstance(project_block, dict) else []
+                    if deps:
+                        dependency_sets.append(("project.dependencies", deps))
+                    opt_deps = project_block.get("optional-dependencies", {}) if isinstance(project_block, dict) else {}
+                    if isinstance(opt_deps, dict):
+                        for group, entries in opt_deps.items():
+                            if entries:
+                                dependency_sets.append((f"project.optional-dependencies.{group}", entries))
+
+                    for section_name, entries in dependency_sets:
+                        if not isinstance(entries, list):
+                            continue
+                        unpinned_entries: List[str] = []
+                        insecure_entries: List[str] = []
+                        for entry in entries:
+                            if isinstance(entry, str):
+                                lowered = entry.lower()
+                                if lowered.startswith("git+") and "http://" in lowered:
+                                    insecure_entries.append(entry)
+                                if not any(spec in entry for spec in specifiers):
+                                    unpinned_entries.append(entry)
+                            elif isinstance(entry, dict):
+                                name = entry.get("name")
+                                version = entry.get("version", "")
+                                if isinstance(name, str):
+                                    lowered_name = name.lower()
+                                    if lowered_name.startswith("git+") and "http://" in lowered_name:
+                                        insecure_entries.append(name)
+                                version_str = str(version) if version is not None else ""
+                                if not version_str or not any(spec in version_str for spec in specifiers):
+                                    display = f"{name or 'dependency'} ({version_str or 'unconstrained'})"
+                                    unpinned_entries.append(display)
+
+                        if unpinned_entries or insecure_entries:
+                            alert_details: Dict[str, Any] = {}
+                            if unpinned_entries:
+                                alert_details["unpinned"] = unpinned_entries[:10]
+                            if insecure_entries:
+                                alert_details["insecure_sources"] = insecure_entries[:10]
+                            alerts.append({
+                                "file": "pyproject.toml",
+                                "section": section_name,
+                                "issue": "Unpinned dependencies in pyproject",
+                                "details": alert_details,
+                                "recommendation": "Provide version constraints or document rationale for floating dependencies",
+                            })
+                else:
+                    for match in re.finditer(r"dependencies\s*=\s*\[(.*?)\]", content_text, re.DOTALL):
+                        block = match.group(1)
+                        entries = re.findall(r"\"([^\"\n]+)\"", block)
+                        unpinned_entries = [entry for entry in entries if not any(spec in entry for spec in specifiers)]
+                        if unpinned_entries:
+                            alerts.append({
+                                "file": "pyproject.toml",
+                                "issue": "Unpinned dependencies in pyproject",
+                                "details": {"unpinned": unpinned_entries[:10]},
+                                "recommendation": "Provide version constraints or document rationale for floating dependencies",
+                            })
+                            break
+            except Exception:
+                pass
+
+        return alerts
 
     def _efficiency_checks(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         suggestions: List[str] = []
@@ -875,6 +1084,28 @@ RECOMMENDED APPROACH:
             for fp in verified_fps[:5]:
                 print(f"  ✓ {fp['file']} (pattern: {fp['pattern']})")
                 print(f"    Reason: {fp['reason']}")
+
+        attack_findings = results["security"].get("attack_surface_findings", [])
+        if attack_findings:
+            print("\nSecurity - Attack Surface Findings:")
+            for finding in attack_findings[:5]:
+                location = f"{finding['file']}:{finding.get('line', '?')}"
+                print(f"  ! {location} - {finding['issue']}")
+                print(f"    Recommendation: {finding['recommendation']}")
+
+        dependency_alerts = results["security"].get("dependency_alerts", [])
+        if dependency_alerts:
+            print("\nSecurity - Dependency Alerts:")
+            for alert in dependency_alerts[:5]:
+                print(f"  ! {alert['file']} - {alert['issue']}")
+                details = alert.get("details", {})
+                for key, values in details.items():
+                    if values:
+                        preview = ", ".join(values[:3])
+                        remainder = len(values) - 3
+                        extra = f" (+{remainder} more)" if remainder > 0 else ""
+                        print(f"    {key}: {preview}{extra}")
+                print(f"    Recommendation: {alert['recommendation']}")
         
         print("\nEfficiency Suggestions:")
         for s in results["efficiency"]["suggestions"]:
