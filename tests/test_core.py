@@ -8,6 +8,7 @@ import os
 # Add the codesentinel package to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+from codesentinel import __version__
 from codesentinel.core import CodeSentinel
 
 
@@ -21,7 +22,7 @@ class TestCodeSentinel(unittest.TestCase):
     def test_initialization(self):
         """Test that CodeSentinel initializes correctly."""
         self.assertIsInstance(self.cs, CodeSentinel)
-        self.assertEqual(self.cs.version, "1.0.0")
+        self.assertEqual(self.cs.version, __version__)
 
     @patch('codesentinel.core.subprocess.run')
     def test_run_security_scan(self, mock_subprocess):
@@ -50,7 +51,7 @@ class TestCodeSentinel(unittest.TestCase):
         self.assertIsInstance(status, dict)
         self.assertIn('version', status)
         self.assertIn('status', status)
-        self.assertEqual(status['version'], "1.0.0")
+        self.assertEqual(status['version'], __version__)
 
 
 if __name__ == '__main__':

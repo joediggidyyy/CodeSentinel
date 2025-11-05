@@ -26,10 +26,12 @@ import shutil
 import sys
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+import webbrowser
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Callable
 
 from .utils.config import ConfigManager
+from . import __version__ as CS_VERSION
 
 
 class ScrollableFrame(ttk.Frame):
@@ -79,7 +81,8 @@ class WizardApp:
 
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("CodeSentinel Setup Wizard")
+        # Window title shows product name and version only
+        self.root.title(f"CodeSentinel Setup Wizard v{CS_VERSION}")
         self.root.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.root.resizable(True, True)
         self._center()
@@ -140,6 +143,13 @@ class WizardApp:
         self.header.pack(fill="x", padx=20, pady=(16, 8))
         ttk.Label(self.header, text="CodeSentinel Setup Wizard", style='Title.TLabel').pack()
         ttk.Label(self.header, text="SECURITY > EFFICIENCY > MINIMALISM", font=('Arial', 9), foreground=self.colors['info']).pack(pady=(2, 0))
+        # Subtle attribution and version line
+        ttk.Label(
+            self.header,
+            text=f"by Polymath • v{CS_VERSION}",
+            font=('Arial', 8),
+            foreground='#666666'
+        ).pack(pady=(2, 0))
         
         # Progress bar
         progress_frame = ttk.Frame(self.root)
@@ -170,6 +180,17 @@ class WizardApp:
         
         self.back_btn = ttk.Button(self.footer, text="← Back", command=self._back)
         self.back_btn.pack(side="right", padx=(0, 8))
+        
+        # Bottom margin branding (suppressed on summary step)
+        self.bottom_margin = ttk.Frame(self.root)
+        self.bottom_margin.pack(fill="x", padx=20, pady=(0, 8))
+        self.bottom_brand = ttk.Label(
+            self.bottom_margin,
+            text="",
+            font=('Arial', 7),
+            foreground='#999999'
+        )
+        self.bottom_brand.pack(anchor="center")
 
     def _clear_body(self):
         for w in self.body.winfo_children():
@@ -195,6 +216,12 @@ class WizardApp:
         self.back_btn.state(["!disabled"] if idx > 0 else ["disabled"])
         is_last = idx == len(self.steps) - 1
         self.next_btn.config(text="Finish" if is_last else "Next →")
+
+        # Update bottom branding visibility
+        if is_last:
+            self.bottom_brand.config(text="")
+        else:
+            self.bottom_brand.config(text="joediggidyyy")
         
         # Update navigation state after UI is ready
         self.root.after(50, self._update_nav_state)
@@ -372,22 +399,12 @@ class WizardApp:
         
         ttk.Label(start_frame, text=start_text, font=('Arial', 9), 
                  justify="left", foreground="#333333").pack(anchor="w")
-        
-        return f
-        
-        start_text = (
-            "This wizard will help you configure CodeSentinel for your project.\n\n"
-            "Configuration includes:\n\n"
-            "1. Project location and GitHub setup\n"
-            "2. Alert channel preferences\n"
-            "3. IDE integration options\n"
-            "4. GitHub Copilot integration\n"
-            "5. Optional automation features\n\n"
-            "Click 'Next' to begin configuration."
-        )
-        
-        ttk.Label(start_frame, text=start_text, font=('Arial', 9), 
-                 justify="left", foreground="#333333").pack(anchor="w")
+
+        # Repository link (clickable)
+        repo_url = "https://github.com/joediggidy/CodeSentinel"
+        link = ttk.Label(start_frame, text="View repository on GitHub", foreground=self.colors['info'], cursor="hand2")
+        link.pack(anchor="w", pady=(8, 0))
+        link.bind("<Button-1>", lambda e, url=repo_url: webbrowser.open_new(url))
         
         return f
 
@@ -673,20 +690,30 @@ class WizardApp:
         try:
             import json
             import urllib.request
-            
+            from urllib.parse import urlparse
+
             webhook_url = self.slack_url_var.get().strip()
-            
+
             if not webhook_url:
                 self.slack_status.config(text="❌ Webhook URL required", foreground=self.colors['error'])
                 self.validations['slack'] = False
                 self._update_nav_state()
                 return
-            
+
+            # Basic allowlist validation to prevent SSRF: only allow Slack webhooks
+            parsed = urlparse(webhook_url)
+            host = (parsed.hostname or "").lower()
+            if not (parsed.scheme == "https" and host and (host == "hooks.slack.com" or host.endswith(".slack.com")) and "/services/" in parsed.path):
+                self.slack_status.config(text="❌ Invalid Slack webhook URL", foreground=self.colors['error'])
+                self.validations['slack'] = False
+                self._update_nav_state()
+                return
+
             # Test webhook with a test message
             data = json.dumps({"text": "CodeSentinel test message"}).encode('utf-8')
             req = urllib.request.Request(webhook_url, data=data, headers={'Content-Type': 'application/json'})
             response = urllib.request.urlopen(req, timeout=10)
-            
+
             if response.status == 200:
                 self.slack_status.config(text="✓ Webhook valid", foreground=self.colors['success'])
                 self.validations['slack'] = True
@@ -822,6 +849,7 @@ class WizardApp:
         self._update_nav_state()
 
     def _step_ide(self):
+        # Compact, non-scroll implementation to avoid occluding footer
         f = ttk.Frame(self.body)
         
         # Compact header
@@ -830,7 +858,12 @@ class WizardApp:
         
         # IDE Support Section
         ide_frame = ttk.LabelFrame(f, text="🔍 Detected IDEs", padding=10)
-        ide_frame.pack(fill="both", expand=True, pady=(0, 6))
+        # Do not expand to avoid pushing into footer; allow wrapping into two columns
+        ide_frame.pack(fill="x", expand=False, pady=(0, 6))
+        grid_frame = ttk.Frame(ide_frame)
+        grid_frame.pack(fill="x", expand=False)
+        grid_frame.columnconfigure(0, weight=1)
+        grid_frame.columnconfigure(1, weight=1)
         
         # Define IDE configurations with detection commands
         ide_configs = [
@@ -955,7 +988,7 @@ class WizardApp:
         statuses = {}
         self.ide_vars = {}  # Store checkbox variables
         
-        for config in ide_configs:
+        for idx, config in enumerate(ide_configs):
             found = False
             
             # First try PATH-based detection
@@ -978,9 +1011,10 @@ class WizardApp:
             
             statuses[config['key']] = found
             
-            # Create IDE row - more compact
-            ide_row = ttk.Frame(ide_frame)
-            ide_row.pack(fill="x", pady=2)
+            # Create IDE cell in a 2-column grid to reduce height
+            row, col = divmod(idx, 2)
+            ide_row = ttk.Frame(grid_frame)
+            ide_row.grid(row=row, column=col, sticky="nsew", padx=(0, 6) if col == 0 else (6, 0), pady=2)
             
             # Checkbox for selection (default: enabled if detected)
             self.ide_vars[config['key']] = tk.BooleanVar(value=found)
@@ -1010,7 +1044,7 @@ class WizardApp:
             
             # Description - more compact
             ttk.Label(left_frame, text=f"  {config['description']}", 
-                     font=('Arial', 8), foreground='gray').pack(anchor="w", padx=(20, 0), pady=(0, 2))
+                     font=('Arial', 8), foreground='gray').pack(anchor="w", padx=(20, 0))
             
             # Right side: Download button for not detected IDEs
             if not found:
@@ -1019,7 +1053,7 @@ class WizardApp:
                     webbrowser.open(url)
                 
                 ttk.Button(ide_row, text="Download", 
-                          command=open_url).pack(side="right", padx=(10, 0))
+                          command=open_url).pack(side="right", padx=(6, 0))
         
         # Store IDE detection results and selections
         def collect():
@@ -1033,13 +1067,17 @@ class WizardApp:
             self.data["ide"] = ide_data
         
         f.collect = collect  # type: ignore
-        
+
         # Compact note about installation
         note_frame = ttk.Frame(f)
         note_frame.pack(fill="x", pady=(8, 0))
-        ttk.Label(note_frame, text="ℹ️ IDE integration files will be created during final installation.", 
-                 font=('Arial', 8), foreground='gray').pack(anchor="w")
-        
+        ttk.Label(
+            note_frame,
+            text="ℹ️ IDE integration files will be created during final installation.",
+            font=('Arial', 8),
+            foreground='gray'
+        ).pack(anchor="w")
+
         return f
 
     def _step_copilot(self):
@@ -1330,6 +1368,48 @@ class WizardApp:
                                     yscrollcommand=text_scrollbar.set)
         self.summary_text.pack(side="left", fill="both", expand=True)
         text_scrollbar.config(command=self.summary_text.yview)
+
+        # Footer area with repo link and attribution (Polymath venture)
+        footer = ttk.Frame(f)
+        footer.pack(fill="x", pady=(8, 0))
+        repo_url = "https://github.com/joediggidy/CodeSentinel"
+        repo_link = ttk.Label(footer, text="View repository on GitHub", foreground=self.colors['info'], cursor="hand2")
+        repo_link.pack(anchor="w")
+        repo_link.bind("<Button-1>", lambda e, url=repo_url: webbrowser.open_new(url))
+
+        # Centered thumbnail + tagline
+        venture_container = ttk.Frame(footer)
+        venture_container.pack(anchor="center", pady=(6, 0))
+        
+        # Caption above thumbnail
+        ttk.Label(venture_container, text="a Polymath venture", 
+                 font=('Arial', 8, 'italic'), foreground="#666666").pack(anchor="center", pady=(0, 2))
+        
+        # Thumbnail (scaled down)
+        try:
+            from pathlib import Path as _P
+            _here = _P(__file__).resolve().parent
+            candidate_paths = [
+                _here / "assets" / "polymath.png",
+                _here.parent / "docs" / "polymath.png",
+            ]
+            self._polymath_img = None
+            for _p in candidate_paths:
+                if _p.exists():
+                    full_img = tk.PhotoImage(file=str(_p))
+                    target_w, target_h = 50, 40
+                    # Determine scaling factor to keep aspect ratio within target bounds
+                    width_factor = max(1, (full_img.width() + target_w - 1) // target_w)
+                    height_factor = max(1, (full_img.height() + target_h - 1) // target_h)
+                    scale = max(width_factor, height_factor)
+                    self._polymath_img = full_img.subsample(scale, scale)  # type: ignore
+                    break
+            if self._polymath_img is not None:
+                img_label = ttk.Label(venture_container, image=self._polymath_img)
+                img_label.pack(anchor="center")
+        except Exception:
+            # Image optional; proceed without it
+            self._polymath_img = None
 
         def collect():
             """Generate formatted summary of configuration."""

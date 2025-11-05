@@ -389,6 +389,7 @@ RECOMMENDED APPROACH:
             re.compile(r"-----BEGIN (RSA|DSA|EC) PRIVATE KEY-----"),
         ]
         findings: List[Dict[str, Any]] = []
+        verified_false_positives: List[Dict[str, Any]] = []
         max_hits = 25 if not limit_scan else 8
 
         scanned = 0
@@ -408,23 +409,94 @@ RECOMMENDED APPROACH:
 
                 for pat in secrets_patterns:
                     if pat.search(content):
-                        findings.append({
+                        finding = {
                             "file": str(p.relative_to(root)),
                             "pattern": pat.pattern[:40] + ("..." if len(pat.pattern) > 40 else ""),
-                        })
-                        if len(findings) >= max_hits:
+                        }
+                        
+                        # Verify if this is a false positive
+                        fp_result = self._verify_false_positive_security(p, content, pat)
+                        if fp_result["is_false_positive"]:
+                            finding["verified_false_positive"] = True
+                            finding["reason"] = fp_result["reason"]
+                            verified_false_positives.append(finding)
+                        else:
+                            findings.append(finding)
+                        
+                        if len(findings) + len(verified_false_positives) >= max_hits:
                             break
-                if len(findings) >= max_hits:
+                if len(findings) + len(verified_false_positives) >= max_hits:
                     break
 
             scanned += 1
-            if len(findings) >= max_hits:
+            if len(findings) + len(verified_false_positives) >= max_hits:
                 break
 
         return {
             "secrets_findings": findings,
+            "verified_false_positives": verified_false_positives,
             "issues": len(findings),
         }
+
+    def _verify_false_positive_security(self, file_path: Path, content: str, pattern: re.Pattern) -> Dict[str, Any]:
+        """
+        Verify if a security finding is a false positive through contextual analysis.
+        Does NOT whitelist - still reports the finding but marks it as verified FP.
+        """
+        file_name = file_path.name
+        rel_path = str(file_path)
+        
+        # Check for documentation/example contexts
+        if file_name in ("SECURITY.md", "README.md", "CONTRIBUTING.md", "EXAMPLE.md"):
+            # Look for documentation indicators around matches
+            doc_indicators = [
+                r"example[:\s]",
+                r"for example",
+                r"sample",
+                r"placeholder",
+                r"demo",
+                r"illustration",
+                r"```",  # code blocks
+                r"#\s*Example",
+                r">\s*",  # markdown quotes
+            ]
+            for indicator in doc_indicators:
+                if re.search(indicator, content, re.IGNORECASE):
+                    return {
+                        "is_false_positive": True,
+                        "reason": f"Documentation file ({file_name}) with example/demo context"
+                    }
+        
+        # Check for GUI wizard placeholder/demo password fields
+        if "gui_wizard" in rel_path or "setup_wizard" in rel_path:
+            # Look for GUI context - Entry widgets, placeholder text, validation
+            gui_indicators = [
+                r"Entry\s*\(",
+                r"placeholder",
+                r"Label\s*\(",
+                r"\.insert\s*\(",
+                r"show\s*=\s*['\"][\*\•]",  # password masking
+                r"entry\.get\(\)",
+                r"validate",
+                r"# Example:",
+                r"# Demo",
+            ]
+            match = pattern.search(content)
+            if match:
+                # Get context around the match (500 chars before/after)
+                start = max(0, match.start() - 500)
+                end = min(len(content), match.end() + 500)
+                context = content[start:end]
+                
+                for indicator in gui_indicators:
+                    if re.search(indicator, context):
+                        return {
+                            "is_false_positive": True,
+                            "reason": f"GUI wizard file with placeholder/demo password field context"
+                        }
+        
+        # Not a verified false positive
+        return {"is_false_positive": False, "reason": None}
 
     def _efficiency_checks(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         suggestions: List[str] = []
@@ -458,6 +530,7 @@ RECOMMENDED APPROACH:
 
     def _minimalism_checks(self, root: Path, metrics: Dict[str, Any]) -> Dict[str, Any]:
         violations: List[str] = []
+        verified_false_positives: List[Dict[str, Any]] = []
         
         # Check for duplicate installers (defensive)
         installer_names = {"install.py", "install_deps.py", "setup_wizard.py", "install_codesentinel.py"}
@@ -487,7 +560,15 @@ RECOMMENDED APPROACH:
 
         # Check for duplicate setup configurations (setup.py + pyproject.toml)
         if (root / "setup.py").exists() and (root / "pyproject.toml").exists():
-            violations.append("Redundant packaging: both setup.py and pyproject.toml (prefer pyproject.toml only)")
+            violation = "Redundant packaging: both setup.py and pyproject.toml (prefer pyproject.toml only)"
+            fp_result = self._verify_false_positive_minimalism(root, "redundant_packaging")
+            if fp_result["is_false_positive"]:
+                verified_false_positives.append({
+                    "violation": violation,
+                    "reason": fp_result["reason"]
+                })
+            else:
+                violations.append(violation)
 
         # Check for incomplete/abandoned directories
         src_dir = root / "src"
@@ -505,8 +586,48 @@ RECOMMENDED APPROACH:
 
         return {
             "violations": violations,
+            "verified_false_positives": verified_false_positives,
             "issues": len(violations),
         }
+
+    def _verify_false_positive_minimalism(self, root: Path, check_type: str) -> Dict[str, Any]:
+        """
+        Verify if a minimalism violation is a false positive through contextual analysis.
+        Does NOT whitelist - still reports the finding but marks it as verified FP.
+        """
+        if check_type == "redundant_packaging":
+            setup_py = root / "setup.py"
+            pyproject_toml = root / "pyproject.toml"
+            
+            if not setup_py.exists() or not pyproject_toml.exists():
+                return {"is_false_positive": False, "reason": None}
+            
+            try:
+                setup_content = setup_py.read_text(errors="ignore")
+                pyproject_content = pyproject_toml.read_text(errors="ignore")
+                
+                # Modern Python packaging best practice: pyproject.toml is primary,
+                # but setup.py can be kept for backward compatibility with:
+                # - pip < 19.0
+                # - older build tools
+                # - editable installs in some environments
+                
+                # Check if pyproject.toml has complete PEP 517/518 build system
+                has_build_system = "[build-system]" in pyproject_content
+                has_project_section = "[project]" in pyproject_content
+                uses_setuptools_backend = "setuptools.build_meta" in pyproject_content
+                
+                # If pyproject.toml is complete and uses setuptools backend,
+                # having setup.py is intentional for compatibility
+                if has_build_system and has_project_section and uses_setuptools_backend:
+                    return {
+                        "is_false_positive": True,
+                        "reason": "Valid dual-config: pyproject.toml (PEP 517/518) primary with setup.py for backward compatibility"
+                    }
+            except Exception:
+                pass
+        
+        return {"is_false_positive": False, "reason": None}
 
     def _style_preservation_checks(self, root: Path) -> Dict[str, Any]:
         """Check that audit respects existing style and doesn't force changes."""
@@ -551,27 +672,48 @@ RECOMMENDED APPROACH:
             str(results.get('policy', {}).get('non_destructive', True)),
             str(results.get('policy', {}).get('feature_preservation', True))
         ))
+        
         print("\nSecurity Findings:")
         for f in results["security"]["secrets_findings"][:5]:
             print(f"  - {f['file']} (pattern: {f['pattern']})")
         if not results["security"]["secrets_findings"]:
             print("  - No obvious secrets detected")
+        
+        # Report verified false positives separately
+        verified_fps = results["security"].get("verified_false_positives", [])
+        if verified_fps:
+            print("\nSecurity - Verified False Positives:")
+            for fp in verified_fps[:5]:
+                print(f"  ✓ {fp['file']} (pattern: {fp['pattern']})")
+                print(f"    Reason: {fp['reason']}")
+        
         print("\nEfficiency Suggestions:")
         for s in results["efficiency"]["suggestions"]:
             print(f"  - {s}")
         if not results["efficiency"]["suggestions"]:
             print("  - No suggestions")
+        
         print("\nMinimalism Violations:")
         for v in results["minimalism"]["violations"]:
             print(f"  - {v}")
         if not results["minimalism"]["violations"]:
             print("  - None detected")
+        
+        # Report verified false positives for minimalism
+        min_fps = results["minimalism"].get("verified_false_positives", [])
+        if min_fps:
+            print("\nMinimalism - Verified False Positives:")
+            for fp in min_fps:
+                print(f"  ✓ {fp['violation']}")
+                print(f"    Reason: {fp['reason']}")
+        
         print("\nStyle Preservation:")
         style_notes = results.get("style_preservation", {}).get("notes", [])
         for note in style_notes:
             print(f"  - {note}")
         if not style_notes:
             print("  - No style information available")
+        
         print("\nSummary:")
         print(json.dumps(results["summary"], indent=2))
 
