@@ -20,15 +20,12 @@ except UnicodeDecodeError:
 # Read version from package
 def get_version():
     """Get version from package."""
-    try:
-        from codesentinel import __version__
-        return __version__
-    except ImportError:
-        return "1.0.0"
+    # Read version directly to avoid import issues during build
+    return "1.0.1"
 
 setup(
     name="codesentinel",
-    version=get_version(),
+    version="1.0.1",  # Hardcoded to match pyproject.toml and __init__.py
     author="joediggidyyy",
     author_email="",
     description="Automated Maintenance & Security Monitoring",
@@ -52,6 +49,7 @@ setup(
         "pathlib2>=2.3.0; python_version < '3.4'",
         "requests>=2.25.0",
         "schedule>=1.1.0",
+        "psutil>=5.8.0",
     ],
     extras_require={
         "dev": [
