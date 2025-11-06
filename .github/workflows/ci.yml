@@ -27,6 +27,9 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov mypy
 
+      - name: Pre-build version verification
+        run: python tools/verify_version.py --strict
+
       # - name: Lint with black
       #   run: black --check codesentinel tests
 
@@ -61,8 +64,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
+      - name: Pre-build version verification
+        run: python tools/verify_version.py --strict
+
       - name: Build package
         run: python -m build
+
+      - name: Post-build version verification
+        run: python tools/verify_version.py --strict
 
       - name: Check package
         run: twine check dist/*
@@ -72,3 +81,18 @@ jobs:
         with:
           name: dist
           path: dist/
+
+  version-check:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Comprehensive version verification
+        run: python tools/verify_version.py --strict

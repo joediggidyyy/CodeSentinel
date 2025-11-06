@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-CodeSentinel v1.0.3.beta - PyPI Publication Script
+CodeSentinel v1.0.3 - PyPI Publication Script
 
-This script uploads the v1.0.3.beta distributions to PyPI.
+This script uploads the v1.0.3 distributions to PyPI.
 It will prompt for credentials if not already configured in ~/.pypirc
 
 Usage:
@@ -15,43 +15,54 @@ import sys
 from pathlib import Path
 
 def main():
-    """Publish CodeSentinel v1.0.3.beta to PyPI"""
-    
+    """Publish CodeSentinel v1.0.3 to PyPI"""
+
+    # Pre-publication version verification
+    print("🔍 Running pre-publication version verification...")
+    result = subprocess.run([sys.executable, "tools/verify_version.py", "--strict"],
+                          capture_output=True, text=True)
+    if result.returncode != 0:
+        print("❌ VERSION VERIFICATION FAILED!")
+        print(result.stdout)
+        print(result.stderr)
+        return 1
+    print("✅ Version verification passed")
+
     use_test = "--test" in sys.argv
     repo = "testpypi" if use_test else "pypi"
     repo_name = "test.pypi.org" if use_test else "pypi.org"
-    
+
     print(f"\n{'='*80}")
-    print(f"CodeSentinel v1.0.3.beta - PyPI Publication")
+    print(f"CodeSentinel v1.0.3 - PyPI Publication")
     print(f"{'='*80}")
     print(f"\nTarget Repository: {repo_name}")
     print(f"Distributions to upload:")
-    print(f"  - codesentinel-1.0.3b0.tar.gz (91 KB)")
-    print(f"  - codesentinel-1.0.3b0-py3-none-any.whl (77 KB)")
-    
-    # Check distributions exist
+    print(f"  - codesentinel-1.0.3.tar.gz")
+    print(f"  - codesentinel-1.0.3-py3-none-any.whl")
+
+    # Check distributions exist (look for any v1.0.3 distributions)
     dist_dir = Path("dist")
-    sdist = dist_dir / "codesentinel-1.0.3b0.tar.gz"
-    wheel = dist_dir / "codesentinel-1.0.3b0-py3-none-any.whl"
-    
-    if not sdist.exists():
-        print(f"\n❌ ERROR: Source distribution not found: {sdist}")
+    if not dist_dir.exists():
+        print(f"\n❌ ERROR: dist/ directory not found")
         return 1
-    
-    if not wheel.exists():
-        print(f"\n❌ ERROR: Wheel distribution not found: {wheel}")
+
+    dist_files = list(dist_dir.glob("codesentinel-1.0.3*"))
+    if len(dist_files) < 2:
+        print(f"\n❌ ERROR: Expected at least 2 distribution files, found {len(dist_files)}")
+        for f in dist_files:
+            print(f"  - {f.name}")
         return 1
-    
-    print(f"\n✅ Both distributions found")
-    
+
+    print(f"\n✅ Found {len(dist_files)} distribution files:")
+    for f in dist_files:
+        print(f"  - {f.name}")
+
     # Build twine command
     cmd = [
         "python", "-m", "twine", "upload",
-        "--repository", repo,
-        str(sdist),
-        str(wheel)
-    ]
-    
+        "--repository", repo
+    ] + [str(f) for f in dist_files]
+
     print(f"\nExecuting: {' '.join(cmd)}")
     print(f"\n{'='*80}")
     print("When prompted, use:")
