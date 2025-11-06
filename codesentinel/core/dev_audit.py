@@ -6,6 +6,15 @@ Implements interactive and silent development audits focused on:
 
 > SECURITY - EFFICIENCY - MINIMALISM <
 
+FUNDAMENTAL POLICY HIERARCHY:
+1. CORE CONCEPTS: Security > Efficiency > Minimalism (absolute priority)
+2. PERMANENT DIRECTIVES: Non-negotiable security rules
+3. PERSISTENT POLICIES: Non-destructive, feature-preserving operations
+
+Dev audits are always executed thoroughly and comprehensively, focusing
+heavily on the three core concepts while complying with all directives
+and policies EXCEPT where they would explicitly violate a core concept.
+
 The interactive audit prints a detailed report. Immediately after it
 finishes, a brief silent audit runs in the background and reports its
 outcome via the configured alert channels.
@@ -22,18 +31,31 @@ from typing import Dict, Any, List, Optional
 
 
 class DevAudit:
-    """Runs development audits with interactive and silent modes."""
+    """
+    Runs development audits with interactive and silent modes.
+    
+    Always executes thoroughly and comprehensively with heavy focus on:
+    - SECURITY (highest priority)
+    - EFFICIENCY (second priority)  
+    - MINIMALISM (third priority)
+    
+    Complies with all directives and policies except where they would
+    explicitly violate a higher-priority core concept.
+    """
 
     def __init__(self, project_root: Optional[Path], alert_manager, config_manager):
         self.project_root = project_root or Path.cwd()
         self.alert_manager = alert_manager
         self.config_manager = config_manager
         # Persisted policy: '!!!!' must be non-destructive and feature-preserving
+        # Unless explicitly required by security (core concept override)
         cfg = getattr(self.config_manager, 'config', {}) or {}
         self.policy = (cfg.get('policy') or {
             'non_destructive': True,
             'feature_preservation': True,
-            'conflict_resolution': 'merge-prefer-existing'
+            'conflict_resolution': 'merge-prefer-existing',
+            'principles': ['SECURITY', 'EFFICIENCY', 'MINIMALISM'],
+            'hierarchy': ['CORE_CONCEPTS', 'PERMANENT_DIRECTIVES', 'PERSISTENT_POLICIES']
         })
 
     # -------------------- Public API --------------------
@@ -256,20 +278,23 @@ CodeSentinel Development Audit - Agent Guidance
 
 Total Issues: {total_issues} (Severity: {severity})
 
-CORE PRINCIPLES:
-- SECURITY > EFFICIENCY > MINIMALISM
-- All actions must be NON-DESTRUCTIVE
-- Feature preservation is MANDATORY
-- Style preservation is MANDATORY
+FUNDAMENTAL POLICY HIERARCHY:
+1. CORE CONCEPTS (Absolute Priority): SECURITY > EFFICIENCY > MINIMALISM
+2. PERMANENT DIRECTIVES: Non-negotiable security rules
+3. PERSISTENT POLICIES: Non-destructive, feature-preserving operations
+
+Dev audits are executed thoroughly and comprehensively with heavy focus on
+the three core concepts. Policies can be overridden ONLY when they explicitly
+violate a higher-priority core concept.
 
 AGENT ROLE:
 You are tasked with intelligently reviewing the audit findings and building
 a remediation pipeline. You should:
 
 1. ANALYZE: Review each issue with context
-2. PRIORITIZE: Focus on critical/high priority items first
+2. PRIORITIZE: Focus on critical/high priority items first (SECURITY first)
 3. DECIDE: Determine safe vs. requires-review actions
-4. PLAN: Build step-by-step remediation plan
+4. PLAN: Build step-by-step remediation plan following hierarchy
 5. EXECUTE: Only perform safe, non-destructive operations
 6. REPORT: Document all actions and decisions
 
@@ -319,11 +344,15 @@ RECOMMENDED APPROACH:
         # Collect metrics
         metrics = self._collect_repo_metrics(prj, limit_scan=(detail_level == "brief"))
         security = self._security_checks(prj, limit_scan=(detail_level == "brief"))
+        
+        # File integrity checks (if enabled)
+        file_integrity = self._file_integrity_checks(prj)
+        
         efficiency = self._efficiency_checks(metrics)
         minimalism = self._minimalism_checks(prj, metrics)
         style = self._style_preservation_checks(prj)
 
-        summary = self._summarize(security, efficiency, minimalism, style)
+        summary = self._summarize(security, efficiency, minimalism, style, file_integrity)
 
         return {
             "repository": repo_name,
@@ -332,6 +361,7 @@ RECOMMENDED APPROACH:
             "policy": self.policy,
             "metrics": metrics,
             "security": security,
+            "file_integrity": file_integrity,
             "efficiency": efficiency,
             "minimalism": minimalism,
             "style_preservation": style,
@@ -498,6 +528,88 @@ RECOMMENDED APPROACH:
         # Not a verified false positive
         return {"is_false_positive": False, "reason": None}
 
+    def _file_integrity_checks(self, root: Path) -> Dict[str, Any]:
+        """
+        Check file integrity using hash-based validation.
+        
+        Detects:
+        - Unauthorized file modifications
+        - Missing critical files
+        - Unauthorized new files
+        """
+        try:
+            from codesentinel.utils.file_integrity import FileIntegrityValidator
+        except ImportError:
+            return {
+                "status": "error",
+                "message": "File integrity module not available"
+            }
+        
+        # Load integrity configuration from config
+        cfg = getattr(self.config_manager, 'config', {}) or {}
+        integrity_config = cfg.get("integrity", {})
+        
+        # Skip if not enabled
+        if not integrity_config.get("enabled", False):
+            return {
+                "status": "disabled",
+                "message": "File integrity checking is disabled"
+            }
+        
+        # Initialize validator
+        validator = FileIntegrityValidator(root, integrity_config)
+        
+        # Verify integrity
+        results = validator.verify_integrity()
+        
+        # Transform results for dev_audit format
+        issues = []
+        for violation in results.get("violations", []):
+            priority = "CRITICAL" if violation.get("severity") == "critical" else "HIGH"
+            issue_type = violation.get("type", "unknown")
+            
+            if issue_type == "modified_file":
+                issues.append({
+                    "issue": f"File modified without authorization: {violation['file']}",
+                    "priority": priority,
+                    "hints": [
+                        "Verify if modification was intentional",
+                        "Update baseline if change is authorized: codesentinel integrity --update",
+                        "Investigate potential security breach if unauthorized"
+                    ],
+                    "file": violation["file"],
+                    "is_critical": violation.get("is_critical", False)
+                })
+            elif issue_type == "missing_file":
+                issues.append({
+                    "issue": f"Required file missing: {violation['file']}",
+                    "priority": priority,
+                    "hints": [
+                        "Restore file from backup or repository",
+                        "Update baseline if deletion was intentional: codesentinel integrity --update"
+                    ],
+                    "file": violation["file"],
+                    "is_critical": violation.get("is_critical", False)
+                })
+            elif issue_type == "unauthorized_file":
+                issues.append({
+                    "issue": f"Unauthorized file detected: {violation['file']}",
+                    "priority": "HIGH",
+                    "hints": [
+                        "Verify file source and purpose",
+                        "Add to whitelist if legitimate: codesentinel integrity --whitelist",
+                        "Remove if malicious or unwanted"
+                    ],
+                    "file": violation["file"]
+                })
+        
+        return {
+            "status": results.get("status"),
+            "issues": issues,
+            "statistics": results.get("statistics", {}),
+            "verified": results.get("verified")
+        }
+
     def _efficiency_checks(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         suggestions: List[str] = []
         
@@ -650,13 +762,24 @@ RECOMMENDED APPROACH:
         }
 
     # -------------------- Reporting --------------------
-    def _summarize(self, security: Dict[str, Any], efficiency: Dict[str, Any], minimalism: Dict[str, Any], style: Dict[str, Any]) -> Dict[str, Any]:
+    def _summarize(self, security: Dict[str, Any], efficiency: Dict[str, Any], minimalism: Dict[str, Any], style: Dict[str, Any], file_integrity: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         total_issues = security.get("issues", 0) + efficiency.get("issues", 0) + minimalism.get("issues", 0)
+        
+        # Add file integrity violations to total
+        if file_integrity and file_integrity.get("status") not in ["disabled", "error"]:
+            integrity_issues = len(file_integrity.get("issues", []))
+            total_issues += integrity_issues
+        
         level = "info"
         if total_issues >= 8 or security.get("issues", 0) >= 5:
             level = "critical"
         elif total_issues >= 4 or security.get("issues", 0) >= 3:
             level = "warning"
+        
+        # Elevate to critical if file integrity has critical violations
+        if file_integrity and file_integrity.get("status") == "critical":
+            level = "critical"
+        
         return {
             "total_issues": total_issues,
             "severity": level,
@@ -686,6 +809,33 @@ RECOMMENDED APPROACH:
             for fp in verified_fps[:5]:
                 print(f"  ✓ {fp['file']} (pattern: {fp['pattern']})")
                 print(f"    Reason: {fp['reason']}")
+        
+        # File Integrity Report
+        file_integrity = results.get("file_integrity", {})
+        if file_integrity.get("status") not in ["disabled", "error"]:
+            print("\nFile Integrity:")
+            status = file_integrity.get("status", "unknown")
+            print(f"  Status: {status.upper()}")
+            
+            stats = file_integrity.get("statistics", {})
+            if stats:
+                print(f"  Files checked: {stats.get('files_checked', 0)}")
+                print(f"  Passed: {stats.get('files_passed', 0)}")
+                if stats.get('files_modified', 0) > 0:
+                    print(f"  ⚠ Modified: {stats.get('files_modified', 0)}")
+                if stats.get('files_missing', 0) > 0:
+                    print(f"  ⚠ Missing: {stats.get('files_missing', 0)}")
+                if stats.get('files_unauthorized', 0) > 0:
+                    print(f"  ⚠ Unauthorized: {stats.get('files_unauthorized', 0)}")
+            
+            # Show critical violations
+            critical_issues = [issue for issue in file_integrity.get("issues", []) if issue.get("is_critical")]
+            if critical_issues:
+                print("\n  CRITICAL File Integrity Violations:")
+                for issue in critical_issues[:5]:
+                    print(f"    ! {issue['issue']}")
+        elif file_integrity.get("status") == "disabled":
+            print("\nFile Integrity: DISABLED (enable in config to check file modifications)")
         
         print("\nEfficiency Suggestions:")
         for s in results["efficiency"]["suggestions"]:
