@@ -23,11 +23,14 @@ CodeSentinel is built on the principle: **SECURITY > EFFICIENCY > MINIMALISM**
 
 ### Security Practices
 
-1. **Credential Management**
-   - Never commit credentials to the repository
+1. **Credential Management** ⚠️ **PERMANENT DIRECTIVES**
+   - **NEVER store plain text passwords or tokens in files**
+   - **NEVER store passwords or tokens in executable files**
+   - **NEVER commit credentials to the repository**
    - Use environment variables for sensitive data
    - Configuration files containing credentials should be in `.gitignore`
    - Email passwords, API keys, and tokens must be externalized
+   - In CodeSentinel dev spaces: passwords and tokens are hashed and stored in specific well-guarded locations, called by reference only
 
 2. **File Permissions**
    - Configuration files: Read/write for owner only (600)
