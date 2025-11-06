@@ -32,7 +32,7 @@
 ### Where CodeSentinel Is Available
 
 - ✅ **PyPI** - pip install codesentinel (stable releases + beta versions)
-- ✅ **GitHub** - https://github.com/joediggidyyy/CodeSentinel
+- ✅ **GitHub** - <https://github.com/joediggidyyy/CodeSentinel>
 - ✅ **Local Dist** - `dist/` directory in repository
 
 ---
@@ -65,6 +65,7 @@
 ### Tracking Distribution Strategy
 
 **At Every Release**:
+
 - ✅ Document current PyPI publication status
 - ✅ Verify credentials are configured
 - ✅ Note which versions are on PyPI
@@ -72,12 +73,14 @@
 - ✅ Update this directive if strategy changes
 
 **Before Each Publication**:
+
 - ✅ Confirm PyPI credentials exist
 - ✅ Verify build artifacts in `dist/`
 - ✅ Check PyPI versions already published
 - ✅ Plan publication approach (beta/release)
 
 **After Each Publication**:
+
 - ✅ Verify on PyPI: `pip install codesentinel==VERSION`
 - ✅ Document in release notes
 - ✅ Update distribution tracking
@@ -91,12 +94,14 @@
 
 **Status**: NOT YET PUBLISHED  
 **Action**: PUBLISH TO PyPI  
-**Command**: 
+**Command**:
+
 ```bash
 twine upload dist/codesentinel-1.0.3b1-py3-none-any.whl dist/codesentinel-1.0.3b1.tar.gz
 ```
 
 **Note**: v1.0.3 release should be published to PyPI to make it available to users via:
+
 ```bash
 pip install codesentinel==1.0.3
 ```
@@ -115,6 +120,7 @@ pip install codesentinel==1.0.3
 ### Verification
 
 To verify credentials are working:
+
 ```bash
 twine check dist/codesentinel-1.0.3b1*
 twine upload --dry-run dist/codesentinel-1.0.3b1*
@@ -149,6 +155,7 @@ twine upload --dry-run dist/codesentinel-1.0.3b1*
 ### Before Any Release Decision
 
 **Ask Yourself**:
+
 1. ✅ Are PyPI credentials configured? (YES - confirmed)
 2. ✅ Have beta versions been published? (YES - v1.0.3b0, v1.0.3b1)
 3. ✅ What's the current PyPI version? (v1.0.3b1)
@@ -169,13 +176,15 @@ twine upload --dry-run dist/codesentinel-1.0.3b1*
 
 ### Directive Level: LOW-LEVEL (Persistent)
 
-**Meaning**: 
+**Meaning**:
+
 - Applies to all operations
 - Persists across sessions
 - Not overrideable by higher-level decisions
 - Part of core workflow
 
 **Equivalent To**:
+
 - Version control best practices
 - Security policies
 - Build system requirements
@@ -207,10 +216,10 @@ twine upload --dry-run dist/codesentinel-1.0.3b1*
 
 ### Quick Links
 
-- **PyPI Profile**: https://pypi.org/project/codesentinel/
+- **PyPI Profile**: <https://pypi.org/project/codesentinel/>
 - **Install Latest Beta**: `pip install codesentinel==1.0.3b1`
 - **Install Stable**: `pip install codesentinel` (v1.0.1 currently)
-- **GitHub Repository**: https://github.com/joediggidyyy/CodeSentinel
+- **GitHub Repository**: <https://github.com/joediggidyyy/CodeSentinel>
 
 ### Commands
 
