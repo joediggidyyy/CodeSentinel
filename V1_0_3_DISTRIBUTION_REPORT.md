@@ -276,6 +276,59 @@ codesentinel integrity whitelist --add "*.tmp" "*.cache"
 
 ---
 
+## Installation & Setup
+
+### Quick Start (GUI Installation)
+
+For users who want the easiest installation with the interactive setup wizard:
+
+**Windows Users:**
+
+- Double-click: `INSTALL_CODESENTINEL_GUI.bat`
+- Or run: `python INSTALL_CODESENTINEL_GUI.py`
+
+**macOS/Linux Users:**
+
+- Run: `bash INSTALL_CODESENTINEL_GUI.sh`
+- Or run: `python INSTALL_CODESENTINEL_GUI.py`
+
+**What the installer does:**
+
+1. Automatically installs all dependencies
+2. Launches the interactive setup wizard
+3. Guides through configuration
+4. Saves settings to `codesentinel.json`
+
+### Command-Line Installation
+
+For advanced users who prefer manual control:
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Install package in development mode
+pip install -e .
+
+# Verify installation
+codesentinel --version
+
+# Run interactive setup
+codesentinel setup
+
+# Check system status
+codesentinel status
+```
+
+### Installation Files Included
+
+- `INSTALL_CODESENTINEL_GUI.bat` - Windows installer (double-click)
+- `INSTALL_CODESENTINEL_GUI.sh` - macOS/Linux installer (bash)
+- `INSTALL_CODESENTINEL_GUI.py` - Cross-platform installer (python)
+- `QUICK_START.md` - Quick reference guide for all platforms
+
+---
+
 ## Deployment Readiness Checklist
 
 ### Code Quality
