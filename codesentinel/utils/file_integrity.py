@@ -294,6 +294,17 @@ class FileIntegrityValidator:
         with open(input_file, 'r') as f:
             self.baseline = json.load(f)
         
+        # Ensure statistics field exists (for backward compatibility with older baselines)
+        if "statistics" not in self.baseline:
+            logger.warning("Baseline missing statistics field - regenerating from scratch")
+            self.baseline["statistics"] = {
+                "total_files": len(self.baseline.get("files", {})),
+                "critical_files": 0,
+                "whitelisted_files": 0,
+                "excluded_files": 0,
+                "skipped_files": 0
+            }
+        
         logger.info(f"Baseline loaded from {input_file}")
         return self.baseline
     
