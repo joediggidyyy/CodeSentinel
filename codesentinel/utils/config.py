@@ -138,10 +138,31 @@ class ConfigManager:
                 "feature_preservation": True,
                 "conflict_resolution": "merge-prefer-existing",
                 "principles": ["SECURITY", "EFFICIENCY", "MINIMALISM"],
+                "hierarchy": ["CORE_CONCEPTS", "PERMANENT_DIRECTIVES", "PERSISTENT_POLICIES"]
             },
             "dev_audit": {
                 "trigger_tokens": ["!!!!"],
                 "enforce_policy": True,
+            },
+            "integrity": {
+                "enabled": False,  # Disabled by default until baseline generated
+                "hash_algorithm": "sha256",
+                "whitelist_patterns": [
+                    "**/.codesentinel_integrity.json",  # Baseline file itself
+                    "**/test_*.py",  # Test files can change frequently
+                    "**/__pycache__/**",  # Excluded anyway, but explicit
+                    "**/.*",  # Hidden files (git, env, etc.)
+                ],
+                "critical_files": [
+                    # Files that must not be modified without authorization
+                    ".github/copilot-instructions.md",
+                    "SECURITY.md",
+                    "docs/POLICY.md",
+                    "codesentinel/core/dev_audit.py",
+                    "codesentinel/utils/config.py"
+                ],
+                "auto_update_baseline": False,  # Require explicit update
+                "alert_on_violation": True  # Send alerts on integrity violations
             },
             "alerts": {
                 "enabled": True,

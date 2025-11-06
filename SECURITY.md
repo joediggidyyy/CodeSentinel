@@ -94,6 +94,103 @@ Users will be notified via:
 - Release notes
 - Repository README updates
 
+## File Integrity Validation
+
+CodeSentinel includes hash-based file integrity validation to detect unauthorized modifications in your workspace.
+
+### Features
+
+- **SHA256 Hash Verification**: Baseline hashing of all workspace files
+- **Whitelist System**: Exclude frequently-changing files from integrity checks
+- **Critical File Designation**: Mark security-sensitive files for priority monitoring
+- **Integrated Audit Reporting**: Violations reported during `codesentinel !!!!` audits
+
+### Setup
+
+1. **Generate Initial Baseline**:
+   ```bash
+   codesentinel integrity generate
+   ```
+   This creates `.codesentinel_integrity.json` with hashes of all workspace files.
+
+2. **Enable in Configuration**:
+   Edit `codesentinel.json`:
+   ```json
+   {
+     "integrity": {
+       "enabled": true,
+       "hash_algorithm": "sha256",
+       "whitelist_patterns": [
+         "**/.codesentinel_integrity.json",
+         "**/test_*.py",
+         "**/__pycache__/**"
+       ],
+       "critical_files": [
+         ".github/copilot-instructions.md",
+         "SECURITY.md",
+         "codesentinel/core/dev_audit.py"
+       ],
+       "alert_on_violation": true
+     }
+   }
+   ```
+
+3. **Verify Integrity**:
+   ```bash
+   codesentinel integrity verify
+   ```
+   Or run a full development audit:
+   ```bash
+   codesentinel !!!!
+   ```
+
+### Managing Whitelists and Critical Files
+
+**Add to Whitelist** (files that change frequently):
+```bash
+codesentinel integrity whitelist "**/*.log" "**/temp/**"
+```
+
+**Mark Files as Critical** (must not be modified):
+```bash
+codesentinel integrity critical "SECURITY.md" "codesentinel/core/dev_audit.py"
+```
+
+### Update Baseline After Authorized Changes
+
+When you intentionally modify files:
+```bash
+# Verify changes are what you expect
+codesentinel integrity verify
+
+# If correct, regenerate baseline
+codesentinel integrity generate
+```
+
+**Note**: Never auto-update the baseline. Always verify changes first to ensure no unauthorized modifications occurred.
+
+### Integrity Violation Response
+
+If integrity check fails:
+
+1. **Review violations** - Check which files were modified/deleted/added
+2. **Investigate** - Determine if changes were authorized
+3. **For unauthorized changes**:
+   - Restore files from backup or git
+   - Scan for malware or security breaches
+   - Review access logs and security events
+4. **For authorized changes**:
+   - Verify changes match expectations
+   - Update baseline with `codesentinel integrity generate`
+
+### Security Considerations
+
+- Store baseline (`.codesentinel_integrity.json`) in version control
+- Generate baseline only from known-good, verified workspace state
+- Enable `alert_on_violation` to receive immediate notifications
+- Mark security-critical files (config, auth, core) as critical
+- Review integrity violations during code reviews and audits
+
 ## Security Best Practices for Users
 
 ### Installation
