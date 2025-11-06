@@ -3,7 +3,7 @@
 #
 #  CODESENTINEL INSTALLER - RUN THIS TO INSTALL
 #
-#  This script makes it super obvious how to install CodeSentinel on Linux/Mac.
+#  This script makes it easy to install CodeSentinel on Linux/macOS.
 #
 #  Simply run:
 #      bash INSTALL_CODESENTINEL_GUI.sh
@@ -19,13 +19,9 @@ set -e
 # Print banner
 cat << 'EOF'
 
-╔════════════════════════════════════════════════════════════════════════════╗
-║                                                                            ║
-║               🚀 CodeSentinel Interactive GUI Installer 🚀               ║
-║                                                                            ║
-║                    Starting installation wizard...                         ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
+CodeSentinel Interactive GUI Installer
+
+Starting installation wizard...
 
 EOF
 

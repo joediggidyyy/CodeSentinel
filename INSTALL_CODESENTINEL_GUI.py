@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """
-╔════════════════════════════════════════════════════════════════════════════╗
-║                                                                            ║
-║              🚀 CODESENTINEL INSTALLER - START HERE 🚀                    ║
-║                                                                            ║
-║  This is the easiest way to install CodeSentinel with the GUI wizard.     ║
-║                                                                            ║
-║  Simply run:                                                               ║
-║      python INSTALL_CODESENTINEL_GUI.py                                   ║
-║                                                                            ║
-║  Or on Windows, just double-click this file.                              ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
+CodeSentinel Interactive GUI Installer
+
+This is the easiest way to install CodeSentinel with the GUI wizard.
+
+Simply run:
+    python INSTALL_CODESENTINEL_GUI.py
+
+Or on Windows, just double-click the .bat file.
 """
 
 import sys
@@ -22,14 +18,14 @@ from pathlib import Path
 def print_header():
     """Print welcome banner."""
     print("\n" + "=" * 80)
-    print("║ CodeSentinel Interactive GUI Installer".ljust(80) + "║")
+    print("CodeSentinel Interactive GUI Installer".ljust(80))
     print("=" * 80)
     print()
 
 
 def install_requirements():
     """Install required dependencies."""
-    print("📦 Installing dependencies...")
+    print("Installing dependencies...")
     print("-" * 80)
     
     requirements_file = Path(__file__).parent / "requirements.txt"
@@ -60,7 +56,7 @@ def install_requirements():
 
 def launch_gui_wizard():
     """Launch the GUI setup wizard."""
-    print("🎨 Launching CodeSentinel Setup Wizard...")
+    print("Launching CodeSentinel Setup Wizard...")
     print("-" * 80)
     
     try:
@@ -79,7 +75,7 @@ def launch_gui_wizard():
         print("✅ CodeSentinel installation complete!")
         print("=" * 80)
         print()
-        print("📖 Next steps:")
+        print("Next steps:")
         print("   1. Type 'codesentinel' in your terminal to verify installation")
         print("   2. Run 'codesentinel setup' to configure monitoring")
         print("   3. Check 'codesentinel status' to see system status")

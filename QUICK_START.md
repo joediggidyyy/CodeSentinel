@@ -1,10 +1,10 @@
-# 🚀 CODESENTINEL - START HERE
+# CodeSentinel - Start Here
 
 **Easiest Installation with GUI Wizard**
 
-## ⚡ Quick Start (Choose Your OS)
+## Quick Start (Choose Your OS)
 
-### 🪟 Windows Users
+### Windows Users
 
 **Double-click this file:**
 
@@ -16,7 +16,7 @@ That's it! The GUI setup wizard will launch automatically.
 
 ---
 
-### 🍎 macOS Users
+### macOS Users
 
 **Run this command:**
 
@@ -28,7 +28,7 @@ Or double-click `INSTALL_CODESENTINEL_GUI.sh` if you made it executable.
 
 ---
 
-### 🐧 Linux Users
+### Linux Users
 
 **Run this command:**
 
@@ -45,7 +45,7 @@ chmod +x INSTALL_CODESENTINEL_GUI.sh
 
 ---
 
-## 📋 What These Installers Do
+## What These Installers Do
 
 1. **Automatically install all dependencies** - No manual pip install needed
 2. **Launch the interactive setup wizard** - Configure everything through the GUI
@@ -55,21 +55,21 @@ chmod +x INSTALL_CODESENTINEL_GUI.sh
 
 ---
 
-## ✨ What You'll Configure
+## What You'll Configure
 
 After launching the installer, the wizard will guide you through:
 
-- **📍 Installation Location** - Where to store CodeSentinel data
-- **🔔 Alerts** - Console, file, email, or Slack notifications
-- **🐙 GitHub Integration** - Connect your repositories (optional)
-- **💻 IDE Detection** - Integrate with VS Code, PyCharm, etc. (optional)
-- **⚙️ Advanced Features** - Scheduler, git hooks, CI templates (optional)
+- **Installation Location** - Where to store CodeSentinel data
+- **Alerts** - Console, file, email, or Slack notifications
+- **GitHub Integration** - Connect your repositories (optional)
+- **IDE Detection** - Integrate with VS Code, PyCharm, etc. (optional)
+- **Advanced Features** - Scheduler, git hooks, CI templates (optional)
 
 Everything is optional except location. You can skip advanced features for now.
 
 ---
 
-## 🆘 If You Have Issues
+## If You Have Issues
 
 ### Problem: "Python not found"
 
@@ -96,7 +96,7 @@ Everything is optional except location. You can skip advanced features for now.
 
 ---
 
-## 📖 Advanced Installation
+## Advanced Installation
 
 If you prefer command-line installation:
 
@@ -113,7 +113,7 @@ codesentinel status
 
 ---
 
-## 🎯 After Installation
+## After Installation
 
 Once installed, you can use CodeSentinel:
 
@@ -133,7 +133,7 @@ codesentinel maintenance --schedule daily
 
 ---
 
-## 📚 Full Documentation
+## Full Documentation
 
 For detailed documentation, see:
 
@@ -143,7 +143,7 @@ For detailed documentation, see:
 
 ---
 
-## ❓ Still Confused?
+## Still Confused?
 
 **Just run one of these:**
 
@@ -151,7 +151,3 @@ For detailed documentation, see:
 - **macOS/Linux:** `bash INSTALL_CODESENTINEL_GUI.sh`
 
 **That's all you need to do.** Everything else is automatic.
-
----
-
-**Happy monitoring! 🎉**

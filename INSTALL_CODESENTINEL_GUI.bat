@@ -3,22 +3,18 @@ REM ============================================================================
 REM   CODESENTINEL INSTALLER - DOUBLE CLICK TO INSTALL
 REM ============================================================================
 REM
-REM   This batch file makes it super obvious how to install CodeSentinel on Windows.
+REM   This batch file makes it easy to install CodeSentinel on Windows.
 REM
-REM   Just double-click this file and the setup wizard will launch automatically.
+REM   Just double-click this file and the setup wizard will launch.
 REM
 REM ============================================================================
 
 setlocal enabledelayedexpansion
 
 echo.
-echo ╔════════════════════════════════════════════════════════════════════════════╗
-echo ║                                                                            ║
-echo ║               🚀 CodeSentinel Interactive GUI Installer 🚀               ║
-echo ║                                                                            ║
-echo ║                    Starting installation wizard...                         ║
-echo ║                                                                            ║
-echo ╚════════════════════════════════════════════════════════════════════════════╝
+echo CodeSentinel Interactive GUI Installer
+echo.
+echo Starting installation wizard...
 echo.
 
 REM Check if Python is installed
