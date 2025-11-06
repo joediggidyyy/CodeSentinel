@@ -12,6 +12,7 @@
 ### Current Release: v1.0.3.beta1 (Normalized from 1.0.3.beta1)
 
 **Wheel Distribution**
+
 - **File**: `codesentinel-1.0.3b1-py3-none-any.whl`
 - **Size**: 79,401 bytes
 - **Deployed**: November 6, 2025, 3:14 AM
@@ -20,6 +21,7 @@
 - **Checksum**: Ready for verification
 
 **Source Distribution**
+
 - **File**: `codesentinel-1.0.3b1.tar.gz`
 - **Size**: 140,083 bytes
 - **Deployed**: November 6, 2025, 3:14 AM
@@ -31,11 +33,13 @@
 ### Previous Releases
 
 #### v1.0.3.beta0
+
 - **Wheel**: `codesentinel-1.0.3b0-py3-none-any.whl` (77,190 bytes)
 - **Source**: `codesentinel-1.0.3b0.tar.gz` (91,254 bytes)
 - **Deployed**: November 6, 2025, 12:07-12:08 AM
 
 #### v1.0.1
+
 - **Wheel**: `codesentinel-1.0.1-py3-none-any.whl` (70,139 bytes)
 - **Source**: `codesentinel-1.0.1.tar.gz` (80,320 bytes)
 - **Deployed**: November 5, 2025, 3:30 PM
@@ -73,6 +77,7 @@ pip install file:///path/to/edu/UNC/codesentinel_releases/codesentinel-1.0.3b1-p
 **Status**: Beta release with critical fixes
 
 **Critical Fixes Included**:
+
 1. ✅ Integrity generate indefinite hang (now 2.21 seconds)
 2. ✅ ProcessMonitor singleton warning spam (eliminated)
 3. ✅ Setup command incomplete implementation (fully functional)
@@ -101,22 +106,26 @@ pip install file:///path/to/edu/UNC/codesentinel_releases/codesentinel-1.0.3b1-p
 ## Next Steps for UNC Testing
 
 1. **Install Package**
+
    ```bash
    pip install codesentinel-1.0.3b1-py3-none-any.whl
    ```
 
 2. **Run Basic Tests**
+
    ```bash
    codesentinel --help
    codesentinel integrity --help
    ```
 
 3. **Run Integrity Generate** (new with this release)
+
    ```bash
    codesentinel integrity generate --patterns "*.py" --non-interactive
    ```
 
 4. **Run Full Test Suite**
+
    ```bash
    pytest tests/ -v
    ```
@@ -133,11 +142,13 @@ pip install file:///path/to/edu/UNC/codesentinel_releases/codesentinel-1.0.3b1-p
 If issues are found with v1.0.3.beta1:
 
 1. **Uninstall Current**
+
    ```bash
    pip uninstall codesentinel
    ```
 
 2. **Install Previous Version**
+
    ```bash
    pip install codesentinel-1.0.3b0-py3-none-any.whl
    ```
@@ -152,6 +163,7 @@ If issues are found with v1.0.3.beta1:
 ## Quality Assurance Summary
 
 ### Metrics
+
 - **Test Pass Rate**: 12/12 (100%)
 - **Performance**: All targets achieved
 - **Framework Compliance**: 100% verified
@@ -159,11 +171,13 @@ If issues are found with v1.0.3.beta1:
 - **Backward Compatibility**: Maintained
 
 ### Governance
+
 - **Compliance Review**: ✅ Completed (FRAMEWORK_COMPLIANCE_REVIEW_1_0_3_BETA2.md)
 - **Architecture Review**: ✅ Completed (TECHNICAL_ARCHITECTURE_REVIEW_1_0_3_BETA2.md)
 - **T0-5 Policy**: ✅ Established (all future releases require compliance review)
 
 ### Documentation
+
 - **Release Notes**: Available in repository
 - **Installation Guide**: In package docs/installation/
 - **API Documentation**: Available in codesentinel/ modules
@@ -175,7 +189,7 @@ If issues are found with v1.0.3.beta1:
 
 For issues or questions about the deployment:
 
-1. **Repository**: https://github.com/joediggidyyy/CodeSentinel
+1. **Repository**: <https://github.com/joediggidyyy/CodeSentinel>
 2. **Documentation**: See `/docs` in deployed package
 3. **Issues**: Report via GitHub Issues with v1.0.3b1 tag
 4. **Testing Feedback**: Provide to UNC maintainers
@@ -185,6 +199,7 @@ For issues or questions about the deployment:
 ## Archive & Reference
 
 **Deployment Metadata**:
+
 - Deployment Date: November 6, 2025
 - Deployed By: GitHub Copilot AI Agent
 - Deployment Method: Direct xcopy to UNC repository
@@ -193,6 +208,7 @@ For issues or questions about the deployment:
 - Status: Ready for extended testing
 
 **Previous Deployments Retained**:
+
 - v1.0.3b0 available for fallback testing
 - v1.0.1 available for baseline comparison
 

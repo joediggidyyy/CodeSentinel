@@ -9,6 +9,7 @@
 ### Decision: Threading-based timeout wrapper
 
 **Current Implementation**:
+
 ```python
 thread = threading.Thread(target=generate_with_timeout, daemon=True)
 thread.start()
@@ -18,14 +19,18 @@ thread.join(timeout=timeout_seconds)
 ### Why Threading? (Not Signal or Subprocess)
 
 #### Alternative 1: Signal-based (signal.alarm)
+
 ❌ **Not Chosen** because:
+
 - Unix-only (not portable to Windows)
 - Cannot apply to functions, only process-level
 - Not suitable for library code (affects global signal handlers)
 - CodeSentinel must work cross-platform
 
 #### Alternative 2: Subprocess-based
+
 ❌ **Not Chosen** because:
+
 - Heavy overhead (separate Python interpreter)
 - Inter-process communication complexity
 - Overkill for small timeout wrapper
@@ -33,13 +38,17 @@ thread.join(timeout=timeout_seconds)
 - Adds OS process overhead
 
 #### Alternative 3: Signal with Windows eventlet
+
 ❌ **Not Chosen** because:
+
 - Extra external dependency (violates MINIMALISM)
 - Adds complexity without benefit
 - Only marginal advantage over threading
 
 #### Alternative 4: Async/await (asyncio)
+
 ❌ **Not Chosen** because:
+
 - Requires refactoring all file I/O operations
 - Complex state management needed
 - Would defer fix for beta2 (need immediate solution)
@@ -49,6 +58,7 @@ thread.join(timeout=timeout_seconds)
 ### Why Threading is Optimal
 
 ✅ **Chosen** because:
+
 - **Cross-platform**: Works on Windows, macOS, Linux
 - **Lightweight**: Minimal overhead, standard library
 - **Straightforward**: Easy to understand and maintain
@@ -60,12 +70,14 @@ thread.join(timeout=timeout_seconds)
 ### Long-term Sustainability
 
 ✅ **Upgradeable**:
+
 - Current threading wrapper can be replaced with async
 - File I/O operations can migrate to async incrementally
 - No breaking changes required
 - Could use `asyncio.wait_for()` in future
 
 ✅ **Testable**:
+
 - Timeout behavior easily verifiable
 - Can test with controlled slow operations
 - Thread safety verified through repeated tests
@@ -77,6 +89,7 @@ thread.join(timeout=timeout_seconds)
 ### Decision: Set max 10,000 items in enumeration
 
 **Implementation**:
+
 ```python
 if len(files_to_process) > max_files:
     files_to_process = files_to_process[:max_files]
@@ -104,12 +117,14 @@ if len(files_to_process) > max_files:
 ### Long-term Appropriateness
 
 ✅ **Still Valid in 5 Years**:
+
 - Average project size won't grow 10x
 - SSD performance maintains sub-2s for 10k files
 - Limit prevents pathological cases
 - --patterns flag enables unlimited scans
 
 ✅ **Configurable if Needed**:
+
 - Could add --max-files parameter in future
 - Current hardcoded value is reasonable default
 - Not a blocker for any use case
@@ -121,6 +136,7 @@ if len(files_to_process) > max_files:
 ### Decision: Log progress every 100 files
 
 **Implementation**:
+
 ```python
 if idx % 100 == 0:
     elapsed = time.time() - start_time
@@ -150,6 +166,7 @@ if idx % 100 == 0:
 ### Long-term Appropriateness
 
 ✅ **Sustainable**:
+
 - Logging overhead remains sub-1%
 - Debug level won't clutter production
 - Can be refined with different frequencies per verbosity level
@@ -162,6 +179,7 @@ if idx % 100 == 0:
 ### Decision: Reset global singleton on stop()
 
 **Implementation**:
+
 ```python
 def stop_monitor() -> None:
     global _global_monitor
@@ -190,6 +208,7 @@ def stop_monitor() -> None:
 ### Long-term Sustainability
 
 ✅ **Robust Pattern**:
+
 - Standard singleton reset pattern
 - Used in many production systems
 - No known issues with this approach
@@ -202,6 +221,7 @@ def stop_monitor() -> None:
 ### Decision: Skip problematic files, track as statistics
 
 **Implementation**:
+
 ```python
 try:
     # File operations
@@ -232,6 +252,7 @@ except (OSError, PermissionError) as e:
 ### Long-term Sustainability
 
 ✅ **Practical Approach**:
+
 - Matches real-world filesystem behaviors
 - Handles edge cases gracefully
 - Provides debugging information
@@ -244,6 +265,7 @@ except (OSError, PermissionError) as e:
 ### Decision: Set 30-second timeout at CLI level
 
 **Rationale**:
+
 - **Small workspaces**: Complete in <1 second
 - **Medium workspaces**: Complete in 2 seconds
 - **Large workspaces**: Use --patterns flag
@@ -261,6 +283,7 @@ Ratio: 15-60x safety margin
 ### Long-term Appropriateness
 
 ✅ **Safe for All Scenarios**:
+
 - No legitimate operation should hit timeout
 - If timeout triggers, user receives clear error
 - Users can use --patterns to reduce scan scope
@@ -273,6 +296,7 @@ Ratio: 15-60x safety margin
 ### Decision: Timeout at CLI layer (not in library)
 
 **Rationale**:
+
 ```
 ┌─────────────────────────────────┐
 │ CLI (codesentinel command)      │  ← Timeout wrapper here
@@ -284,6 +308,7 @@ Ratio: 15-60x safety margin
 ### Why CLI Layer?
 
 ✅ **Advantages**:
+
 - **Reusable**: Library remains timeout-agnostic
 - **Flexible**: Different timeout for different uses
 - **Testable**: Can test library without timeout complexity
@@ -291,6 +316,7 @@ Ratio: 15-60x safety margin
 - **Standard**: Common pattern in Python CLI design
 
 ❌ **Not in Library**:
+
 - Would prevent programmatic use without timeout
 - Makes library less composable
 - Mixes CLI concerns with business logic
@@ -298,6 +324,7 @@ Ratio: 15-60x safety margin
 ### Long-term Sustainability
 
 ✅ **Proper Architecture**:
+
 - Follows separation of concerns
 - Library can be used without timeout
 - CLI can adjust timeout independently
@@ -310,12 +337,14 @@ Ratio: 15-60x safety margin
 ### Decision: No API changes, only behavioral improvements
 
 **Preserved**:
+
 - All method signatures unchanged
 - All return types unchanged
 - All configuration options compatible
 - All CLI flags unchanged
 
 **Improved**:
+
 - No hanging (completes instead)
 - No warning spam (clean logs)
 - Better error messages (actionable)
@@ -324,6 +353,7 @@ Ratio: 15-60x safety margin
 ### Long-term Sustainability
 
 ✅ **Zero Breaking Changes**:
+
 - Existing code continues to work
 - No migration path needed
 - Straight upgrade from beta1 to beta2

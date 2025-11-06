@@ -47,6 +47,7 @@ Statistics: Properly calculated and displayed
 ```
 
 **Evidence**:
+
 - Statistics field present in output
 - 9,014 files checked without errors
 - Backward compatibility confirmed working
@@ -77,6 +78,7 @@ Singleton reset: Confirmed in logs
 ### Original Problem
 
 **Pre-v1.0.3b1 Behavior**:
+
 - Command would hang indefinitely
 - Blocked all file system operations
 - Formatter daemon would timeout on file operations
@@ -85,6 +87,7 @@ Singleton reset: Confirmed in logs
 ### Current Behavior (v1.0.3b1)
 
 **Post-v1.0.3.beta1 Behavior**:
+
 - Command completes in 3-8 seconds depending on options
 - No I/O blocking
 - Normal, predictable behavior
@@ -93,6 +96,7 @@ Singleton reset: Confirmed in logs
 ### Test Results
 
 **Test Case**: Pattern-filtered integrity generate
+
 ```
 Command: codesentinel integrity generate --patterns "*.py"
 Result: Completed in 3.39 seconds ✓
@@ -148,6 +152,7 @@ timeout 5 codesentinel integrity generate
 ### Execution Times (v1.0.3b1)
 
 **Pattern-Filtered Operations** (Recommended for CI/CD):
+
 ```
 codesentinel integrity generate --patterns "*.py"
 ├─ Enumeration: 0.5s
@@ -157,6 +162,7 @@ Total: 3.39 seconds ✓
 ```
 
 **Full Repository Scan**:
+
 ```
 codesentinel integrity generate
 ├─ Full enumeration: 2-3s (12,473 items)
@@ -168,6 +174,7 @@ Total: 6-8 seconds ✓
 ```
 
 **Integrity Verify**:
+
 ```
 codesentinel integrity verify
 ├─ Baseline load: 0.1s
@@ -191,6 +198,7 @@ Total: 6.2 seconds ✓
 ### For Development/Testing
 
 **Use pattern filtering for speed**:
+
 ```powershell
 # Fast baseline (62 Python files)
 codesentinel integrity generate --patterns "*.py"
@@ -204,6 +212,7 @@ codesentinel integrity verify
 ### For Full Repository Baselines
 
 **Use extended timeout**:
+
 ```powershell
 # Full scan with sufficient timeout
 timeout 30 codesentinel integrity generate
@@ -213,6 +222,7 @@ timeout 30 codesentinel integrity generate
 ### For Normal Operation
 
 **No timeout needed**:
+
 ```powershell
 # Standard usage without timeout wrapper
 codesentinel integrity generate
@@ -235,6 +245,7 @@ codesentinel integrity verify
 ### Pre-v1.0.3b1 Situation
 
 **Root Cause**: Integrity generate hanging indefinitely
+
 - Blocked all file system operations
 - Formatter daemon couldn't write to files
 - Formatter retried with corrupted state
@@ -245,6 +256,7 @@ codesentinel integrity verify
 ### Post-v1.0.3b1 Situation
 
 **Root Cause Eliminated**: Integrity generate completes normally
+
 - No file system blocking
 - Formatter daemon operates normally
 - No corruption mechanisms active

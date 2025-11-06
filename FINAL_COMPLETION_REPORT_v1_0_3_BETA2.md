@@ -11,6 +11,7 @@
 CodeSentinel v1.0.3.beta2 represents a comprehensive quality improvement release addressing all critical issues from v1.0.3.beta1 while establishing permanent governance policies for future releases.
 
 **Key Achievements**:
+
 - ✅ 3 critical issues resolved
 - ✅ Test pass rate: 12/12 (100%) — up from 4/12 (33%) in beta1
 - ✅ Comprehensive compliance review completed
@@ -29,12 +30,14 @@ CodeSentinel v1.0.3.beta2 represents a comprehensive quality improvement release
 **Root Cause**: No timeout protection on potentially-infinite filesystem enumeration.
 
 **Solution**:
+
 - Added 30-second threading-based timeout wrapper at CLI level
 - Implemented comprehensive progress logging (every 100 files)
 - Added safety limit (10,000 files max) for pathological cases
 - Enhanced error handling for locked files, symlinks, permission errors
 
 **File**: `codesentinel/utils/file_integrity.py`
+
 - `generate_baseline()` now tracks elapsed time
 - Statistics tracking: total_files, critical_files, whitelisted_files, excluded_files, skipped_files
 - Debug-level logging at key milestones
@@ -42,6 +45,7 @@ CodeSentinel v1.0.3.beta2 represents a comprehensive quality improvement release
 **Performance**: 2.21 seconds for 136 files (target: <2s achieved with patterns)
 
 **Compliance**: ✅ SECURITY > EFFICIENCY > MINIMALISM
+
 - Security: Prevents DoS via infinite loops
 - Efficiency: Progress tracking enables monitoring
 - Minimalism: Focused, single-purpose fix
@@ -55,11 +59,13 @@ CodeSentinel v1.0.3.beta2 represents a comprehensive quality improvement release
 **Root Cause**: Singleton pattern didn't reset global reference after `stop()`, causing stale instance checks.
 
 **Solution**:
+
 - Modified `stop_monitor()` to reset global `_global_monitor = None`
 - Graceful handling of already-running instances
 - Clean lifecycle management with proper logging
 
 **File**: `codesentinel/utils/process_monitor.py`
+
 - `stop_monitor()` now includes global reset
 - `start_monitor()` safely checks if already running
 - Singleton pattern now follows production standards
@@ -67,6 +73,7 @@ CodeSentinel v1.0.3.beta2 represents a comprehensive quality improvement release
 **Result**: Zero warning spam, clean lifecycle management
 
 **Compliance**: ✅ SECURITY > EFFICIENCY > MINIMALISM
+
 - Security: Clean resource management prevents leaks
 - Efficiency: Eliminates unnecessary warnings
 - Minimalism: Single-point fix, no refactoring needed
@@ -80,12 +87,14 @@ CodeSentinel v1.0.3.beta2 represents a comprehensive quality improvement release
 **Root Cause**: Handler stub incomplete, no fallback modes.
 
 **Solution**:
+
 - Implemented `--non-interactive` terminal mode with clear setup instructions
 - Added `--gui` mode with improved error handling for missing modules
 - Both code paths fully functional and tested
 - Clear guidance for users on different setup scenarios
 
 **File**: `codesentinel/cli/__init__.py`
+
 - Setup handler with branching logic for `--gui` and `--non-interactive` modes
 - Timeout error guidance suggests `--patterns` flag
 - Proper error messages and next steps
@@ -93,6 +102,7 @@ CodeSentinel v1.0.3.beta2 represents a comprehensive quality improvement release
 **Result**: All setup paths functional, users never see "not implemented"
 
 **Compliance**: ✅ SECURITY > EFFICIENCY > MINIMALISM
+
 - Security: Improved setup doesn't compromise security
 - Efficiency: Users can complete setup via multiple methods
 - Minimalism: Focused implementation, no unnecessary features
@@ -144,11 +154,13 @@ Total: 12/12 (100%) ✅
 **Scope**: All fixes assessed against SECURITY > EFFICIENCY > MINIMALISM framework
 
 **Assessment Results**:
+
 - ✅ SECURITY: Enhanced through timeout protection and controlled cleanup
 - ✅ EFFICIENCY: Improved through proper resource management and lifecycle control
 - ✅ MINIMALISM: Maintained through focused, single-purpose improvements
 
 **Key Findings**:
+
 - Zero security violations introduced
 - Zero performance regressions
 - Zero technical debt added
@@ -164,6 +176,7 @@ Total: 12/12 (100%) ✅
 **Scope**: Design decisions, tradeoffs, safety limits, implementation patterns
 
 **Analysis Covers**:
+
 1. Timeout Implementation
    - Threading-based approach chosen (cross-platform, proven)
    - Alternatives analyzed: signal.alarm, subprocess, eventlet, async
@@ -195,6 +208,7 @@ Total: 12/12 (100%) ✅
 **Classification**: Constitutional (Irreversible) Tier
 
 **Requirement**: Every package release must include:
+
 1. Comprehensive framework compliance review
 2. Technical architecture review
 3. Test report with coverage
