@@ -32,6 +32,7 @@ The Priority Distribution System (PDS) is CodeSentinel's governance framework fo
 - **T0-2: Non-Destructive Operations**: Never delete code without archiving to `quarantine_legacy_archive/`
 - **T0-3: Feature Preservation**: All existing functionality must persist across versions
 - **T0-4: Open Source License**: MIT license, copyright maintained, attribution required
+- **T0-5: Framework Compliance Review**: Every package release (pre-release and production) must include comprehensive framework compliance review verifying SECURITY > EFFICIENCY > MINIMALISM alignment, persistent policies compliance, technical debt assessment, and long-term sustainability evaluation. Compliance review is a release-blocking requirement.
 
 **Consequences of Violation**: Immediate branch rollback, security audit, rebuild plan
 

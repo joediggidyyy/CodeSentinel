@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.3.beta2] - 2025-11-06
 
+### Governance - PERMANENT POLICY
+
+- **PERMANENT POLICY (T0-5): Framework Compliance Review Requirement**
+  - Every package release (pre-release and production) must include comprehensive framework compliance review
+  - Review must verify SECURITY > EFFICIENCY > MINIMALISM alignment
+  - Review must validate persistent policies compliance and technical debt assessment
+  - Review must evaluate long-term sustainability impact
+  - Framework compliance review is now a release-blocking requirement (cannot be deferred)
+  - Formally classified as T0 (Constitutional/Irreversible) policy in governance system
+  - Compliance reviews to be archived as release package artifacts
+
 ### Fixed - CRITICAL
 
 - **CRITICAL: Fixed integrity generate indefinite hang**
