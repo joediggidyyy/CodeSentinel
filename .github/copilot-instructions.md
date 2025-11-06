@@ -59,6 +59,15 @@ When working with this codebase:
 2. **FEATURE PRESERVATION**: All existing functionality must be maintained
 3. **STYLE PRESERVATION**: Respect existing code style and patterns
 4. **SECURITY FIRST**: Security concerns always take priority
+5. **PERMANENT POLICY (T0-5)**: Framework compliance review required with every package release
+   - Every pre-release and production release must include comprehensive framework compliance review
+   - Review must verify SECURITY > EFFICIENCY > MINIMALISM alignment
+   - Review must validate all persistent policies (non-destructive, feature preservation, security-first)
+   - Compliance review is a release-blocking requirement, cannot be deferred
+   - Classified as Constitutional (Irreversible) tier in governance system
+   - Review must assess technical debt impact and long-term sustainability
+   - Report must be part of release package and documentation
+   - Failure to include compliance review blocks release approval
 
 ## Agent-Driven Remediation
 
