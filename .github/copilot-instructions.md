@@ -33,21 +33,11 @@ python tools/codesentinel/scheduler.py --schedule weekly
 
 ## Core Principles
 
-### SECURITY ⚠️ **PERMANENT DIRECTIVES**
-
-**FORBIDDEN ACTIONS - NEVER DO THESE:**
-- ❌ **NEVER store plain text passwords or tokens in files**
-- ❌ **NEVER store passwords or tokens in executable files**
-- ❌ **NEVER include credentials in code, comments, or documentation**
-- ❌ **NEVER commit credentials to the repository**
-
-**REQUIRED PRACTICES:**
-- ✅ Use environment variables for sensitive data (CODESENTINEL_* prefix)
-- ✅ Reference credentials by hash/key from secure storage
-- ✅ All credentials in `.gitignore` if file-based
-- ✅ Audit logging for all operations with timestamps
-- ✅ Configuration validation with secure defaults
-- ✅ Automated dependency vulnerability detection
+### SECURITY
+- No hardcoded credentials - Environment variables or config files only
+- Audit logging - All operations logged with timestamps
+- Configuration validation - Auto-creation of missing configs with secure defaults
+- Dependency scanning - Automated vulnerability detection
 
 ### EFFICIENCY
 - Avoid redundant code and duplicate implementations
@@ -108,6 +98,7 @@ Your role is to:
 - Forcing code style changes
 - Removing features without verification
 - Modifying core functionality without explicit approval
+- Excessive use of emojis in documentation or code comments
 
 ## Integration Points
 

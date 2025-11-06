@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-11-05 23:12:19",
+  "workspace": "C:\\Users\\joedi\\Documents\\CodeSentinel",
+  "system": {
+    "cpu_count": 12,
+    "memory_total_gb": 63.71782684326172,
+    "memory_available_gb": 48.97167205810547
+  },
+  "audits": [
+    {
+      "operation": "baseline_generation",
+      "files_processed": 151,
+      "metrics": {
+        "duration_seconds": 0.6317649000000074,
+        "memory_delta_bytes": 536576,
+        "memory_delta_mb": 0.51171875,
+        "cpu_percent_delta": 0.0,
+        "io": {
+          "read_bytes": 1086135,
+          "write_bytes": 0,
+          "read_count": 454,
+          "write_count": 0
+        }
+      }
+    },
+    {
+      "operation": "save_load",
+      "baseline_size_bytes": 42668,
+      "save_metrics": {
+        "duration_seconds": 0.003950799999984156,
+        "memory_delta_bytes": 229376,
+        "memory_delta_mb": 0.21875,
+        "cpu_percent_delta": 0.0,
+        "io": {
+          "read_bytes": 0,
+          "write_bytes": 42668,
+          "read_count": 0,
+          "write_count": 1
+        }
+      },
+      "load_metrics": {
+        "duration_seconds": 0.02488949999997203,
+        "memory_delta_bytes": 188416,
+        "memory_delta_mb": 0.1796875,
+        "cpu_percent_delta": 0.0,
+        "io": {
+          "read_bytes": 42668,
+          "write_bytes": 0,
+          "read_count": 2,
+          "write_count": 0
+        }
+      }
+    },
+    {
+      "operation": "verification",
+      "files_checked": 152,
+      "violations_found": 0,
+      "metrics": {
+        "duration_seconds": 0.5953437000000577,
+        "memory_delta_bytes": 184320,
+        "memory_delta_mb": 0.17578125,
+        "cpu_percent_delta": 0.0,
+        "io": {
+          "read_bytes": 1086135,
+          "write_bytes": 0,
+          "read_count": 454,
+          "write_count": 0
+        }
+      }
+    }
+  ]
+}

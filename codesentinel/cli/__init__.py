@@ -135,6 +135,36 @@ Examples:
     dev_audit_parser.add_argument(
         '--export', type=str, help='Export audit results to JSON file')
 
+    # File integrity command
+    integrity_parser = subparsers.add_parser('integrity', help='Manage file integrity validation')
+    integrity_subparsers = integrity_parser.add_subparsers(dest='integrity_action', help='Integrity actions')
+    
+    # Generate baseline
+    generate_parser = integrity_subparsers.add_parser('generate', help='Generate integrity baseline')
+    generate_parser.add_argument(
+        '--patterns', nargs='+', help='File patterns to include (default: all files)')
+    generate_parser.add_argument(
+        '--output', type=str, help='Output path for baseline file')
+    
+    # Verify integrity
+    verify_parser = integrity_subparsers.add_parser('verify', help='Verify files against baseline')
+    verify_parser.add_argument(
+        '--baseline', type=str, help='Path to baseline file')
+    
+    # Update whitelist
+    whitelist_parser = integrity_subparsers.add_parser('whitelist', help='Manage whitelist patterns')
+    whitelist_parser.add_argument(
+        'patterns', nargs='+', help='Glob patterns to add to whitelist')
+    whitelist_parser.add_argument(
+        '--replace', action='store_true', help='Replace existing whitelist')
+    
+    # Mark critical files
+    critical_parser = integrity_subparsers.add_parser('critical', help='Mark files as critical')
+    critical_parser.add_argument(
+        'files', nargs='+', help='Files to mark as critical (relative paths)')
+    critical_parser.add_argument(
+        '--replace', action='store_true', help='Replace existing critical files list')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -287,6 +317,84 @@ Examples:
             else:
                 import json as _json
                 print(_json.dumps(results.get('summary', {}), indent=2))
+            return
+
+        elif args.command == 'integrity':
+            from ..utils.file_integrity import FileIntegrityValidator
+            import json as _json
+            
+            # Load integrity config
+            cfg = getattr(codesentinel.config, 'config', {}) or {}
+            integrity_config = cfg.get("integrity", {})
+            
+            # Get workspace root
+            workspace_root = Path.cwd()
+            
+            # Initialize validator
+            validator = FileIntegrityValidator(workspace_root, integrity_config)
+            
+            if args.integrity_action == 'generate':
+                print("Generating file integrity baseline...")
+                baseline = validator.generate_baseline(patterns=args.patterns)
+                
+                output_path = Path(args.output) if args.output else None
+                saved_path = validator.save_baseline(output_path)
+                
+                print(f"\nBaseline generated successfully!")
+                print(f"Saved to: {saved_path}")
+                print(f"\nStatistics:")
+                stats = baseline['statistics']
+                print(f"  Total files: {stats['total_files']}")
+                print(f"  Critical files: {stats['critical_files']}")
+                print(f"  Whitelisted files: {stats['whitelisted_files']}")
+                print(f"  Excluded files: {stats['excluded_files']}")
+                print(f"\nEnable integrity checking in config to use during audits.")
+                
+            elif args.integrity_action == 'verify':
+                print("Verifying file integrity...")
+                if args.baseline:
+                    validator.load_baseline(Path(args.baseline))
+                
+                results = validator.verify_integrity()
+                
+                print(f"\nIntegrity Check: {results['status'].upper()}")
+                stats = results['statistics']
+                print(f"\nStatistics:")
+                print(f"  Files checked: {stats['files_checked']}")
+                print(f"  Passed: {stats['files_passed']}")
+                print(f"  Modified: {stats['files_modified']}")
+                print(f"  Missing: {stats['files_missing']}")
+                print(f"  Unauthorized: {stats['files_unauthorized']}")
+                print(f"  Critical violations: {stats['critical_violations']}")
+                
+                if results['violations']:
+                    print(f"\nViolations found: {len(results['violations'])}")
+                    print("\nCritical Issues:")
+                    for violation in [v for v in results['violations'] if v.get('severity') == 'critical'][:10]:
+                        print(f"  ! {violation['type']}: {violation['file']}")
+                    
+                    print("\nRun 'codesentinel !!!! --agent' for AI-assisted remediation.")
+                else:
+                    print("\n✓ All files passed integrity check!")
+                
+            elif args.integrity_action == 'whitelist':
+                print(f"Updating whitelist with {len(args.patterns)} pattern(s)...")
+                validator.update_whitelist(args.patterns, replace=args.replace)
+                
+                # Save updated config (would need to persist this properly)
+                print(f"Whitelist updated: {', '.join(args.patterns)}")
+                print("Note: Update your config file to persist these changes.")
+                
+            elif args.integrity_action == 'critical':
+                print(f"Marking {len(args.files)} file(s) as critical...")
+                validator.update_critical_files(args.files, replace=args.replace)
+                
+                print(f"Critical files updated: {', '.join(args.files)}")
+                print("Note: Update your config file to persist these changes.")
+                
+            else:
+                integrity_parser.print_help()
+            
             return
 
     except Exception as e:

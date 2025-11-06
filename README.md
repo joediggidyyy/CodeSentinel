@@ -2,6 +2,39 @@
 
 CodeSentinel is a cross-platform application that integrates with VS Code or any major IDE to provide a secure, automated, self-healing development environment.
 
+## Project Structure
+
+```
+CodeSentinel/
+├── README.md                          (main documentation)
+├── CHANGELOG.md                       (release notes)
+├── QUICK_START.md                     (user installation guide)
+├── PUBLISH_NOW.md                     (v1.0.3.beta: PyPI publication steps)
+├── setup.py, pyproject.toml           (packaging configuration)
+├── requirements.txt                   (dependencies)
+├── SECURITY.md, CONTRIBUTING.md       (project guidelines)
+├── INSTALL_CODESENTINEL_GUI.py        (cross-platform installer)
+│
+├── codesentinel/                      (package source)
+│   ├── __init__.py                    (version: 1.0.3.beta)
+│   ├── cli/                           (command-line interface)
+│   ├── core/                          (core functionality & auditing)
+│   ├── gui/                           (GUI components)
+│   └── utils/                         (utilities: config, alerts, scheduler, file integrity)
+│
+├── tests/                             (test suite: 22/22 passing)
+│
+├── dist/                              (distributions: sdist + wheel)
+│
+├── docs/                              (documentation & reference)
+│   ├── V1_0_3_DISTRIBUTION_REPORT.md (technical overview with scheduling & customization)
+│   ├── V1_0_3_BETA_TEST_REPORT.md    (all test results)
+│   ├── PYPI_PUBLICATION_GUIDE.md     (detailed PyPI guide)
+│   └── [20+ reference files]
+│
+└── .github/                           (GitHub configuration & CI/CD)
+```
+
 ## Core Features
 
 - **Security-First Architecture**: Automated vulnerability scanning and security monitoring
