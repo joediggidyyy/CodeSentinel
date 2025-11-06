@@ -2,34 +2,6 @@
 
 CodeSentinel is a security-first automated maintenance and monitoring system with the core principle: **SECURITY > EFFICIENCY > MINIMALISM**.
 
-## Fundamental Policy Hierarchy
-
-**Priority Order (Descending Importance):**
-
-1. **🎯 CORE CONCEPTS** (Absolute Priority)
-   - **SECURITY** > **EFFICIENCY** > **MINIMALISM**
-   - These three principles guide ALL decisions
-   - Security always overrides efficiency and minimalism
-   - Efficiency cannot compromise security
-   - Minimalism serves efficiency, not vice versa
-
-2. **⚠️ PERMANENT DIRECTIVES**
-   - Non-negotiable security rules
-   - Credential management requirements
-   - Audit logging mandates
-
-3. **📋 PERSISTENT POLICIES**
-   - Non-destructive operations
-   - Feature preservation
-   - Style preservation
-   - Security-first decision making
-
-**Dev Audit Execution:**
-- Always executed thoroughly and comprehensively
-- Heavy focus on the three core concepts
-- Complies with all directives and policies EXCEPT where they would explicitly violate a core concept
-- This hierarchy is fundamental to CodeSentinel's operating policy
-
 ## Architecture Overview
 
 The codebase follows a dual-architecture pattern:
@@ -61,21 +33,11 @@ python tools/codesentinel/scheduler.py --schedule weekly
 
 ## Core Principles
 
-### SECURITY ⚠️ **PERMANENT DIRECTIVES**
-
-**FORBIDDEN ACTIONS - NEVER DO THESE:**
-- ❌ **NEVER store plain text passwords or tokens in files**
-- ❌ **NEVER store passwords or tokens in executable files**
-- ❌ **NEVER include credentials in code, comments, or documentation**
-- ❌ **NEVER commit credentials to the repository**
-
-**REQUIRED PRACTICES:**
-- ✅ Use environment variables for sensitive data (CODESENTINEL_* prefix)
-- ✅ Reference credentials by hash/key from secure storage
-- ✅ All credentials in `.gitignore` if file-based
-- ✅ Audit logging for all operations with timestamps
-- ✅ Configuration validation with secure defaults
-- ✅ Automated dependency vulnerability detection
+### SECURITY
+- No hardcoded credentials - Environment variables or config files only
+- Audit logging - All operations logged with timestamps
+- Configuration validation - Auto-creation of missing configs with secure defaults
+- Dependency scanning - Automated vulnerability detection
 
 ### EFFICIENCY
 - Avoid redundant code and duplicate implementations
@@ -91,16 +53,12 @@ python tools/codesentinel/scheduler.py --schedule weekly
 
 ## Persistent Policies
 
-**Priority: Level 3** (Below Core Concepts and Permanent Directives)
-
 When working with this codebase:
 
-1. **NON-DESTRUCTIVE**: Never delete code without archiving first (unless security violation)
-2. **FEATURE PRESERVATION**: All existing functionality must be maintained (unless security violation)
-3. **STYLE PRESERVATION**: Respect existing code style and patterns (unless security violation)
-4. **SECURITY FIRST**: Security concerns always take priority over all other considerations
-
-**Note:** These policies may be overridden by Core Concepts or Permanent Directives when necessary.
+1. **NON-DESTRUCTIVE**: Never delete code without archiving first
+2. **FEATURE PRESERVATION**: All existing functionality must be maintained
+3. **STYLE PRESERVATION**: Respect existing code style and patterns
+4. **SECURITY FIRST**: Security concerns always take priority
 
 ## Agent-Driven Remediation
 
@@ -140,6 +98,7 @@ Your role is to:
 - Forcing code style changes
 - Removing features without verification
 - Modifying core functionality without explicit approval
+- Excessive use of emojis in documentation or code comments
 
 ## Integration Points
 

@@ -10,7 +10,7 @@ This guide provides step-by-step instructions for publishing CodeSentinel v1.0.3
 
 ## Pre-Publication Checklist
 
-- ✅ Version updated to 1.0.3.beta in setup.py, pyproject.toml, __init__.py
+- ✅ Version updated to 1.0.3.beta in setup.py, pyproject.toml, **init**.py
 - ✅ Distributions built: sdist (91 KB), wheel (77 KB)
 - ✅ All tests passed (22/22)
 - ✅ CLI functional (all commands work)
@@ -25,7 +25,8 @@ This guide provides step-by-step instructions for publishing CodeSentinel v1.0.3
 ### 1.1 Create PyPI Account (if needed)
 
 If you don't have a PyPI account:
-1. Visit https://test.pypi.org/account/register/
+
+1. Visit <https://test.pypi.org/account/register/>
 2. Create account and verify email
 3. **IMPORTANT:** Save your credentials securely
 
@@ -33,7 +34,7 @@ If you don't have a PyPI account:
 
 For secure uploads without storing passwords:
 
-1. Go to https://test.pypi.org/legacy/manage/account/tokens/
+1. Go to <https://test.pypi.org/legacy/manage/account/tokens/>
 2. Click "Add API token"
 3. Give it a name: "CodeSentinel v1.0.3.beta"
 4. **SAVE THE TOKEN** (shown only once)
@@ -55,6 +56,7 @@ password = pypi-YOUR_PRODUCTION_TOKEN_HERE
 ```
 
 **Windows Paths:**
+
 - `C:\Users\USERNAME\AppData\Roaming\pip\pip.ini`
 
 **Permissions:** 600 (chmod on Linux/macOS)
@@ -85,12 +87,13 @@ python -m twine upload --repository testpypi dist/codesentinel-1.0.3b0*
 ```
 
 You will be prompted for:
+
 - Username: `__token__`
 - Password: `pypi-YOUR_TOKEN_HERE` (paste your token)
 
 ### 3.2 Verify Test Upload
 
-1. Check: https://test.pypi.org/project/codesentinel/
+1. Check: <https://test.pypi.org/project/codesentinel/>
 2. Look for version `1.0.3b0`
 3. Verify all files present (sdist + wheel)
 4. Check README and metadata display correctly
@@ -136,6 +139,7 @@ All should complete without errors.
 ## Step 5: Production PyPI Upload (After Test Validation)
 
 ### 5.1 Prerequisites
+
 - Test PyPI installation validated successfully
 - All test environment tests passed
 - Ready for production release
@@ -146,11 +150,11 @@ All should complete without errors.
 python -m twine upload dist/codesentinel-1.0.3b0*
 ```
 
-This will upload to: https://pypi.org/project/codesentinel/
+This will upload to: <https://pypi.org/project/codesentinel/>
 
 ### 5.3 Verify Production Upload
 
-1. Check: https://pypi.org/project/codesentinel/
+1. Check: <https://pypi.org/project/codesentinel/>
 2. Look for version `1.0.3b0`
 3. Verify all metadata is correct
 4. Check it shows as "pre-release" (beta)
@@ -176,7 +180,7 @@ codesentinel integrity --help
 
 ## Step 7: Create GitHub Release
 
-1. Go to: https://github.com/joediggidyyy/CodeSentinel/releases
+1. Go to: <https://github.com/joediggidyyy/CodeSentinel/releases>
 2. Click "Create a new release"
 3. Tag: `v1.0.3-beta`
 4. Title: `CodeSentinel v1.0.3.beta - File Integrity Validation System`
@@ -222,12 +226,14 @@ pip install codesentinel==1.0.3b0
 If critical issues are found after publishing:
 
 ### For Test PyPI
+
 1. Contact PyPI support to remove the release
 2. Fix issues in the codebase
 3. Bump to v1.0.3b1 or v1.0.3rc1
 4. Republish with new version
 
 ### For Production PyPI
+
 1. Use `python -m twine yank` (requires PyPI permissions)
 2. Or contact PyPI support
 3. Clearly mark as unsafe with security/critical issue notes
@@ -241,11 +247,13 @@ python -m twine yank codesentinel-1.0.3b0 -r pypi
 ### Issue: "HTTPError: 403 Forbidden" during upload
 
 **Causes:**
+
 - Invalid token
 - Token has insufficient permissions
 - Token is for wrong repository (test vs. production)
 
 **Solution:**
+
 1. Generate new token from test.pypi.org or pypi.org
 2. Update .pypirc with correct token
 3. Verify repository URL in .pypirc
@@ -255,6 +263,7 @@ python -m twine yank codesentinel-1.0.3b0 -r pypi
 **Cause:** Attempting to upload same version twice
 
 **Solution:**
+
 - Test PyPI: Versions can be re-uploaded (allowed for testing)
 - Production PyPI: Cannot re-upload same version (security)
   - Create new version: v1.0.3b1
@@ -263,11 +272,13 @@ python -m twine yank codesentinel-1.0.3b0 -r pypi
 ### Issue: Package won't install from PyPI
 
 **Causes:**
+
 - Wrong Python version (requires >=3.13)
 - Missing dependencies
 - Network timeout
 
 **Solution:**
+
 ```bash
 # Try with verbose output
 pip install -v codesentinel==1.0.3b0
@@ -282,17 +293,20 @@ pip install --no-cache-dir codesentinel==1.0.3b0
 ## Post-Publication Tasks
 
 ### Immediate (within 24 hours)
+
 1. ✅ Announce on GitHub releases
 2. ✅ Pin release announcement in Issues
 3. ✅ Notify beta testers
 4. Monitor for bug reports
 
 ### Week 1
+
 - Collect user feedback
 - Monitor GitHub issues
 - Test on additional platforms if needed
 
 ### Before v1.0.3 Final Release
+
 - Review all feedback from beta period
 - Create v1.0.3 (remove beta tag) when ready
 - Full documentation update
@@ -301,11 +315,13 @@ pip install --no-cache-dir codesentinel==1.0.3b0
 ## Version Management
 
 ### Current Versions
+
 - Development: v1.0.4-dev (main branch)
 - Beta Testing: v1.0.3.beta (feature/v1.0.3-integrity-validation)
 - Production: v1.0.1 (main branch, stable)
 
 ### Next Steps After Beta
+
 1. Beta period: 2 weeks (collect feedback)
 2. v1.0.3 Release Candidate (if major feedback)
 3. v1.0.3 Final Production Release
@@ -319,9 +335,9 @@ pip install --no-cache-dir codesentinel==1.0.3b0
 
 ## Support & Communication
 
-- **Issues:** https://github.com/joediggidyyy/CodeSentinel/issues
-- **Discussions:** https://github.com/joediggidyyy/CodeSentinel/discussions
-- **Email:** joediggidy3@gmail.com
+- **Issues:** <https://github.com/joediggidyyy/CodeSentinel/issues>
+- **Discussions:** <https://github.com/joediggidyyy/CodeSentinel/discussions>
+- **Email:** <joediggidy3@gmail.com>
 
 ---
 

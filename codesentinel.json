@@ -9,13 +9,14 @@
       "log_file": "codesentinel.log"
     },
     "email": {
-      "enabled": false,
-      "smtp_server": "",
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
       "smtp_port": 587,
-      "username": "",
-      "password": "",
-      "from_email": "",
-      "to_emails": []
+      "username": "joediggidy3@gmail.com",
+      "from_email": "joediggidy3@gmail.com",
+      "to_emails": [
+        "joediggidy3@gmail.com"
+      ]
     },
     "slack": {
       "enabled": false,
@@ -25,10 +26,9 @@
   },
   "github": {
     "mode": "connect",
-    "repo_url": "",
+    "repo_url": "https://github.com/joediggidyyy/CodeSentinel.git",
     "create": false,
-    "enabled": false,
-    "access_token": ""
+    "enabled": true
   },
   "ide": {
     "VS Code": {
@@ -41,7 +41,7 @@
     },
     "PyCharm": {
       "detected": true,
-      "enabled": true
+      "enabled": false
     },
     "IntelliJ IDEA": {
       "detected": false,
@@ -49,7 +49,7 @@
     },
     "RStudio": {
       "detected": true,
-      "enabled": true
+      "enabled": false
     },
     "Sublime Text": {
       "detected": false,
@@ -69,14 +69,14 @@
     }
   },
   "copilot": {
-    "enabled": false,
-    "install_vscode_extension": false,
+    "enabled": true,
+    "install_vscode_extension": true,
     "generate_instructions": true,
     "enable_agent_mode": true
   },
   "optional": {
-    "scheduler": false,
+    "scheduler": true,
     "git_hooks": true,
-    "ci": false
+    "ci": true
   }
 }
