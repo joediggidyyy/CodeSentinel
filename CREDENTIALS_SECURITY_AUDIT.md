@@ -43,6 +43,7 @@
 **Good News**: Password is NOT persisted to disk automatically (security patch v1.0.1)
 
 **How It Works**:
+
 - Code looks for password in config file
 - Falls back to environment variable: `CODESENTINEL_EMAIL_PASSWORD`
 - Secrets are pruned before saving config to disk
@@ -72,6 +73,7 @@ password = pypi-AgEIcHl... (scoped token)
 ```
 
 **Security**: ✅ EXCELLENT
+
 - Outside repository (not in version control)
 - File permissions: User read/write only
 - Inheritance: Disabled (no inherited permissions)
@@ -99,7 +101,8 @@ password = pypi-AgEIcHl... (scoped token)
 }
 ```
 
-**How Secrets Are Handled**: 
+**How Secrets Are Handled**:
+
 - Code looks for `access_token` or `token` fields
 - Prunes them before saving to disk (lines 104-109 in `config.py`)
 - Should use environment variable: `CODESENTINEL_GITHUB_TOKEN` (recommended)
@@ -148,14 +151,17 @@ export CODESENTINEL_GITHUB_TOKEN="ghp_..."
 ## 4. What Gets Persisted to Disk
 
 ### Files in Repository (Tracked)
+
 - ✅ `codesentinel.json` - Config WITHOUT passwords, tokens, secrets
 - ❌ Credentials are NOT stored in this file
 
 ### Files in User Home (Not Tracked)
+
 - ✅ `~/.pypirc` - PyPI credentials (file permissions locked)
 - ✅ Environment variables - Not persisted to disk
 
 ### Files in Repository (Not Tracked by Git)
+
 - `codesentinel.log` - Log file (can contain non-sensitive info)
 
 ---
@@ -243,6 +249,7 @@ If you add automated PyPI uploads to CI/CD:
 ```
 
 **✅ Never**:
+
 - Commit `.pypirc` to repository
 - Store tokens in workflow files
 - Use repository secrets in local development
@@ -252,6 +259,7 @@ If you add automated PyPI uploads to CI/CD:
 ## 8. Credential Rotation Policy
 
 ### PyPI Token
+
 - **How to Rotate**:
   1. Generate new token on PyPI
   2. Update password line in `~/.pypirc`
@@ -259,6 +267,7 @@ If you add automated PyPI uploads to CI/CD:
 - **Frequency**: Annually or after suspected compromise
 
 ### Email Password
+
 - **How to Rotate**:
   1. Generate new app-specific password (Gmail)
   2. Update `CODESENTINEL_EMAIL_PASSWORD` environment variable
@@ -266,6 +275,7 @@ If you add automated PyPI uploads to CI/CD:
 - **Frequency**: Every 6 months
 
 ### GitHub Token
+
 - **How to Rotate**:
   1. Generate new personal access token
   2. Update `CODESENTINEL_GITHUB_TOKEN` environment variable
@@ -277,16 +287,19 @@ If you add automated PyPI uploads to CI/CD:
 ## 9. Action Items
 
 ### Immediate (Security-First)
+
 - ✅ PyPI token secured in `~/.pypirc`
 - ✅ Email password configured via environment variable
 - ✅ `.gitignore` updated with `.pypirc` entry
 
 ### Short-term (Recommended)
+
 - [ ] Set up environment variables for all credentials
 - [ ] Add credential rotation schedule to documentation
 - [ ] Create setup guide for new developers
 
 ### Long-term (Enterprise)
+
 - [ ] Evaluate secrets management tools
 - [ ] Implement audit logging for credential access
 - [ ] Set up credential monitoring alerts

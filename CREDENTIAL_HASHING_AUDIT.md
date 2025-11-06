@@ -28,7 +28,8 @@ password = config.get('password') or os.getenv('CODESENTINEL_EMAIL_PASSWORD')
 server.login(username, password)  # Plain text password used directly
 ```
 
-**Status**: 
+**Status**:
+
 - ❌ No hashing implementation
 - ❌ Password used directly in plain text for SMTP login
 - ✅ Password NOT persisted to config files (removed before save)
@@ -49,6 +50,7 @@ password = pypi-AgEIcHl...  # Plain text token
 ```
 
 **Status**:
+
 - ❌ No hashing/encryption
 - ✅ File permissions restricted to user only
 - ✅ Outside repository
@@ -67,6 +69,7 @@ gh.pop("token", None)
 ```
 
 **Status**:
+
 - ❌ No hashing implementation
 - ✅ Tokens removed from config files
 - ✅ Expected to be in environment variables
@@ -86,6 +89,7 @@ DEFAULT_HASH_ALGORITHM = "sha256"  # Used for file integrity, NOT credentials
 ```
 
 **Status**:
+
 - ✅ SHA256 hashing implemented for file integrity checking
 - ❌ NOT used for credential hashing
 - ✅ Proper use case: detecting file modifications
@@ -97,6 +101,7 @@ DEFAULT_HASH_ALGORITHM = "sha256"  # Used for file integrity, NOT credentials
 ### 5. Available Encryption Libraries
 
 **Imports Found**:
+
 - ✅ `cryptography` - Available but NOT used for credentials
 - ✅ `keyring` - Available but NOT used
 - ❌ No bcrypt, argon2, or PBKDF2 imports found
@@ -282,11 +287,13 @@ class CredentialStore:
 ## Compliance Impact
 
 ### SECURITY.md Claims
+
 - ⚠️ "hashed and stored" - **INACCURATE** (stored plain text, not hashed)
 - ⚠️ "well-guarded locations" - **PARTIALLY TRUE** (guarded by file permissions)
 - ✅ "called by reference only" - **ACCURATE** (env vars, not inline)
 
 ### Recommendation
+
 Update SECURITY.md to accurately describe current implementation:
 
 ```markdown
