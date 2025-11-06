@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-11-05 23:16:40",
+  "total_tests": 10,
+  "passed": 10,
+  "failed": 0,
+  "pass_rate": 100.0,
+  "tests": [
+    {
+      "test": "missing_baseline",
+      "passed": true,
+      "message": "No baseline found. Generate baseline first with --generate flag."
+    },
+    {
+      "test": "corrupted_baseline",
+      "passed": true,
+      "message": "Correctly detected corrupted baseline"
+    },
+    {
+      "test": "modified_file_detection",
+      "passed": true,
+      "message": "Detected 1 modified file(s)"
+    },
+    {
+      "test": "deleted_file_detection",
+      "passed": true,
+      "message": "Detected 1 missing file(s)"
+    },
+    {
+      "test": "unauthorized_file_detection",
+      "passed": true,
+      "message": "Detected 2 unauthorized file(s)"
+    },
+    {
+      "test": "whitelist_functionality",
+      "passed": true,
+      "message": "Whitelist correctly excluded file"
+    },
+    {
+      "test": "critical_file_severity",
+      "passed": true,
+      "message": "Critical severity applied: 1 violation(s)"
+    },
+    {
+      "test": "empty_workspace",
+      "passed": true,
+      "message": "Empty workspace handled correctly"
+    },
+    {
+      "test": "large_file_handling",
+      "passed": true,
+      "message": "Large file handled: 6 files"
+    },
+    {
+      "test": "permission_error_handling",
+      "passed": true,
+      "message": "Permission handling validated (no errors encountered)"
+    }
+  ]
+}

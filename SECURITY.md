@@ -108,13 +108,16 @@ CodeSentinel includes hash-based file integrity validation to detect unauthorize
 ### Setup
 
 1. **Generate Initial Baseline**:
+
    ```bash
    codesentinel integrity generate
    ```
+
    This creates `.codesentinel_integrity.json` with hashes of all workspace files.
 
 2. **Enable in Configuration**:
    Edit `codesentinel.json`:
+
    ```json
    {
      "integrity": {
@@ -136,10 +139,13 @@ CodeSentinel includes hash-based file integrity validation to detect unauthorize
    ```
 
 3. **Verify Integrity**:
+
    ```bash
    codesentinel integrity verify
    ```
+
    Or run a full development audit:
+
    ```bash
    codesentinel !!!!
    ```
@@ -147,11 +153,13 @@ CodeSentinel includes hash-based file integrity validation to detect unauthorize
 ### Managing Whitelists and Critical Files
 
 **Add to Whitelist** (files that change frequently):
+
 ```bash
 codesentinel integrity whitelist "**/*.log" "**/temp/**"
 ```
 
 **Mark Files as Critical** (must not be modified):
+
 ```bash
 codesentinel integrity critical "SECURITY.md" "codesentinel/core/dev_audit.py"
 ```
@@ -159,6 +167,7 @@ codesentinel integrity critical "SECURITY.md" "codesentinel/core/dev_audit.py"
 ### Update Baseline After Authorized Changes
 
 When you intentionally modify files:
+
 ```bash
 # Verify changes are what you expect
 codesentinel integrity verify

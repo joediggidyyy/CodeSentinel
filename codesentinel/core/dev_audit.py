@@ -424,7 +424,7 @@ RECOMMENDED APPROACH:
 
         scanned = 0
         for dirpath, dirnames, filenames in os.walk(root):
-            skip_dirs = {".git", "__pycache__", ".venv", "venv", "dist", "build", "node_modules", "quarantine_legacy_archive"}
+            skip_dirs = {".git", "__pycache__", ".venv", "venv", ".venv_beta", "test_install_env", "dist", "build", "node_modules", "quarantine_legacy_archive"}
             dirnames[:] = [d for d in dirnames if d not in skip_dirs]
 
             for fname in filenames:
@@ -476,9 +476,17 @@ RECOMMENDED APPROACH:
         file_name = file_path.name
         rel_path = str(file_path)
         
+        # Skip virtual environments and installed packages
+        venv_indicators = ["test_install_env", ".venv", "venv", "site-packages", "dist-packages"]
+        if any(indicator in rel_path for indicator in venv_indicators):
+            return {
+                "is_false_positive": True,
+                "reason": "Virtual environment or installed package (not source code)"
+            }
+        
         # Check for documentation/example contexts
-        if file_name in ("SECURITY.md", "README.md", "CONTRIBUTING.md", "EXAMPLE.md"):
-            # Look for documentation indicators around matches
+        if file_name in ("SECURITY.md", "README.md", "CONTRIBUTING.md", "EXAMPLE.md", "POLICY.md"):
+            # Look for documentation indicators
             doc_indicators = [
                 r"example[:\s]",
                 r"for example",
@@ -489,13 +497,33 @@ RECOMMENDED APPROACH:
                 r"```",  # code blocks
                 r"#\s*Example",
                 r">\s*",  # markdown quotes
+                r"export\s+CODESENTINEL",  # environment variable examples
+                r"CODESENTINEL_\w+",  # environment variable names
             ]
-            for indicator in doc_indicators:
-                if re.search(indicator, content, re.IGNORECASE):
-                    return {
-                        "is_false_positive": True,
-                        "reason": f"Documentation file ({file_name}) with example/demo context"
-                    }
+            # Check match context (not just file content)
+            match = pattern.search(content)
+            if match:
+                start = max(0, match.start() - 200)
+                end = min(len(content), match.end() + 200)
+                context = content[start:end]
+                
+                for indicator in doc_indicators:
+                    if re.search(indicator, context, re.IGNORECASE):
+                        return {
+                            "is_false_positive": True,
+                            "reason": f"Documentation file ({file_name}) with example/demo context"
+                        }
+        
+        # Check for empty placeholder strings in config (commonly "password": "")
+        match = pattern.search(content)
+        if match and pattern.pattern.startswith(r"(?i)password"):
+            # Check if this is an empty string placeholder
+            match_text = match.group(0)
+            if '""' in match_text or "''" in match_text:
+                return {
+                    "is_false_positive": True,
+                    "reason": "Empty placeholder string in configuration"
+                }
         
         # Check for GUI wizard placeholder/demo password fields
         if "gui_wizard" in rel_path or "setup_wizard" in rel_path:
@@ -511,7 +539,6 @@ RECOMMENDED APPROACH:
                 r"# Example:",
                 r"# Demo",
             ]
-            match = pattern.search(content)
             if match:
                 # Get context around the match (500 chars before/after)
                 start = max(0, match.start() - 500)

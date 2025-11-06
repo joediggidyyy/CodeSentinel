@@ -1,0 +1,95 @@
+{
+  "timestamp": "2025-11-05 23:13:32",
+  "system": {
+    "cpu_count": 12,
+    "memory_total_gb": 63.71782684326172,
+    "memory_available_gb": 48.999942779541016,
+    "python_version": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]"
+  },
+  "components": [
+    {
+      "component": "ConfigManager",
+      "success": true,
+      "error": null,
+      "duration_ms": 2.2132999999939784,
+      "memory_delta_mb": 0.05078125,
+      "cpu_percent": 0.0,
+      "io": {
+        "read_mb": 0.0015459060668945312,
+        "write_mb": 0.0015001296997070312
+      }
+    },
+    {
+      "component": "AlertManager",
+      "success": true,
+      "error": null,
+      "duration_ms": 0.07489999984500173,
+      "memory_delta_mb": 0.0,
+      "cpu_percent": 0.0,
+      "io": {
+        "read_mb": 0.0,
+        "write_mb": 0.0
+      }
+    },
+    {
+      "component": "ProcessMonitor",
+      "success": true,
+      "error": null,
+      "duration_ms": 119.48159999997188,
+      "memory_delta_mb": 0.12109375,
+      "cpu_percent": 0.0,
+      "io": {
+        "read_mb": 0.0,
+        "write_mb": 0.0
+      }
+    },
+    {
+      "component": "DevAudit_Brief",
+      "success": true,
+      "error": null,
+      "duration_ms": 13457.736899999873,
+      "memory_delta_mb": 0.36328125,
+      "cpu_percent": 0.0,
+      "io": {
+        "read_mb": 6.481636047363281,
+        "write_mb": 0.0
+      }
+    },
+    {
+      "component": "FileIntegrity",
+      "success": true,
+      "error": null,
+      "duration_ms": 585.9155000000555,
+      "memory_delta_mb": 0.44921875,
+      "cpu_percent": 0.0,
+      "io": {
+        "read_mb": 1.0764646530151367,
+        "write_mb": 0.0
+      }
+    },
+    {
+      "component": "CLI_Init",
+      "success": true,
+      "error": null,
+      "duration_ms": 0.009500000032858225,
+      "memory_delta_mb": 0.0,
+      "cpu_percent": 0.0,
+      "io": {
+        "read_mb": 0.0,
+        "write_mb": 0.0
+      }
+    },
+    {
+      "component": "CodeSentinel_Full",
+      "success": true,
+      "error": null,
+      "duration_ms": 8.553100000199265,
+      "memory_delta_mb": 0.03515625,
+      "cpu_percent": 0.0,
+      "io": {
+        "read_mb": 0.0015001296997070312,
+        "write_mb": 9.632110595703125e-05
+      }
+    }
+  ]
+}
