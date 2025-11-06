@@ -10,9 +10,22 @@ import sys
 import atexit
 from pathlib import Path
 from typing import Optional
+import signal
+import threading
 
 from ..core import CodeSentinel
 from ..utils.process_monitor import start_monitor, stop_monitor
+
+
+class TimeoutError(Exception):
+    """Custom timeout exception."""
+    pass
+
+
+def timeout_handler(signum, frame):
+    """Handle timeout signal."""
+    raise TimeoutError("Operation timed out")
+
 
 
 def main():
@@ -242,20 +255,39 @@ Examples:
 
         elif args.command == 'setup':
             print("Launching setup wizard...")
-            if args.gui:
+            if args.gui or args.non_interactive is False:
                 try:
                     # Prefer the new modular wizard
                     try:
                         from ..gui_wizard_v2 import main as wizard_main
                         wizard_main()
-                    except Exception:
-                        from ..gui_project_setup import main as project_setup_main
-                        project_setup_main()
+                    except ImportError:
+                        try:
+                            from ..gui_project_setup import main as project_setup_main
+                            project_setup_main()
+                        except ImportError:
+                            print("\n❌ ERROR: GUI modules not available")
+                            print("\nTry running: codesentinel setup --non-interactive")
+                            sys.exit(1)
                 except Exception as e:
-                    print(f"Failed to launch GUI setup: {e}")
+                    print(f"\n❌ ERROR: Failed to launch GUI setup: {e}")
+                    print(f"\nDetails: {type(e).__name__}")
+                    print("\nTry running: codesentinel setup --non-interactive")
                     sys.exit(1)
             else:
-                print("Terminal setup not yet implemented - use setup_wizard.py or --gui")
+                # Non-interactive setup
+                print("\n" + "=" * 60)
+                print("CodeSentinel Setup - Terminal Mode")
+                print("=" * 60)
+                print("\nThis is the minimal terminal-based setup.")
+                print("For full configuration, use: codesentinel setup --gui")
+                print("\nSetup wizard created config file: codesentinel.json")
+                print("You can edit it directly to customize CodeSentinel.")
+                print("\nTo view/edit configuration:")
+                print("  notepad codesentinel.json  (Windows)")
+                print("  nano codesentinel.json     (Linux/Mac)")
+                print("\nSetup complete! CodeSentinel is ready to use.")
+                print("=" * 60)
 
         elif args.command == 'dev-audit':
             interactive = not getattr(args, 'silent', False)
@@ -334,13 +366,48 @@ Examples:
             validator = FileIntegrityValidator(workspace_root, integrity_config)
             
             if args.integrity_action == 'generate':
-                print("Generating file integrity baseline...")
-                baseline = validator.generate_baseline(patterns=args.patterns)
+                print("Generating file integrity baseline (timeout: 30 seconds)...")
+                
+                # Set timeout to prevent indefinite hangs
+                timeout_seconds = 30
+                baseline = None
+                error_message = None
+                
+                def generate_with_timeout():
+                    nonlocal baseline, error_message
+                    try:
+                        baseline = validator.generate_baseline(patterns=args.patterns)
+                    except Exception as e:
+                        error_message = str(e)
+                
+                # Run generation in thread with timeout
+                thread = threading.Thread(target=generate_with_timeout, daemon=True)
+                thread.start()
+                thread.join(timeout=timeout_seconds)
+                
+                if thread.is_alive():
+                    print(f"\n❌ ERROR: Baseline generation timed out after {timeout_seconds} seconds")
+                    print("The file enumeration may be stuck on a large or slow filesystem.")
+                    print("\nPossible causes:")
+                    print("  - Large number of files (>100,000) in workspace")
+                    print("  - Slow/network filesystem causing I/O hangs")
+                    print("  - Symlinks or junction points causing infinite traversal")
+                    print("\nTry with specific patterns to limit scope:")
+                    print("  codesentinel integrity generate --patterns '**/*.py' '**/*.md'")
+                    sys.exit(1)
+                
+                if error_message:
+                    print(f"\n❌ ERROR: Baseline generation failed: {error_message}")
+                    sys.exit(1)
+                
+                if baseline is None:
+                    print(f"\n❌ ERROR: Baseline generation failed (no data)")
+                    sys.exit(1)
                 
                 output_path = Path(args.output) if args.output else None
                 saved_path = validator.save_baseline(output_path)
                 
-                print(f"\nBaseline generated successfully!")
+                print(f"\n✓ Baseline generated successfully!")
                 print(f"Saved to: {saved_path}")
                 print(f"\nStatistics:")
                 stats = baseline['statistics']
@@ -348,6 +415,7 @@ Examples:
                 print(f"  Critical files: {stats['critical_files']}")
                 print(f"  Whitelisted files: {stats['whitelisted_files']}")
                 print(f"  Excluded files: {stats['excluded_files']}")
+                print(f"  Skipped files: {stats.get('skipped_files', 0)}")
                 print(f"\nEnable integrity checking in config to use during audits.")
                 
             elif args.integrity_action == 'verify':

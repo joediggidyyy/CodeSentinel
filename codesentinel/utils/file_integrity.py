@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional, Any
 from datetime import datetime
 import logging
+import time
+from threading import Thread
 
 logger = logging.getLogger(__name__)
 
@@ -121,17 +123,19 @@ class FileIntegrityValidator:
         rel_path = file_path.relative_to(self.workspace_root)
         return str(rel_path) in self.critical_files
     
-    def generate_baseline(self, patterns: Optional[List[str]] = None) -> Dict[str, Any]:
+    def generate_baseline(self, patterns: Optional[List[str]] = None, max_files: int = 10000) -> Dict[str, Any]:
         """
         Generate baseline hashes for workspace files.
         
         Args:
             patterns: Optional list of glob patterns to include. If None, includes all files.
+            max_files: Maximum number of files to process (safety limit to prevent infinite loops)
         
         Returns:
             Dict with baseline data including hashes, metadata, and statistics
         """
         logger.info("Generating file integrity baseline...")
+        start_time = time.time()
         
         baseline = {
             "version": "1.0.0",
@@ -143,21 +147,55 @@ class FileIntegrityValidator:
                 "total_files": 0,
                 "critical_files": 0,
                 "whitelisted_files": 0,
-                "excluded_files": 0
+                "excluded_files": 0,
+                "skipped_files": 0
             }
         }
         
         # Determine which files to process
-        if patterns:
-            files_to_process = []
-            for pattern in patterns:
-                files_to_process.extend(self.workspace_root.rglob(pattern))
-        else:
-            files_to_process = self.workspace_root.rglob("*")
+        logger.debug(f"Starting file enumeration for {self.workspace_root}")
+        try:
+            if patterns:
+                logger.debug(f"Using glob patterns: {patterns}")
+                files_to_process = []
+                for pattern in patterns:
+                    try:
+                        pattern_matches = list(self.workspace_root.rglob(pattern))
+                        logger.debug(f"Pattern '{pattern}' matched {len(pattern_matches)} files")
+                        files_to_process.extend(pattern_matches)
+                    except Exception as e:
+                        logger.warning(f"Error globbing pattern '{pattern}': {e}")
+                        continue
+            else:
+                logger.debug("Using default rglob('*') enumeration")
+                files_to_process = list(self.workspace_root.rglob("*"))
+                logger.debug(f"Enumerated {len(files_to_process)} total items")
+        except Exception as e:
+            logger.error(f"Failed to enumerate files: {e}")
+            raise RuntimeError(f"File enumeration failed: {e}")
         
-        # Process files
-        for file_path in files_to_process:
-            if not file_path.is_file():
+        # Safety check for infinite loops
+        if len(files_to_process) > max_files:
+            logger.warning(f"File enumeration returned {len(files_to_process)} items (limit: {max_files})")
+            logger.warning("Truncating to safety limit to prevent infinite processing")
+            files_to_process = files_to_process[:max_files]
+        
+        # Process files with progress logging
+        files_processed = 0
+        logger.info(f"Beginning file processing ({len(files_to_process)} items)")
+        
+        for idx, file_path in enumerate(files_to_process, 1):
+            # Progress logging every 100 files
+            if idx % 100 == 0:
+                elapsed = time.time() - start_time
+                logger.debug(f"Progress: {idx}/{len(files_to_process)} files processed ({elapsed:.2f}s)")
+            
+            try:
+                if not file_path.is_file():
+                    continue
+            except (OSError, PermissionError) as e:
+                logger.debug(f"Skipping {file_path}: cannot stat file ({e})")
+                baseline["statistics"]["skipped_files"] += 1
                 continue
             
             # Check if should be excluded
@@ -169,32 +207,51 @@ class FileIntegrityValidator:
             try:
                 rel_path = str(file_path.relative_to(self.workspace_root))
             except ValueError:
+                logger.debug(f"Skipping {file_path}: outside workspace root")
                 continue
             
-            # Calculate hash
-            file_hash = self._calculate_hash(file_path)
-            if not file_hash:
+            # Calculate hash with error handling
+            try:
+                file_hash = self._calculate_hash(file_path)
+                if not file_hash:
+                    logger.debug(f"Skipping {file_path}: failed to calculate hash")
+                    baseline["statistics"]["skipped_files"] += 1
+                    continue
+            except Exception as e:
+                logger.debug(f"Skipping {file_path}: hash calculation error ({e})")
+                baseline["statistics"]["skipped_files"] += 1
                 continue
             
-            # Store file info
-            file_info = {
-                "hash": file_hash,
-                "size": file_path.stat().st_size,
-                "modified": datetime.fromtimestamp(file_path.stat().st_mtime).isoformat(),
-                "is_critical": self._is_critical(file_path),
-                "is_whitelisted": self._is_whitelisted(file_path)
-            }
+            # Get file metadata with error handling
+            try:
+                file_stat = file_path.stat()
+                file_info = {
+                    "hash": file_hash,
+                    "size": file_stat.st_size,
+                    "modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat(),
+                    "is_critical": self._is_critical(file_path),
+                    "is_whitelisted": self._is_whitelisted(file_path)
+                }
+            except (OSError, PermissionError) as e:
+                logger.debug(f"Skipping {file_path}: cannot stat file for metadata ({e})")
+                baseline["statistics"]["skipped_files"] += 1
+                continue
             
             baseline["files"][rel_path] = file_info
             baseline["statistics"]["total_files"] += 1
+            files_processed += 1
             
             if file_info["is_critical"]:
                 baseline["statistics"]["critical_files"] += 1
             if file_info["is_whitelisted"]:
                 baseline["statistics"]["whitelisted_files"] += 1
         
+        elapsed = time.time() - start_time
         self.baseline = baseline
-        logger.info(f"Baseline generated: {baseline['statistics']['total_files']} files")
+        logger.info(f"Baseline generated: {baseline['statistics']['total_files']} files in {elapsed:.2f}s")
+        logger.info(f"Statistics - Excluded: {baseline['statistics']['excluded_files']}, "
+                   f"Skipped: {baseline['statistics']['skipped_files']}, "
+                   f"Processed: {files_processed}")
         
         return baseline
     

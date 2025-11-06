@@ -265,14 +265,26 @@ def start_monitor(check_interval: int = 60, enabled: bool = True) -> ProcessMoni
         ProcessMonitor: The started monitor instance
     """
     monitor = get_monitor(check_interval=check_interval, enabled=enabled)
-    monitor.start()
+    
+    # Prevent "already running" warning - if already running, skip gracefully
+    if monitor._monitor_thread and monitor._monitor_thread.is_alive():
+        logger.debug("ProcessMonitor already running, skipping start")
+    else:
+        monitor.start()
+    
     return monitor
 
 
 def stop_monitor() -> None:
     """Stop the global process monitor daemon."""
+    global _global_monitor
+    
     if _global_monitor is not None:
         _global_monitor.stop()
+        # Reset global instance so next start() creates fresh monitor
+        # This prevents "already running" warnings on repeated CLI invocations
+        _global_monitor = None
+        logger.debug("ProcessMonitor instance reset for next invocation")
 
 
 def track_process(pid: int) -> None:
