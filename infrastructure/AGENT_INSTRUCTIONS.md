@@ -43,51 +43,141 @@ Follow these procedures for all standard infrastructure operations.
 
 ### Procedure 1: Plan and Apply Infrastructure Changes
 
-**Objective**: To safely plan and apply infrastructure changes using IaC principles.
+**When**: Any change to existing infrastructure is required, from a simple security group update to a major resource modification.
 
-1. **Verify Authority**: Confirm you have **L2 (Agent)** authority for planning and **L3 (Senior Dev)** for staging applies.
-2. **Create Feature Branch**: Create a new branch for the change (e.g., `feature/infra-update-s3-policy`).
-3. **Modify IaC Code**: Make the necessary changes to the Terraform (`.tf`) files.
-4. **Format and Validate**: Run `terraform fmt -recursive` and `terraform validate`.
-5. **Generate Plan**: Run `terraform plan -out=tfplan`. Review the plan carefully for unintended changes.
-6. **Submit for Review**: Commit the code and the plan output to the feature branch and open a Pull Request. An **L3 (Senior Dev)** must review and approve the plan.
-7. **Apply Change**: Once approved, apply the change to the target environment (staging first). For production, an **L4 (Architect)** must approve.
+**Steps**:
+
+1. **Branch and Scope**:
+    - Create a new, descriptively named feature branch from `main` (e.g., `feature/infra-update-rds-encryption`).
+    - Clearly define the scope of the change. A single PR should address a single logical change.
+
+2. **Modify IaC Code**:
+    - Locate and modify the relevant Terraform (`.tf`) files in the `infrastructure/` directory.
+    - Adhere to the principle of least privilege. For IAM roles or security groups, only grant the minimum necessary permissions.
+
+3. **Local Validation and Formatting**:
+    - Run `terraform fmt -recursive` to ensure all code is correctly formatted.
+    - Run `terraform validate` to check for syntax errors and internal consistency.
+
+4. **Generate and Analyze the Plan**:
+    - Run `terraform plan -out=tfplan`. This is the most critical step.
+    - **Scrutinize the output**: Carefully review every proposed `create`, `update`, and `destroy` action. Ensure there are no unintended or collateral changes. If the plan is not 100% expected, do not proceed. Investigate and fix the code.
+
+5. **Submit for Peer Review**:
+    - Commit the modified `.tf` files and the `tfplan` output to your branch.
+    - Open a Pull Request. The PR description must include:
+        - A clear explanation of *what* the change is and *why* it is needed.
+        - The full output of the `terraform plan`.
+        - Any potential risks or impacts.
+    - An **L3 (Senior Dev)** must review and approve the PR. For production changes, an **L4 (Architect)** must also approve.
+
+6. **Apply to Staging**:
+    - Once the PR is approved, merge it into `main`.
+    - The CI/CD pipeline will automatically apply the plan to the **staging** environment.
+    - Monitor the `apply` job and verify that the changes were deployed successfully. Run integration tests to confirm the environment is healthy.
+
+7. **Promote to Production**:
+    - Production applies are **manual**. After staging has been verified, a user with **L4 (Architect)** privileges must approve the production deployment job in the CI/CD pipeline.
+    - This manual gate ensures a final review before impacting users.
+
+---
 
 ### Procedure 2: Create a Reusable IaC Module
 
-**Objective**: To create a new, reusable Terraform module that follows best practices.
+**When**: A pattern of resources is being repeated across the infrastructure, and creating a standardized, reusable component would improve consistency and maintainability.
 
-1. **Verify Authority**: Confirm you have **L2 (Agent)** authority.
-2. **Define Module Scope**: Clearly define the module's purpose, inputs (variables), and outputs.
-3. **Create Directory Structure**: Create a new directory under `infrastructure/modules/`.
-4. **Implement Module**: Create `main.tf`, `variables.tf`, and `outputs.tf`. Add a `README.md` explaining its usage.
-5. **Add Example Usage**: Create an `examples/` directory showing how to use the module.
-6. **Test Module**: Write a simple test configuration that provisions the module's resources in a temporary workspace.
-7. **Submit for Review**: Open a PR for an **L3 (Senior Dev)** to review the module for correctness, security, and reusability.
+**Steps**:
+
+1. **Define the Module Contract**:
+    - Clearly define the module's purpose and boundaries.
+    - **Inputs (`variables.tf`)**: Define all configurable parameters. Provide descriptions, types, and sensible defaults where possible.
+    - **Outputs (`outputs.tf`)**: Define the values the module will expose to its consumers (e.g., resource IDs, DNS names).
+
+2. **Develop the Module**:
+    - Create a new directory for the module under `infrastructure/modules/` (e.g., `secure-s3-bucket`).
+    - Implement the core logic in `main.tf`.
+    - **Add a `README.md`**: This is mandatory. The README must contain:
+        - A description of what the module does.
+        - All input variables and their purpose.
+        - All outputs.
+        - A clear example of how to use the module.
+
+3. **Implement Versioning and Tagging**:
+    - Add a `versions.tf` file to pin the required Terraform and provider versions.
+    - Ensure all resources created by the module are tagged with the module's name and version for traceability.
+
+4. **Write Tests and Examples**:
+    - Create an `examples/` directory within the module folder.
+    - Provide at least one working example of how to instantiate the module.
+    - Use a simple test framework or a separate Terraform configuration to provision and destroy the module's resources to ensure it works as expected.
+
+5. **Submit for Review**:
+    - Open a Pull Request. An **L3 (Senior Dev)** must review the module for:
+        - **Correctness**: Does it provision the correct resources?
+        - **Security**: Does it follow the principle of least privilege? Are resources secure by default?
+        - **Reusability**: Is it generic enough to be used in different contexts?
+        - **Documentation**: Is the `README.md` clear and complete?
 
 ### Procedure 3: Manage Terraform State
 
-**Objective**: To handle Terraform state operations safely, as they are highly destructive.
+**When**: A high-risk operation is required that directly manipulates the Terraform state file, such as importing an existing resource or resolving state drift. These operations are dangerous and require architect-level approval.
 
-1. **Verify Authority**: Confirm you have **L3 (Senior Dev)** authority. All state operations require **L4 (Architect)** approval.
-2. **NEVER Modify State Manually**: State files should not be edited by hand. Use `terraform state` commands.
-3. **Backup State**: Before any state operation, ensure a backup of the remote state exists.
-4. **Use Workspaces**: Use Terraform workspaces to manage different environments (e.g., `staging`, `production`).
-5. **State Locking**: Ensure remote state backend supports locking to prevent concurrent modifications.
-6. **Importing Resources**: When importing existing infrastructure, use `terraform import` and verify the generated state.
-7. **Review and Approve**: All state manipulation plans must be reviewed and approved by an **L4 (Architect)**.
+**Steps**:
+
+1. **Emergency and Approval**:
+    - State manipulation is an emergency-only procedure. It should never be part of a standard workflow.
+    - Obtain explicit approval from an **L4 (Architect)** before proceeding. The justification must be documented in a GitHub issue.
+
+2. **Backup the State**:
+    - Before any operation, manually create a backup of the remote state file. The remote backend (e.g., S3 bucket) should have versioning enabled, but a manual backup provides an extra layer of safety.
+
+3. **Use a Dedicated, Locked Workspace**:
+    - Perform the state operation on a clean, isolated machine or container.
+    - Ensure state locking is active to prevent anyone else from running `apply` while you are manipulating the state.
+
+4. **Execute the State Command**:
+    - Use the appropriate `terraform state` subcommand (e.g., `mv`, `rm`, `replace-provider`).
+    - **For `terraform import`**:
+        - Write the resource configuration block in your `.tf` code first.
+        - Run `terraform import <RESOURCE_ADDRESS> <RESOURCE_ID>`.
+        - Run `terraform plan` immediately after to verify that Terraform now sees the imported resource as being under its control and that there are no differences.
+
+5. **Verify and Document**:
+    - After the operation, run `terraform plan` to confirm the state file accurately reflects the desired reality and that no further changes are planned.
+    - Document the entire procedure, including the commands run and the reasons for the operation, in the corresponding GitHub issue.
+
+---
 
 ### Procedure 4: Handle Infrastructure Security Scans
 
-**Objective**: To proactively identify and remediate security issues in IaC.
+**When**: A security vulnerability is detected in the IaC code, either by the automated CI pipeline scanner or a manual audit.
 
-1. **Verify Authority**: Confirm you have **L1 (Junior Dev)** authority or higher.
-2. **Integrate Scanner**: Integrate a static analysis tool like `tfsec` or `checkov` into the CI/CD pipeline.
-3. **Run Scans**: Scans should run automatically on every Pull Request that modifies `.tf` files.
-4. **Review Findings**: Triage the findings based on severity (CRITICAL, HIGH, MEDIUM, LOW).
-5. **Remediate Critical/High Issues**: All CRITICAL and HIGH severity findings must be fixed before merging.
-6. **Document False Positives**: If a finding is a false positive, document the justification in the code or a separate policy file.
-7. **Regular Audits**: Perform full repository scans on a quarterly basis to catch any new vulnerabilities.
+**Steps**:
+
+1. **Automated Scanning in CI**:
+    - The CI pipeline is configured to run a static analysis security scanner (e.g., `tfsec`, `checkov`) on every Pull Request that modifies `.tf` files.
+    - The pipeline will fail if any **CRITICAL** or **HIGH** severity vulnerabilities are detected.
+
+2. **Triage and Prioritize Findings**:
+    - Review the scanner's output in the failed CI job.
+    - **CRITICAL/HIGH**: These must be remediated immediately. The PR cannot be merged until they are fixed.
+    - **MEDIUM/LOW**: Create a GitHub issue to track the finding. These should be addressed in a timely manner but do not block the merge unless they violate a specific policy.
+
+3. **Remediate the Vulnerability**:
+    - Modify the IaC code to fix the issue. This often involves:
+        - Applying more restrictive IAM policies.
+        - Closing open ports in security groups.
+        - Enabling encryption or logging on resources.
+    - Push the fix to the PR branch. The CI pipeline will re-run, and the scan should now pass.
+
+4. **Handling False Positives**:
+    - If a finding is determined to be a false positive, you must explicitly ignore it.
+    - Add a comment directly above the resource in the `.tf` file (e.g., `#tfsec:ignore:aws-s3-enable-bucket-logging`).
+    - The comment must include a clear justification for why the finding is being ignored. This creates an auditable record.
+
+5. **Regular Audits**:
+    - In addition to PR scans, a full scan of the `main` branch is run on a weekly schedule.
+    - This process ensures that new vulnerability definitions from the scanner are applied to the existing codebase and helps catch anything that might have been missed. Any findings from this audit are tracked as new GitHub issues.
 
 ---
 
