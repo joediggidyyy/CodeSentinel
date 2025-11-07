@@ -559,6 +559,7 @@ This is the **critical path for code reaching production**. Reliability, safety,
 **Related Satellites**:
 
 - `github/AGENT_INSTRUCTIONS.md` - GitHub operations
+- `infrastructure/AGENT_INSTRUCTIONS.md` - Infrastructure as Code procedures
 - `tools/AGENT_INSTRUCTIONS.md` - Automation procedures
 - `docs/AGENT_INSTRUCTIONS.md` - Documentation procedures
 

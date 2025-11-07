@@ -537,6 +537,7 @@ gh release create v1.0.3 -t "Version 1.0.3" -n "Release notes"
 **Related Satellites**:
 
 - `deployment/AGENT_INSTRUCTIONS.md` - CI/CD procedures (linked)
+- `infrastructure/AGENT_INSTRUCTIONS.md` - Infrastructure as Code procedures
 - `docs/AGENT_INSTRUCTIONS.md` - Documentation procedures
 - `tools/AGENT_INSTRUCTIONS.md` - Automation procedures
 
