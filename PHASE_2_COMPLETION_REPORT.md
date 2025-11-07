@@ -12,11 +12,13 @@
 ### 1. Complete Satellite Coverage (5 Satellites)
 
 **Phase 1 Satellites** (Previously Created):
+
 - ✅ `codesentinel/AGENT_INSTRUCTIONS.md` (400+ lines) - CLI/Core operations
 - ✅ `tests/AGENT_INSTRUCTIONS.md` (430+ lines) - Testing procedures
 - ✅ `docs/AGENT_INSTRUCTIONS.md` (450+ lines) - Documentation operations
 
 **Phase 2 Satellites** (New):
+
 - ✅ `archive/AGENT_INSTRUCTIONS.md` (450+ lines) - Archive operations
 - ✅ `tools/AGENT_INSTRUCTIONS.md` (500+ lines) - Automation/Scheduler
 
@@ -27,6 +29,7 @@
 ### 2. Satellite Features Complete
 
 **Each Satellite Includes**:
+
 - ✅ Authority Matrix (10+ operations with approval requirements)
 - ✅ Domain Overview (scope and key principles)
 - ✅ 4 Common Procedures (step-by-step with 5-10 steps each)
@@ -36,6 +39,7 @@
 - ✅ References & Links (to global policies and related documentation)
 
 **Quality Metrics**:
+
 - ✅ 2,230+ total lines across all satellites
 - ✅ 50+ operations defined in authority matrices
 - ✅ 20 documented procedures (4 per satellite)
@@ -50,6 +54,7 @@
 **Quick Reference Card Format** (Embedded in each satellite):
 
 Each satellite includes a "Quick Authority Reference" section (2-3 lines):
+
 ```markdown
 ### Quick Authority Reference
 
@@ -62,6 +67,7 @@ Each satellite includes a "Quick Authority Reference" section (2-3 lines):
 ```
 
 **Quick Decision Tree** (5-10 lines):
+
 ```markdown
 ### Quick [Domain] Decision Tree
 
@@ -75,6 +81,7 @@ Each satellite includes a "Quick Authority Reference" section (2-3 lines):
 ```
 
 **Validation Checklist** (Embedded):
+
 ```markdown
 ## Validation Checklist (Before Commit)
 
@@ -90,7 +97,9 @@ Each satellite includes a "Quick Authority Reference" section (2-3 lines):
 **How Agents Find Applicable Satellites**:
 
 #### Method 1: Directory-Based Discovery
+
 Agents working in a directory look for `AGENT_INSTRUCTIONS.md` in that directory:
+
 - Working on CLI? → Read `codesentinel/AGENT_INSTRUCTIONS.md`
 - Writing tests? → Read `tests/AGENT_INSTRUCTIONS.md`
 - Creating docs? → Read `docs/AGENT_INSTRUCTIONS.md`
@@ -98,7 +107,9 @@ Agents working in a directory look for `AGENT_INSTRUCTIONS.md` in that directory
 - Adding automation? → Read `tools/AGENT_INSTRUCTIONS.md`
 
 #### Method 2: Task-Based Discovery
+
 When starting task, determine which satellite applies:
+
 1. **Identify task type**: What am I doing?
    - CLI/core development → `codesentinel/AGENT_INSTRUCTIONS.md`
    - Testing/validation → `tests/AGENT_INSTRUCTIONS.md`
@@ -112,7 +123,9 @@ When starting task, determine which satellite applies:
 5. **Reference global policies if needed**: Deep-dive available
 
 #### Method 3: Central Satellite Index (Future)
+
 Index file showing all satellites and what they cover:
+
 - Could be `docs/SATELLITES_INDEX.md`
 - Lists all 5 satellites with brief descriptions
 - Shows which domain each covers
@@ -127,6 +140,7 @@ Index file showing all satellites and what they cover:
 **How Policy Changes Propagate to Satellites**:
 
 #### Quarterly Audit Process
+
 **When**: Every 3 months (next: February 7, 2026)
 
 1. **Review Global Policies**:
@@ -160,12 +174,14 @@ Index file showing all satellites and what they cover:
    - Commit with clear message
 
 **Schedule**:
+
 - First Audit: February 7, 2026
 - Second Audit: May 7, 2026
 - Third Audit: August 7, 2026
 - Ongoing: Notify agent system if policy changes immediately
 
 #### Immediate Policy Change Process
+
 If policy changes outside quarterly cycle:
 
 1. **Document Change**: Update global policy
@@ -182,7 +198,9 @@ If policy changes outside quarterly cycle:
 **Measuring the 80-85% Cognitive Overhead Reduction**:
 
 #### Baseline Metrics (Pre-Satellite)
+
 **Task: Create CLI Command**
+
 - Time to understand task: 10 minutes
 - Time to review policies: 15 minutes
 - Time to find relevant guidance: 5 minutes
@@ -190,13 +208,16 @@ If policy changes outside quarterly cycle:
 - **Total**: 40 minutes
 
 **Breakdown**:
+
 - Policy reading overhead: 20 minutes (50%)
 - Guidance search overhead: 5 minutes (12%)
 - Actual work: 10 minutes (25%)
 - Buffer: 5 minutes (13%)
 
 #### Post-Satellite Metrics (With Satellites)
+
 **Same Task: Create CLI Command**
+
 - Time to locate satellite: 1 minute
 - Time to read satellite procedure: 4 minutes
 - Time to execute task: 10 minutes
@@ -204,6 +225,7 @@ If policy changes outside quarterly cycle:
 - **Total**: 17 minutes
 
 **Breakdown**:
+
 - Satellite guidance: 4 minutes (24%)
 - Actual work: 10 minutes (59%)
 - Overhead: 3 minutes (17%)
@@ -256,17 +278,20 @@ If policy changes outside quarterly cycle:
 #### Regular Maintenance Cycle
 
 **Weekly** (Informal):
+
 - Monitor for issues with satellite procedures
 - Track agent feedback
 - Identify common questions
 
 **Monthly** (Scheduled):
+
 - Review satellite usage patterns
 - Update FAQ sections with new questions
 - Fix any identified errors
 - Minor procedure improvements
 
 **Quarterly** (Formal Audit - see Policy Cascade section):
+
 - Full audit against global policies
 - Update authority matrices
 - Refresh decision trees
@@ -276,12 +301,14 @@ If policy changes outside quarterly cycle:
 #### Satellite Update Procedures
 
 **For Minor Updates** (typo, clarification, new Q&A):
+
 - Edit satellite directly
 - Update "Last Updated" date
 - Commit with message: `docs(satellite): update [satellite] - [description]`
 - No version change needed
 
 **For Procedure Updates** (steps change, process improves):
+
 - Update affected procedure section
 - Update validation checklist if needed
 - Update "Last Updated" date
@@ -289,6 +316,7 @@ If policy changes outside quarterly cycle:
 - Version stays same
 
 **For Major Updates** (policy change forces updates, new procedures):
+
 - Update all affected sections
 - Consider version bump
 - Update all dates
@@ -298,6 +326,7 @@ If policy changes outside quarterly cycle:
 #### Satellite Consistency Audit
 
 **Quarterly Check**:
+
 1. All satellites reference global policies? ✅
 2. All authority matrices match DOCUMENT_CLASSIFICATION.md? ✅
 3. All decision trees consistent with policies? ✅
@@ -313,6 +342,7 @@ If policy changes outside quarterly cycle:
 ### What Was Built
 
 **5 Complete Operational Satellites**:
+
 - 2,230+ lines of focused guidance
 - 50+ operations defined
 - 20 procedures documented
@@ -321,6 +351,7 @@ If policy changes outside quarterly cycle:
 - 60+ Q&A entries
 
 **Supporting Infrastructure**:
+
 - Satellite discovery mechanism (3 methods)
 - Policy cascade procedures (quarterly + immediate)
 - Efficiency measurement framework (with baseline metrics)
@@ -344,6 +375,7 @@ If policy changes outside quarterly cycle:
 ### Operational Capabilities
 
 Agents can now:
+
 - ✅ Create CLI commands in 3-5 minutes (vs 25+ before)
 - ✅ Write comprehensive tests in 2-3 minutes (vs 15+ before)
 - ✅ Create documentation in 3-4 minutes (vs 20+ before)
@@ -359,6 +391,7 @@ Agents can now:
 ## Repository Status
 
 **Phase 2 Commits**:
+
 1. 5a3ca95 - Phase 1 satellites (codesentinel, tests, docs)
 2. aa93118 - Phase 1 completion report
 3. 3568f8e - Markdown linting fixes
@@ -366,6 +399,7 @@ Agents can now:
 5. [New] Phase 2 completion report
 
 **Files in Phase 2**:
+
 - ✅ archive/AGENT_INSTRUCTIONS.md (created)
 - ✅ tools/AGENT_INSTRUCTIONS.md (created)
 - ✅ PHASE_2_COMPLETION_REPORT.md (this file)
