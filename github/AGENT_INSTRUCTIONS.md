@@ -145,108 +145,81 @@ This is the **enterprise integration point** for CodeSentinel. Changes here affe
 
 ### Procedure 3: Manage GitHub Actions Workflow
 
-**When**: CI/CD pipeline needs creation, modification, or debugging
+**When**: A CI/CD pipeline requires creation, modification, or debugging.
 
 **Steps**:
 
-1. **Workflow Planning**:
-   - Define workflow triggers (push, PR, schedule, manual)
-   - Plan workflow stages (build, test, deploy)
-   - Identify required secrets/credentials
-   - Design failure recovery
+1.  **Workflow Planning & Design**:
+    -   **Define Triggers**: Clearly specify what events will trigger the workflow (e.g., `on: [push, pull_request, workflow_dispatch]`).
+    -   **Plan Jobs & Stages**: Break the workflow into logical jobs (e.g., `build`, `test`, `deploy`). Use the `needs` keyword to create dependencies between jobs, forming a pipeline.
+    -   **Identify Secrets**: List all required secrets (e.g., `PYPI_TOKEN`, `AWS_ACCESS_KEY_ID`). These must be stored in GitHub's encrypted secrets storage, never in the repository.
+    -   **Design for Failure**: Plan for how the workflow should behave on failure. Use `if: failure()` or `if: always()` to define cleanup or notification steps.
 
-2. **Secrets Management**:
-   - Use GitHub Secrets for sensitive data
-   - Never commit credentials or tokens
-   - Rotate secrets regularly
-   - Document which secrets are needed
-   - Verify access restrictions
+2.  **Secure Secrets Management**:
+    -   Navigate to repository **Settings > Secrets and variables > Actions**.
+    -   Store all sensitive data as encrypted secrets. Use environment-specific secrets (e.g., `STAGING_DB_PASSWORD`) for enhanced security.
+    -   **Never commit credentials, tokens, or API keys directly into the code.**
+    -   Implement a secret rotation policy and audit access regularly.
 
-3. **Workflow Creation**:
-   - Create `.github/workflows/[name].yml`
-   - Define jobs and steps clearly
-   - Use standard actions when possible
-   - Handle errors gracefully
-   - Add logging for debugging
+3.  **Workflow Implementation**:
+    -   Create the workflow file in `.github/workflows/my-workflow.yml`.
+    -   Use reusable actions (e.g., `actions/checkout@v3`, `actions/setup-python@v4`) to keep the workflow clean and maintainable.
+    -   Add descriptive names to each step (`name: Run unit tests`) for clear logging.
+    -   Implement robust error handling for each critical step.
 
-4. **Environment Configuration**:
-   - Set up matrix builds if needed
-   - Configure environment variables
-   - Define concurrency settings
-   - Set resource limits appropriately
+4.  **Environment and Concurrency**:
+    -   Use a matrix strategy (`strategy: matrix:`) to test across multiple versions or operating systems (e.g., `python-version: [3.9, 3.10, 3.11]`).
+    -   Define environment variables using the `env` context.
+    -   Control concurrent runs using `concurrency: group: ${{ github.workflow }}-${{ github.ref }}` to prevent race conditions on feature branches.
 
-5. **Testing Workflow**:
-   - Trigger manually to test
-   - Verify all steps execute correctly
-   - Check logs for errors
-   - Validate artifacts created
-   - Test failure scenarios
+5.  **Testing and Debugging**:
+    -   Test the workflow on a feature branch before merging to `main`.
+    -   To debug a failed run, examine the workflow logs for specific error messages.
+    -   For highly complex issues, consider using an action like `mxschmitt/action-tmate@v3` to get temporary SSH access to the runner for live debugging.
+    -   Verify that all expected artifacts are created and stored correctly using `actions/upload-artifact`.
 
-6. **Debugging Issues**:
-   - Check workflow logs for errors
-   - Verify secrets are properly configured
-   - Test commands locally first
-   - Check action versions are compatible
-   - Review recent changes to workflow
-
-7. **Documentation**:
-   - Document workflow purpose
-   - List required secrets
-   - Document environment variables
-   - Note any limitations or quirks
-   - Link to related documentation
+6.  **Documentation**:
+    -   Add a section to the relevant documentation (e.g., a `README.md` in `.github/workflows/`) explaining the workflow's purpose, triggers, and required secrets.
+    -   Comment complex or non-obvious steps directly within the YAML file.
 
 ---
 
 ### Procedure 4: Handle Release and Versioning
 
-**When**: Ready to release new version to production/PyPI
+**When**: The `main` branch is stable and ready for a new production release.
 
 **Steps**:
 
-1. **Pre-Release Verification**:
-   - All tests passing ✅
-   - Documentation updated ✅
-   - CHANGELOG entries complete ✅
-   - Version numbers updated ✅
-   - No outstanding issues for this release ✅
+1.  **Pre-Release Verification**:
+    -   Ensure all tests are passing on the `main` branch.
+    -   Confirm that all documentation has been updated and the `CHANGELOG.md` file accurately reflects all changes since the last release.
+    -   Verify that the version number in the project's configuration (e.g., `pyproject.toml`) has been correctly incremented following **Semantic Versioning (major.minor.patch)**.
 
-2. **Version Management**:
-   - Update version in `pyproject.toml` or `setup.py`
-   - Follow semantic versioning (major.minor.patch)
-   - Document what changed in CHANGELOG.md
-   - Update README if needed
+2.  **Create a Release Branch**:
+    -   Create a release branch from `main`: `git checkout -b release/v1.2.0`.
+    -   This branch is used for final preparations and is a stable point from which to tag. No new features should be added here; only critical bug fixes are allowed.
 
-3. **Create Release**:
-   - Tag commit with version: `v1.0.3`
-   - Create GitHub Release with notes
-   - Include changelog in release notes
-   - Upload artifacts if applicable
+3.  **Tag the Release**:
+    -   Create an annotated Git tag for the new version: `git tag -a v1.2.0 -m "Release version 1.2.0"`.
+    -   Push the tag to the remote repository: `git push origin v1.2.0`. This is a critical step that makes the tag available to CI/CD systems.
 
-4. **Build Artifacts**:
-   - Build distribution packages (wheels, source)
-   - Verify package contents
-   - Test installation locally
-   - Sign packages if required
+4.  **Build and Test Release Artifacts**:
+    -   The CI/CD pipeline, triggered by the new tag, should automatically build the release artifacts (e.g., Python wheels, source distributions).
+    -   The pipeline must verify the integrity of these artifacts, for example, by testing that the package can be installed and its basic functions run correctly.
 
-5. **Publish**:
-   - Push to PyPI or artifact repository
-   - Verify package is accessible
-   - Test installation from published source
-   - Announce release to stakeholders
+5.  **Publish the Release**:
+    -   **Automated**: The CI/CD pipeline should publish the artifacts to the package repository (e.g., PyPI).
+    -   **Manual (if required)**: If manual publication is necessary, use a secure tool like `twine` and an API token stored in GitHub Secrets.
+    -   Create a corresponding **GitHub Release**. The release notes should be generated from the `CHANGELOG.md` and should link to the milestone and all included PRs.
 
-6. **Post-Release**:
-   - Monitor for installation issues
-   - Update documentation sites
-   - Create post-release branch if needed
-   - Plan next release cycle
+6.  **Post-Release Monitoring & Hotfixes**:
+    -   Closely monitor production systems for any new errors or performance regressions.
+    -   If a critical bug is discovered, create a hotfix branch from the release tag (`hotfix/v1.2.1`).
+    -   Implement the fix, merge it back into `main`, and then cherry-pick the commit into the `main` branch to ensure the fix is included in future releases. A new patch release (e.g., `v1.2.1`) must be created.
 
-7. **Rollback Plan** (if issues):
-   - Document the issue clearly
-   - Identify fix required
-   - Create hotfix branch from release tag
-   - Go through full release process again
-   - Notify users of corrected version
+7.  **Rollback Plan**:
+    -   A rollback is a last resort. The primary strategy is to roll forward with a hotfix.
+    -   If a rollback is unavoidable, the procedure involves reverting the deployment to the previously known good version (e.g., `v1.1.0`). This is typically handled by the deployment system (see `deployment/AGENT_INSTRUCTIONS.md`).
 
 ---
 
