@@ -94,3 +94,133 @@ This policy is persistent and loaded on every run, guaranteeing that `!!!!` neve
 ### Rationale
 
 Professional documentation builds trust with enterprise users and demonstrates security-first competence. Elegant simplicity in presentation reflects the same care applied to code security and reliability. This directive reinforces CodeSentinel's commitment to professionalism alongside its security principles.
+
+---
+
+## Document Classification & Lifecycle Management (T4a-Permanent Directive)
+
+**Classification**: T4a - Core Agent Foundation Documentation  
+**Effective Date**: November 7, 2025  
+**Reference**: `docs/architecture/DOCUMENT_CLASSIFICATION.md`
+
+### Summary
+
+CodeSentinel implements a 5-tier document classification system determining document lifecycle, archival strategy, user interaction requirements, and branding standards:
+
+- **Tier 0 (Secret)**: Encryption capable, user-only deletion, maximum protection
+- **Tier 1 (Critical Infrastructure)**: Version-tracked, never deleted without user instruction, minimal branding
+- **Tier 2 (Informative)**: Agent can create freely, major changes need approval, moderate branding
+- **Tier 3 (Temporary/Job Reports)**: Agent full discretion, consolidate iterations, can be permanently deleted
+- **Tier 4 (Agent Documentation)**: Agent-governed with 4a/4b/4c subdivisions based on scope
+
+### Key Principles
+
+1. **Tier determines authority**: Classification tier explicitly defines who can create, modify, and delete documents
+2. **Archive organization**: Documents organized by tier and type; versions tracked; inactive copies preserved
+3. **User verification**: Deletion requires verification for Tiers 0, 1, 2, and user-requested Tier 4
+4. **Backup strategy**: Active documents backed up daily; inactive archives preserved indefinitely
+5. **Git tracking**: Tier-specific tracking rules; archive directories excluded from version control
+6. **Branding compliance**: Branding applied per tier classification and professional standards
+
+### Archive Structure
+
+```
+archive/
+├── active/
+│   ├── tier0_secret/
+│   ├── tier1_critical/
+│   ├── tier2_informative/
+│   ├── tier3_temporary/
+│   └── tier4_agent/
+├── inactive/
+│   └── [archived inactive documents]
+└── metadata/
+    ├── archive_index.json
+    ├── classification_audit.log
+    └── backup_manifest.json
+```
+
+### Backup Locations
+
+- **Active Backup**: `{repository_parent_directory}/archive_backup/`
+- **Inactive Archive**: `{repository}/archive/inactive/`
+- **Git Tracking**: Per-tier rules; archive directories not tracked
+
+### Implementation
+
+All new documents must be classified at creation. Existing documents will be classified through audit process. Classification determines complete document lifecycle from creation through archival or deletion.
+
+**Storage Requirements**:
+
+- All documents must be stored in proper location according to tier classification
+- All documents must adhere to all CodeSentinel policies and procedures
+- Tier classification determines storage location, backup strategy, and lifecycle management
+- Violations of classification requirements or storage policies flagged during audits
+
+See `docs/architecture/DOCUMENT_CLASSIFICATION.md` for comprehensive policy details, lifecycle workflows, decision matrices, and implementation procedures.
+
+---
+
+## Validation & Quality Assurance (T4a-Permanent Directive)
+
+**Classification**: T4a - Core Agent Foundation Documentation  
+**Effective Date**: November 7, 2025  
+**Authority**: Core Principle - SECURITY > EFFICIENCY > MINIMALISM
+
+### Directive Statement
+
+**All work must pass final validation before commits or task closure.**
+
+### Implementation Requirements
+
+1. **Pre-Commit Validation**
+   - All changes reviewed for correctness and completeness
+   - Files checked for syntax errors and formatting compliance
+   - Policy adherence verified for document classification
+   - Storage locations confirmed correct per tier classification
+   - No broken references or incomplete implementations
+
+2. **Test Coverage**
+   - Code changes validated with unit tests when applicable
+   - Documentation tested for broken links and correct formatting
+   - Configuration files validated for proper syntax
+   - Archive structure verified if modified
+
+3. **Policy Compliance Check**
+   - All files stored in correct locations per classification tier
+   - Branding applied correctly per tier requirements
+   - Version tracking implemented if applicable
+   - Git tracking rules followed
+   - Agent authority limits respected
+
+4. **Documentation Completeness**
+   - Changes documented in commit messages
+   - Related policies updated if affected
+   - Examples provided where needed
+   - Decision rationale recorded
+
+5. **Task Closure Validation**
+   - All objectives met and verified
+   - No outstanding issues or TODOs
+   - Related documentation updated
+   - Changes committed successfully
+   - Validation steps documented
+
+### Validation Checklist Template
+
+Before suggesting commits or closing tasks:
+
+- [ ] All syntax errors resolved (markdown, code, config)
+- [ ] File locations correct per classification tier
+- [ ] Branding compliance verified
+- [ ] Policy requirements met
+- [ ] Broken links or references fixed
+- [ ] Documentation updated
+- [ ] Commit message comprehensive
+- [ ] Related policies reviewed and updated
+- [ ] No outstanding blockers or TODOs
+- [ ] Final review passed
+
+### Rationale
+
+Validation before closure ensures high quality, prevents regressions, maintains policy compliance, and demonstrates professional execution. This directive reinforces CodeSentinel's commitment to security and reliability through careful verification practices.
