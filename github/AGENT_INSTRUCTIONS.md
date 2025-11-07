@@ -61,101 +61,85 @@ This is the **enterprise integration point** for CodeSentinel. Changes here affe
 
 **Steps**:
 
-1. **Verify Authority**: Confirm you have merge permissions ✅
-   - Check repository settings for access level
-   - Verify branch protection rules
-   - Understand approval requirements
+1. **Verify Authority & Branch Strategy**:
+    - Ensure you have permissions to create branches and PRs.
+    - Create a new branch from the latest `main`: `git checkout -b feature/my-new-feature`.
+    - Use a descriptive naming convention: `feature/[name]`, `bugfix/[issue-id]`, `docs/[topic]`.
+    - Keep the branch focused on a single, atomic concern to simplify review.
 
-2. **Branch Strategy**:
-   - Create feature branch from latest `main`
-   - Use naming convention: `feature/[name]`, `bugfix/[name]`, `docs/[name]`
-   - Keep branch focused on single concern
-   - Rebase on main if outdated
+2. **Code Quality & Pre-Commit Hooks**:
+    - Run all local tests and validation: `pytest`.
+    - Ensure code follows project style by running linters and formatters.
+    - **Best Practice**: Use pre-commit hooks (`.pre-commit-config.yaml`) to automate these checks before every commit.
+    - Include comprehensive unit tests for all new functionality, aiming for 100% coverage.
+    - Update any related documentation (`docs/`) or docstrings.
+    - Verify **no hardcoded secrets or credentials** have been added.
 
-3. **Code Quality**:
-   - Run local tests and validation
-   - Follow project code style (linting, formatting)
-   - Include unit tests for new functionality
-   - Update documentation if needed
-   - Verify no hardcoded secrets or credentials
+3. **Commit Best Practices**:
+    - Write clear, descriptive commit messages using the conventional commit format: `type(scope): description`.
+    - *Example*: `feat(cli): add new '--verbose' flag to audit command`.
+    - This format is critical for automated changelog generation and version bumping.
+    - Group related file changes into logical, atomic commits.
 
-4. **Commit Best Practices**:
-   - Clear, descriptive commit messages
-   - One feature per commit when possible
-   - Use conventional commit format: `type(scope): description`
-   - Group related changes logically
+4. **Push and Create PR**:
+    - Keep your branch up-to-date with `main` by rebasing periodically: `git pull --rebase origin main`.
+    - Push the feature branch to the remote repository: `git push origin feature/my-new-feature`.
+    - Create the Pull Request using the GitHub UI or `gh pr create`.
+    - Write a **comprehensive description**:
+        - **What**: A summary of the changes.
+        - **Why**: The business reason or problem being solved.
+        - **How**: A brief technical overview of the implementation.
+        - Link to related issues (e.g., `Closes #123`).
+    - Add appropriate labels (`bug`, `enhancement`) and request review from code owners.
 
-5. **Push and Create PR**:
-   - Push feature branch to origin
-   - Create PR with comprehensive description
-   - Link to related issues (#123, closes #456)
-   - Add appropriate labels and milestone
-   - Request review from code owners
+5. **Automated Validation & Review**:
+    - Ensure all CI/CD status checks (GitHub Actions) pass successfully. A green checkmark (✅) is required.
+    - Actively monitor the PR for feedback from reviewers. Respond to comments and push updates as needed.
+    - If changes are requested, push new commits to the same branch. The PR will update automatically.
 
-6. **Validation**:
-   - All CI/CD checks pass ✅
-   - Code review completed ✅
-   - Documentation updated ✅
-   - No merge conflicts ✅
-   - Tests passing ✅
-
-7. **Merge**:
-   - Squash commits if needed (per project preference)
-   - Delete feature branch after merge
-   - Verify CI/CD post-merge
-   - Monitor for any related failures
+6. **Final Merge**:
+    - Once all reviews are approved and checks are passing, the PR is ready to merge.
+    - Use the "Squash and merge" option to create a single, clean commit on the `main` branch. This keeps the git history tidy.
+    - Ensure the feature branch is deleted after the merge to keep the repository clean.
+    - Verify that the post-merge CI/CD pipeline (e.g., deployment to staging) runs successfully.
 
 ---
 
 ### Procedure 2: Review and Merge Pull Request
 
-**When**: PR received requiring code review and merge decision
+**When**: A Pull Request is ready for code review and merge decision.
 
 **Steps**:
 
-1. **Pre-Review Checklist**:
-   - Verify PR has clear description
-   - Check if CI/CD checks are passing
-   - Review linked issues
-   - Note any special requirements or risks
+1.  **Initial Triage & Pre-Review Checklist**:
+    -   Read the PR description to understand its purpose (**What**, **Why**, **How**).
+    -   Verify that it's linked to a relevant issue and has appropriate labels.
+    -   Check the CI/CD status checks. If they are failing, do not proceed with a review. The author must fix them first. Note any special requirements or risks.
 
-2. **Code Review**:
-   - Read all changes carefully
-   - Check for security issues (credentials, vulnerabilities)
-   - Verify code follows project standards
-   - Ensure tests are adequate
-   - Look for edge cases and error handling
-   - Comment on concerns and questions
+2.  **Systematic Code Review**:
+    -   Fetch the branch and run it locally if the change is complex: `git fetch origin pull/[PR-ID]/head:pr-[PR-ID] && git checkout pr-[PR-ID]`.
+    -   **Security First**: Scrutinize for security vulnerabilities. Look for hardcoded secrets, injection risks (SQL, command), and insecure dependencies.
+    -   **Correctness**: Does the code do what it says it does? Does it handle edge cases and invalid inputs gracefully?
+    -   **Maintainability**: Is the code clean, readable, and well-documented? Does it follow existing project patterns and the SOLID principles?
+    -   **Test Coverage**: Are the tests adequate? They should cover the success path, error conditions, and edge cases. A high-quality PR includes high-quality tests.
 
-3. **Request Changes** (if needed):
-   - Provide specific, actionable feedback
-   - Link to relevant documentation or policies
-   - Allow author to respond and revise
-   - Re-review when updated
+3.  **Provide Actionable Feedback**:
+    -   Use GitHub's review feature to comment directly on lines of code.
+    -   Be specific and constructive. Instead of "this is wrong," say "this approach might lead to a race condition under these circumstances. Could we use a lock here instead?"
+    -   Use the "Request changes" option if the PR is not ready to be merged. This blocks merging until the author addresses the feedback.
+    -   Approve the PR if it meets all quality and security standards.
 
-4. **Approve**:
-   - Confirm all issues resolved
-   - Verify final state is acceptable
-   - Approve through GitHub interface
-   - Add any final notes
+4.  **Merge Decision & Execution**:
+    -   Confirm all required reviews are complete and all status checks have passed.
+    -   Ensure the branch is up-to-date with `main`. If not, ask the author to rebase.
+    -   **Use "Squash and merge"**. This is the repository's standard. It condenses the feature branch's history into a single, clean commit on `main`.
+    -   The commit message should follow the conventional commit standard, summarizing the entire PR.
+    -   Ensure the "Delete branch" option is checked to maintain repository hygiene.
 
-5. **Merge Decision**:
-   - Confirm all required reviews completed
-   - Verify branch is up to date with main
-   - Choose merge strategy (merge commit, squash, rebase)
-   - Add merge commit message if applicable
-
-6. **Perform Merge**:
-   - Click "Merge pull request"
-   - Confirm merge completion
-   - Monitor for post-merge issues
-   - Delete feature branch (GitHub option)
-
-7. **Post-Merge Validation**:
-   - Verify CI/CD post-merge pipeline ✅
-   - Check production deployment (if automated)
-   - Monitor for related errors or issues ✅
-   - Notify stakeholders if needed ✅
+5.  **Post-Merge Validation**:
+    -   After merging, monitor the post-merge CI/CD pipeline (e.g., deployment to staging).
+    -   Verify that the change has been successfully integrated and has not caused any regressions.
+    -   If issues arise, be prepared to revert the PR or coordinate a hotfix.
 
 ---
 
