@@ -41,6 +41,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 - **README Files** - High-level project information
 
 **Key Principles for This Domain**:
+
 - Clear and professional writing
 - Non-destructive archival before deletion
 - Proper tier classification for all documents
@@ -244,6 +245,7 @@ The `docs/` directory contains CodeSentinel documentation including:
    - Include timestamp and reason for archival
 
 4. **Create Archive Metadata**:
+
    ```json
    {
      "classification_tier": 2,
@@ -285,28 +287,34 @@ The `docs/` directory contains CodeSentinel documentation including:
 ## Quick Document Classification Decision Tree
 
 **Is this a policy, compliance, or infrastructure document?**
+
 - If YES → Tier 1 (Critical Infrastructure)
 - If NO → Continue
 
 **Is this a user guide, tutorial, or informational content?**
+
 - If YES → Tier 2 (Informative Documentation)
 - If NO → Continue
 
 **Is this a temporary report or audit output?**
+
 - If YES → Tier 3 (Temporary & Job Reports)
 - If NO → Continue
 
 **Is this guidance for agent operations?**
+
 - If YES → Tier 4 (Agent Documentation)
 - If NO → This shouldn't be in docs/
 
 **Tier 1 Characteristics** (if unsure):
+
 - Permanent storage needed? YES
 - Multiple versions tracked? YES
 - User approval required for changes? YES
 - Never deleted without explicit instruction? YES
 
 **Tier 2 Characteristics**:
+
 - Permanent storage needed? YES
 - Multiple versions tracked? NO (usually)
 - User approval required for major changes? YES
@@ -317,6 +325,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 ## Quick Reference: Before Creating Any Document
 
 **Checklist**:
+
 - [ ] **Tier Determined**: Know if Tier 1, 2, 3, or 4
 - [ ] **Location Planned**: Know where document will live
 - [ ] **Approval Needed**: Confirmed authority (Tier 1 docs need approval)
@@ -333,6 +342,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 ## Validation Checklist (Before Commit)
 
 **Content Quality**:
+
 - [ ] Document has clear title and purpose
 - [ ] Heading hierarchy is logical (H1 → H2 → H3, etc.)
 - [ ] Sections are well-organized
@@ -342,6 +352,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 - [ ] Professional language throughout
 
 **Formatting**:
+
 - [ ] UTF-8 encoding (verified)
 - [ ] Consistent bullet formatting
 - [ ] Code blocks have language specified
@@ -350,6 +361,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 - [ ] Tables (if any) are properly formatted
 
 **Standards Compliance**:
+
 - [ ] Professional branding applied (if Tier 1/2)
 - [ ] Emoji usage follows policy (only when clarifying)
 - [ ] Consistent with existing documentation style
@@ -357,6 +369,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 - [ ] No excessive decoration
 
 **Classification & Metadata**:
+
 - [ ] Tier classification is correct
 - [ ] Metadata.json created (if Tier 1)
 - [ ] Version number assigned (if Tier 1)
@@ -364,12 +377,14 @@ The `docs/` directory contains CodeSentinel documentation including:
 - [ ] Authority statement clear (if Tier 1)
 
 **References & Links**:
+
 - [ ] Links to related documentation included
 - [ ] References section complete (if applicable)
 - [ ] Cross-references accurate
 - [ ] No broken internal links
 
 **Compliance**:
+
 - [ ] Document preserves existing features
 - [ ] Non-destructive approach maintained
 - [ ] Archive procedures followed (if deleting)
@@ -382,13 +397,15 @@ The `docs/` directory contains CodeSentinel documentation including:
 
 ### Q: What's the difference between a guide and a procedure?
 
-**A**: 
+**A**:
+
 - **Guide**: Educational content explaining concepts, with examples. Tier 2.
 - **Procedure**: Step-by-step instructions for how to do something. Can be Tier 1 (infrastructure) or Tier 2 (user procedure).
 
 ### Q: Should I update the main README or create a separate guide?
 
-**A**: 
+**A**:
+
 - Update README for major, commonly-needed information
 - Create separate guide for detailed, specialized content
 - Link from README to guides for discoverability
@@ -396,6 +413,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 ### Q: How do I handle documentation that depends on code?
 
 **A**:
+
 - Code examples must match current code
 - Document code as it is, not as it should be
 - If code changes, update documentation
@@ -404,6 +422,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 ### Q: Can I delete documentation that's "outdated"?
 
 **A**: No. Follow archival procedure:
+
 1. Archive to inactive location with metadata
 2. Keep all historical versions
 3. Only delete with explicit user approval
@@ -412,6 +431,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 ### Q: How do I handle version history in documentation?
 
 **A**: Add section to document:
+
 ```markdown
 ## Version History
 
@@ -460,16 +480,19 @@ docs/
 ## References & Links
 
 **Core Documentation**:
+
 - Global Policy: `docs/architecture/POLICY.md`
 - Classification Framework: `docs/architecture/DOCUMENT_CLASSIFICATION.md`
 - General Strategy: `docs/architecture/AGENT_INSTRUCTION_STRATEGY.md`
 
 **Documentation Standards**:
+
 - Professional Standards: In `docs/architecture/POLICY.md`
 - Emoji Policy: In `docs/architecture/POLICY.md`
 - Archive Strategy: In `docs/architecture/DOCUMENT_CLASSIFICATION.md`
 
 **Related Documents**:
+
 - Satellite Archive Instructions: `archive/AGENT_INSTRUCTIONS.md`
 - Testing Instructions: `tests/AGENT_INSTRUCTIONS.md`
 - Core Package Instructions: `codesentinel/AGENT_INSTRUCTIONS.md`

@@ -40,6 +40,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 - **Performance Tests** - Optional performance benchmarks
 
 **Key Principles for This Domain**:
+
 - 100% code coverage target for new code
 - Tests should be fast and isolated
 - No external dependencies without mocking
@@ -279,6 +280,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 ## Validation Checklist (Before Commit)
 
 **Test Quality**:
+
 - [ ] Test name clearly describes what is being tested
 - [ ] Test has single responsibility/assertion group
 - [ ] No hardcoded paths or configuration
@@ -286,6 +288,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 - [ ] Setup and teardown properly handle resources
 
 **Coverage**:
+
 - [ ] Success case tested
 - [ ] Error case tested
 - [ ] Edge case tested
@@ -293,12 +296,14 @@ The `tests/` directory contains all test code for CodeSentinel including:
 - [ ] Overall coverage not decreased
 
 **Performance**:
+
 - [ ] Unit test completes < 1 second
 - [ ] Integration test completes < 10 seconds
 - [ ] No obvious performance issues
 - [ ] No unnecessary loops or waits
 
 **Isolation**:
+
 - [ ] Test passes independently
 - [ ] Test passes in any order
 - [ ] Test doesn't depend on other tests
@@ -306,6 +311,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 - [ ] Cleanup properly removes side effects
 
 **Compliance**:
+
 - [ ] No permanent file modifications
 - [ ] No external network calls
 - [ ] No hardcoded credentials
@@ -313,6 +319,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 - [ ] Non-destructive testing maintained
 
 **Documentation**:
+
 - [ ] Test has clear docstring
 - [ ] Test name is descriptive
 - [ ] Complex test has comments
@@ -320,6 +327,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 - [ ] Linked to code being tested
 
 **Framework**:
+
 - [ ] Uses pytest (current standard)
 - [ ] Follows existing test patterns
 - [ ] Compatible with pytest.ini
@@ -333,6 +341,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 ### Q: How do I test code that reads files?
 
 **A**: Use temporary directories:
+
 ```python
 import tempfile
 from pathlib import Path
@@ -349,6 +358,7 @@ def test_read_config():
 ### Q: How do I test code that calls external APIs?
 
 **A**: Mock the API calls:
+
 ```python
 from unittest.mock import patch
 
@@ -362,6 +372,7 @@ def test_process_api_data(mock_api):
 ### Q: How do I test CLI commands?
 
 **A**: Use click testing or mock subprocess:
+
 ```python
 from click.testing import CliRunner
 from codesentinel.cli import main_command
@@ -374,7 +385,8 @@ def test_cli_command():
 
 ### Q: What should I do if a test is slow?
 
-**A**: 
+**A**:
+
 1. Check if it's calling external services (mock instead)
 2. Check for unnecessary loops or waits
 3. Consider if it should be an integration test (separate from unit tests)
@@ -384,6 +396,7 @@ def test_cli_command():
 ### Q: How do I skip a test that I'm not ready for?
 
 **A**: Use pytest markers:
+
 ```python
 @pytest.mark.skip(reason="Not implemented yet")
 def test_future_feature():
@@ -397,6 +410,7 @@ def test_known_bug():
 ### Q: Can I test private methods (_method)?
 
 **A**: Generally no - test public API. If you must:
+
 1. Question if the method should be private
 2. Consider if it should be extracted to separate module
 3. If truly necessary, test through public interface
@@ -407,31 +421,37 @@ def test_known_bug():
 ## Running Tests
 
 **Run all tests**:
+
 ```bash
 pytest
 ```
 
 **Run specific test file**:
+
 ```bash
 pytest tests/test_cli.py
 ```
 
 **Run with coverage**:
+
 ```bash
 pytest --cov=codesentinel tests/
 ```
 
 **Run only fast tests** (skip slow):
+
 ```bash
 pytest -m "not slow"
 ```
 
 **Run with verbose output**:
+
 ```bash
 pytest -v
 ```
 
 **Run and show print statements**:
+
 ```bash
 pytest -s
 ```
@@ -441,16 +461,19 @@ pytest -s
 ## References & Links
 
 **Core Documentation**:
+
 - Global Policy: `docs/architecture/POLICY.md`
 - Classification Framework: `docs/architecture/DOCUMENT_CLASSIFICATION.md`
 - General Strategy: `docs/architecture/AGENT_INSTRUCTION_STRATEGY.md`
 
 **Test Framework**:
-- pytest documentation: https://docs.pytest.org/
-- pytest fixtures: https://docs.pytest.org/en/stable/fixture.html
-- pytest markers: https://docs.pytest.org/en/stable/how-to-specify-tests.html
+
+- pytest documentation: <https://docs.pytest.org/>
+- pytest fixtures: <https://docs.pytest.org/en/stable/fixture.html>
+- pytest markers: <https://docs.pytest.org/en/stable/how-to-specify-tests.html>
 
 **CodeSentinel Tests**:
+
 - Test directory: `tests/`
 - Test configuration: `pytest.ini`
 - Existing tests: Study patterns in `tests/test_*.py`
