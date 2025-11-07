@@ -428,6 +428,92 @@ archive/
 
 ### Archive Metadata
 
+```json
+{
+  "index_version": "1.0",
+  "last_updated": "2025-11-07",
+  "total_documents": 127,
+  "tiers": {
+    "tier1": {
+      "count": 23,
+      "location": "archive/active/tier1_critical/"
+    },
+    "tier2": {
+      "count": 45,
+      "location": "archive/active/tier2_informative/"
+    },
+    "tier3": {
+      "count": 34,
+      "location": "archive/active/tier3_temporary/"
+    },
+    "tier4": {
+      "count": 25,
+      "location": "archive/active/tier4_agent/"
+    }
+  },
+  "retention_policy": "Permanent for Tier 1-2, as-useful for Tier 3-4",
+  "last_audit": "2025-11-07T14:30:00Z"
+}
+```
+
+---
+
+## Directory Structure Assessment & Categorical Division Policy
+
+### Automatic Assessment Trigger
+
+**Rule**: When a directory contains approximately 12 or more files, it will be assessed for categorical division.
+
+**Assessment Process**:
+
+1. **Identify Categories**: Analyze the files in the directory for clear categorical classifications
+2. **Determine Clarity**: Assess whether a clear categorical grouping exists (e.g., by type, function, tier, date range)
+3. **Evaluate Impact**: For each potential division, determine whether separating files into multiple subdirectories would:
+   - **Enhance** overall usability and efficiency, OR
+   - **Detract** from overall usability and efficiency
+
+### Decision Criteria
+
+**Enhance Usability & Efficiency When**:
+
+- Subcategories are functionally distinct (files serve different purposes)
+- Navigation time is reduced (users can locate needed files faster)
+- Maintenance is simplified (related files grouped together)
+- Future scalability is improved (room for growth within categories)
+- Tier or classification boundaries naturally align with categories
+- Users or agents regularly access only a subset of files
+
+**Detract from Usability & Efficiency When**:
+
+- Files are conceptually related despite surface differences
+- Navigation adds unnecessary steps for common operations
+- File count remains low after division (extra hierarchy not justified)
+- Cross-category references are frequent (separation complicates relationships)
+- Divisional boundaries are ambiguous or overlapping
+- Single unified location serves the primary access pattern
+
+### Implementation Authority
+
+- **User Decision**: Final authority on categorical division decisions
+- **Agent Assessment**: Can recommend division based on criteria above
+- **Policy Alignment**: All divisions must maintain SECURITY > EFFICIENCY > MINIMALISM compliance
+
+### Documentation Requirement
+
+When a directory undergoes categorical division:
+
+1. Create subdirectories with clear, descriptive names
+2. Update documentation explaining the new structure
+3. Maintain cross-references if necessary for commonly accessed relationships
+4. Update any indices or navigation aids
+5. Log the change in archive metadata (if applicable)
+
+---
+
+## Git Tracking Strategy
+
+### Archive Metadata
+
 Each archived document includes `metadata.json`:
 
 ```json
