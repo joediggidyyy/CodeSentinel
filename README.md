@@ -37,6 +37,24 @@ CodeSentinel/
 └── .github/                           (GitHub configuration & CI/CD)
 ```
 
+## Governance & Architecture
+
+CodeSentinel is managed through a tiered documentation and governance system known as "satellites." This ensures that all operations are standardized, auditable, and aligned with the project's core principles.
+
+### Tiered Documentation Strategy
+
+- **T4a (Strategic Guides)**: High-level documents that define the "why" and "what" for cross-cutting concerns like analytics and enterprise integration.
+  - `docs/ADVANCED_ANALYTICS_FRAMEWORK.md`
+  - `docs/ENTERPRISE_INTEGRATION_GUIDE.md`
+- **T4b (Procedural Satellites)**: Detailed, step-by-step instructions that codify the "how" for specific operational domains.
+  - `github/AGENT_INSTRUCTIONS.md` (Source Control & PRs)
+  - `deployment/AGENT_INSTRUCTIONS.md` (CI/CD & Deployments)
+  - `infrastructure/AGENT_INSTRUCTIONS.md` (Infrastructure as Code)
+- **T4c (Quick Reference Cards)**: Scannable, one-page summaries for engineers, providing at-a-glance information for common tasks.
+  - `docs/quick_reference/`
+
+This layered approach ensures that information is accessible at the right level of detail for every audience, from architects to on-call engineers.
+
 ## Core Features
 
 - **Security-First Architecture**: Automated vulnerability scanning and security monitoring
