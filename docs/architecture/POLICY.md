@@ -44,3 +44,53 @@ Implementation details:
 - Future automation invoked by `!!!!` MUST respect this policy hierarchy
 
 This policy is persistent and loaded on every run, guaranteeing that `!!!!` never results in feature loss unless absolutely required by security concerns.
+
+---
+
+## Documentation Standards & Professional Branding (T2-Permanent Directive)
+
+**Classification**: T2 - Permanent Directive  
+**Effective Date**: November 2025  
+**Scope**: All CodeSentinel documentation, comments, and public-facing content  
+**Authority**: Core Principle - Elegant Professionalism
+
+### Directive Statement
+
+**All documentation will maintain professional elegance through consistent styling:**
+
+1. **Emoji Usage Policy**
+   - Use checkmarks and X marks only when they add clarity to conditions or acceptance criteria
+   - Use other emojis ONLY when they meaningfully help visualize conditions or states
+   - Avoid decorative emoji that does not serve functional purpose
+   - Never use emoji that adds visual clutter or reduces professional presentation
+   - All emoji must pass the "elegant professionalism" test: Does this enhance understanding or detract from it?
+
+2. **Formatting Standards**
+   - All documentation formatted cleanly and uniformly
+   - Projects competence, clarity, and attention to detail
+   - Consistent heading hierarchy throughout
+   - Proper spacing and visual separation of concepts
+   - No excessive decoration or unnecessary embellishment
+
+3. **Professional Branding**
+   - Subtle branding that reflects CodeSentinel's security-first, professional identity
+   - Language that demonstrates expertise and reliability
+   - Consistent tone across all documentation
+   - Architecture and structure that shows careful thought and planning
+
+4. **Character Encoding Requirements**
+   - All documentation in UTF-8 encoding (no BOM)
+   - No corrupted or garbled characters
+   - Tree structures rendered as clean ASCII (├──, └──, │) not Unicode box-drawing
+   - All non-ASCII characters must be intentional and serve a purpose
+
+### Enforcement
+
+- Code reviews will verify documentation meets these standards
+- CI/CD pipeline will validate UTF-8 encoding and character integrity
+- Policy applies to README files, architectural documents, code comments, and API documentation
+- Violations identified during `!!!!` audits will be flagged for correction
+
+### Rationale
+
+Professional documentation builds trust with enterprise users and demonstrates security-first competence. Elegant simplicity in presentation reflects the same care applied to code security and reliability. This directive reinforces CodeSentinel's commitment to professionalism alongside its security principles.
