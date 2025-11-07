@@ -56,56 +56,39 @@ This is the **critical path for code reaching production**. Reliability, safety,
 
 ## Common Procedures
 
-### Procedure 1: Set Up Deployment Pipeline
+### Procedure 1: Set Up a Deployment Pipeline
 
-**When**: Creating new CI/CD pipeline or significant pipeline restructuring
+**When**: A new CI/CD pipeline is required for a new service, or an existing pipeline needs a significant architectural change.
 
 **Steps**:
 
-1. **Pipeline Planning**:
-   - Define stages (build, test, staging, production)
-   - Identify triggers (push, PR, schedule, manual)
-   - Plan failure handling and notifications
-   - Document approval requirements
+1. **Pipeline Planning & Design**:
+    - **Define Stages**: Map out the required jobs (e.g., `build`, `test`, `security-scan`, `deploy-staging`, `deploy-production`). Use the `needs` context to establish a clear, sequential dependency graph.
+    - **Define Triggers**: Specify the exact triggers. For the main pipeline, this is typically `on: push: branches: [ main ]`. For PR validation, use `on: pull_request: branches: [ main ]`. Also, add `workflow_dispatch` to allow for manual runs.
+    - **Use Reusable Workflows**: For common sequences (like building and testing), create a reusable workflow (`workflow_call` trigger). This keeps the main pipeline clean and DRY.
+    - **Plan for Failure**: Define a notification strategy. Use a dedicated job with `if: failure()` to send alerts to a Slack channel or trigger a PagerDuty incident.
 
-2. **Stage Configuration**:
-   - Build stage: Compile, package, artifact creation
-   - Test stage: Unit tests, integration tests, linting
-   - Security stage: Dependency scanning, secret scanning
-   - Staging stage: Deploy to staging, smoke tests
-   - Production stage: Deploy with health checks
+2. **Secure Authentication & Secrets**:
+    - **Use OIDC**: For authenticating with cloud providers (AWS, Azure, GCP), use OpenID Connect. This is a short-lived, token-based method that is far more secure than storing long-lived static credentials as secrets.
+    - **GitHub Environments**: Store environment-specific secrets and variables (e.g., `STAGING_DB_URL`, `PROD_API_KEY`) in GitHub Environments. This scopes them to the correct deployment job.
+    - **Secret Scanning**: Ensure the repository has secret scanning enabled to automatically detect any accidentally committed credentials.
 
-3. **Environment Setup**:
-   - Define environment variables
-   - Configure secrets management
-   - Set resource limits and timeouts
-   - Configure concurrency settings
+3. **Implementation in YAML**:
+    - Create the workflow file in `.github/workflows/`.
+    - Use a matrix strategy (`strategy: matrix:`) for the `test` job to run tests against multiple Python versions and operating systems.
+    - Use `actions/cache` to cache dependencies (like Pip packages) to speed up subsequent runs.
+    - Define clear `name` attributes for each step for readable logs.
 
-4. **Trigger Configuration**:
-   - Set branch filters (e.g., only main branch)
-   - Configure webhook settings
-   - Set schedule if applicable
-   - Allow manual trigger for emergencies
+4. **Testing and Validation**:
+    - Develop and test the workflow on a feature branch. Use the `pull_request` trigger to validate it.
+    - Manually trigger the workflow using `workflow_dispatch` to test specific scenarios.
+    - Verify that all jobs execute in the correct order and that artifacts are passed between them correctly using `actions/upload-artifact` and `actions/download-artifact`.
+    - Test failure conditions to ensure that error handling and notification jobs work as expected.
 
-5. **Failure Handling**:
-   - Define failure scenarios
-   - Set up retry logic where appropriate
-   - Configure notifications (Slack, email)
-   - Plan manual intervention steps
-
-6. **Testing**:
-   - Trigger pipeline manually
-   - Verify each stage executes correctly
-   - Check logs for errors
-   - Validate artifacts created
-   - Test failure scenarios
-
-7. **Documentation**:
-   - Document pipeline flow
-   - List required secrets
-   - Note environment variables
-   - Document manual intervention points
-   - Reference troubleshooting guide
+5. **Documentation**:
+    - Create a `README.md` in the `.github/workflows/` directory or update the main project documentation.
+    - The documentation must explain the pipeline's purpose, its triggers, the jobs it runs, and all required secrets and their environments.
+    - Include a simple diagram showing the flow of jobs.
 
 ---
 
@@ -161,113 +144,69 @@ This is the **critical path for code reaching production**. Reliability, safety,
 
 ---
 
-### Procedure 3: Production Deployment
+### Procedure 3: Execute a Production Deployment
 
-**When**: Ready to release code to end users
+**When**: The staging deployment has been verified, and the release has been approved by the Release Manager.
 
 **Steps**:
 
-1. **Pre-Production Verification**:
-   - Staging deployment successful ✅
-   - All tests passing ✅
-   - Security audit complete ✅
-   - Rollback plan documented ✅
-   - Team lead approval obtained ✅
+1. **Pre-Deployment Final Check**:
+   - **Confirm Staging Verification**: Ensure the staging deployment was successful and that all smoke tests passed. Reference the successful workflow run.
+   - **Obtain Production Approval**: The production deployment job is gated by a GitHub Environment rule that requires approval from a designated Release Manager. Confirm this approval has been given.
+   - **Schedule and Announce**: Announce the production deployment in the `#releases` Slack channel, specifying the version and expected timeline. Schedule it during a low-traffic window if possible.
 
-2. **Communication**:
-   - Notify all stakeholders
-   - Document deployment window
-   - Provide rollback contact info
-   - Note maintenance implications
+2. **Trigger and Monitor the Production Workflow**:
+   - The production deployment is typically a manual workflow (`workflow_dispatch`) or triggered by creating a GitHub release.
+   - Monitor the deployment progress in the "Actions" tab. Pay close attention to the `deploy-production` job.
+   - The deployment strategy should be either blue-green or canary.
+     - **Blue-Green**: The new version (green) is deployed alongside the old version (blue). Traffic is switched only after the green environment is verified.
+     - **Canary**: A small percentage of traffic (e.g., 5%) is routed to the new version. Monitor error rates and performance metrics before gradually increasing traffic.
 
-3. **Gradual Rollout** (if supported):
-   - Deploy to 5% of infrastructure first
-   - Monitor metrics (errors, latency)
-   - If healthy, increase to 10%, then 25%, 50%, 100%
-   - If issues detected, immediately rollback
+3. **Post-Deployment Health Checks**:
+   - The workflow will automatically run health checks against the production environment.
+   - Manually verify the application's health endpoint and check for any errors in the logs.
+   - Confirm that the monitoring dashboard (e.g., Grafana, Datadog) shows the new version running and that key metrics (CPU, memory, error rate) are within normal bounds.
 
-4. **Deployment**:
-   - Trigger production deployment
-   - Monitor deployment progress
-   - Check logs for errors
-   - Verify all instances updated
-   - Confirm service availability
+4. **Handle Deployment Outcomes**:
+   - **On Success**: Once the new version is stable and handling 100% of traffic, announce the successful completion in the `#releases` channel. The old version (blue environment or previous canary) can be decommissioned.
+   - **On Failure (Rollback)**: If health checks fail or critical errors are detected, immediately trigger the `rollback` procedure. The workflow should have a dedicated, one-click rollback job that redeploys the previous stable version.
 
-5. **Health Verification**:
-   - Run health checks
-   - Verify critical endpoints
-   - Test user workflows
-   - Monitor error rates
-   - Check performance metrics
-
-6. **Monitoring**:
-   - Watch metrics for 1-4 hours
-   - Check error logs continuously
-   - Monitor customer reports
-   - Keep team on alert
-   - Have rollback ready
-
-7. **Completion**:
-   - All checks passing
-   - Metrics normal
-   - No critical issues
-   - Document successful deployment
-   - Notify stakeholders
+5. **Documentation and Reporting**:
+   - The workflow automatically generates a deployment report, which is attached to the GitHub release.
+   - Update the release notes with any observations from the deployment.
+   - Ensure the deployment status is accurately reflected in any integrated systems like Jira.
 
 ---
 
-### Procedure 4: Handle Deployment Failures
+### Procedure 4: Execute a Rollback
 
-**When**: Deployment fails or issues detected post-deployment
+**When**: A production deployment has failed, or a critical, user-impacting bug is discovered post-release.
 
 **Steps**:
 
-1. **Identify Issue**:
-   - Determine what failed
-   - Check error logs
-   - Understand scope (all users or partial)
-   - Assess severity (critical, high, medium, low)
+1. **Initiate the Rollback**:
+   - **Decision**: The decision to roll back is made by the on-call engineer or Incident Commander. This is an emergency procedure; do not delay seeking approval.
+   - **Trigger**: Use the one-click `rollback` job in the production deployment workflow. This job is pre-configured to redeploy the last known stable version of the application.
+   - **Communication**: Announce the rollback in the `#incidents` Slack channel immediately. State the reason and link to the failed deployment workflow.
 
-2. **Initial Response**:
-   - Page on-call team if critical
-   - Declare incident if needed
-   - Create incident ticket
-   - Start incident communication channel
+2. **Monitor the Rollback Deployment**:
+   - Watch the rollback deployment job to ensure it completes successfully. It follows the same deployment process but uses the previous version's artifact.
+   - Verify that the application's health endpoint returns to a healthy state.
+   - Check the logs to confirm the previous version has started up correctly.
 
-3. **Diagnosis**:
-   - Collect relevant logs
-   - Check recent changes
-   - Review deployment process
-   - Identify root cause
-   - Understand impact
+3. **Verify System Stability**:
+   - Once the rollback is complete, perform the same health checks and manual verification steps as a normal deployment.
+   - Confirm that monitoring dashboards show the system has returned to its pre-deployment state and that error rates have subsided.
+   - Announce in the `#incidents` channel that the system is stable and the rollback was successful.
 
-4. **Rollback Decision**:
-   - Critical issue? → Immediate rollback
-   - High issue? → Rollback or hotfix decision
-   - Medium/Low? → Fix forward decision
-   - Prioritize user impact
+4. **Post-Mortem and Investigation**:
+   - **Isolate the Faulty Version**: Mark the failed release artifact as "bad" in the artifact repository to prevent accidental redeployment.
+   - **Create a Post-Mortem Report**: A formal post-mortem is required. Create a new GitHub issue using the "Post-Mortem" template.
+   - **Investigate Root Cause**: The issue must be investigated to understand why the failure occurred and was not caught in staging. The faulty code must be reverted from the `main` branch. Do not attempt a new deployment until the root cause is fixed and a new version is created.
 
-5. **Execute Rollback** (if needed):
-   - Trigger rollback workflow
-   - Verify previous version deploying
-   - Confirm service recovering
-   - Run health checks
-   - Document rollback time
-
-6. **Verify Recovery**:
-   - All services healthy
-   - Users able to access
-   - Error rates normalized
-   - Performance baseline restored
-   - No lingering issues
-
-7. **Post-Incident**:
-   - Collect logs and metrics
-   - Document timeline
-   - Identify root cause
-   - Plan preventive measures
-   - Share learning with team
-   - Close incident ticket
+5. **Prevent Recurrence**:
+   - Identify and implement corrective actions. This could include adding new tests, improving health checks, or refining the deployment process.
+   - Update documentation if necessary to reflect any changes in procedure.
 
 ---
 
