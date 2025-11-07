@@ -5,6 +5,27 @@ All notable changes to CodeSentinel will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Phase 3: Extended Governance & Automation**
+  - **New T4b Satellites**: Introduced three new core governance satellites for procedural instructions:
+    - `github/AGENT_INSTRUCTIONS.md`: Manages source code, PRs, and repository workflows.
+    - `deployment/AGENT_INSTRUCTIONS.md`: Governs CI/CD, deployments, and rollback procedures.
+    - `infrastructure/AGENT_INSTRUCTIONS.md`: Manages Infrastructure as Code (IaC) with Terraform.
+  - **New T4a Strategic Guides**: Added two high-level guides to direct long-term strategy:
+    - `docs/ADVANCED_ANALYTICS_FRAMEWORK.md`: Establishes a framework for measuring system and agent performance.
+    - `docs/ENTERPRISE_INTEGRATION_GUIDE.md`: Outlines a strategy for scaling CodeSentinel in an enterprise environment.
+  - **New T4c Quick Reference Cards**: Created three scannable, one-page reference cards for engineers:
+    - `docs/quick_reference/github_operations.md`
+    - `docs/quick_reference/deployment_operations.md`
+    - `docs/quick_reference/infrastructure_operations.md`
+  - **Comprehensive Validation**: Completed a full integration and validation audit (Iteration 4), including:
+    - Documentation linkage verification.
+    - Strategic guide applicability tests.
+    - Performance baselining (APET and DPC scores).
+    - Security, efficiency, and minimalism principle audits.
+
 ## [1.0.3] - 2025-11-06
 
 ### Governance - PERMANENT POLICY
