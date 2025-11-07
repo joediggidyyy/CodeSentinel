@@ -552,9 +552,9 @@ This is the **critical path for code reaching production**. Reliability, safety,
 
 **Deployment Tools**:
 
-- GitHub Actions: https://github.com/features/actions
-- Docker: https://www.docker.com
-- Kubernetes: https://kubernetes.io
+- GitHub Actions: <https://github.com/features/actions>
+- Docker: <https://www.docker.com>
+- Kubernetes: <https://kubernetes.io>
 
 **Related Satellites**:
 
@@ -564,7 +564,7 @@ This is the **critical path for code reaching production**. Reliability, safety,
 
 **CodeSentinel References**:
 
-- Repository: https://github.com/joediggidyyy/CodeSentinel
+- Repository: <https://github.com/joediggidyyy/CodeSentinel>
 - CHANGELOG: `CHANGELOG.md` in root
 - Release notes: GitHub releases page
 

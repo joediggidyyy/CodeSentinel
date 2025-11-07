@@ -327,7 +327,7 @@ This is the **enterprise integration point** for CodeSentinel. Changes here affe
 
 ### Q: How do I handle merge conflicts?
 
-**A**: 
+**A**:
 
 1. Pull latest main: `git pull origin main`
 2. Fix conflicts in your editor
@@ -369,17 +369,20 @@ This is the **enterprise integration point** for CodeSentinel. Changes here affe
 **A**:
 
 Option 1 (Manual):
+
 - Update version file manually
 - Commit with message: `chore: bump version to 1.0.4`
 - Tag commit: `git tag v1.0.4`
 
 Option 2 (Automated):
+
 - Use tools like `bump-my-version` or similar
 - Configure version file locations
 - Run in CI/CD: `bump-my-version bump patch`
 - Automatically commit and tag
 
 Option 3 (Workflow):
+
 - GitHub Action: `actions/create-release` with auto-version
 - Use conventional commits to determine version
 - Automatically generate changelog
@@ -389,6 +392,7 @@ Option 3 (Workflow):
 **A**:
 
 Canary Deployment:
+
 1. Deploy to small percentage of infrastructure (e.g., 5%)
 2. Monitor error rates and metrics
 3. If healthy, gradually increase to 10%, 25%, 50%, 100%
@@ -396,6 +400,7 @@ Canary Deployment:
 5. Automation: Use GitHub Actions with deployment gates
 
 Blue-Green Deployment:
+
 1. Maintain two identical production environments (Blue, Green)
 2. Deploy to inactive environment (Green)
 3. Run tests against Green
@@ -427,6 +432,7 @@ Blue-Green Deployment:
 **A**:
 
 Structure:
+
 ```
 .github/
 └── workflows/
@@ -438,6 +444,7 @@ Structure:
 ```
 
 Each workflow should:
+
 - Have single clear purpose
 - Be named descriptively
 - Include comments explaining logic
@@ -516,13 +523,13 @@ gh release create v1.0.3 -t "Version 1.0.3" -n "Release notes"
 
 **GitHub Documentation**:
 
-- GitHub Docs: https://docs.github.com
-- GitHub Actions: https://github.com/features/actions
-- GitHub API: https://docs.github.com/rest
+- GitHub Docs: <https://docs.github.com>
+- GitHub Actions: <https://github.com/features/actions>
+- GitHub API: <https://docs.github.com/rest>
 
 **CodeSentinel References**:
 
-- Repository: https://github.com/joediggidyyy/CodeSentinel
+- Repository: <https://github.com/joediggidyyy/CodeSentinel>
 - Issues: GitHub repository issues page
 - Releases: GitHub repository releases page
 - CHANGELOG: `CHANGELOG.md` in root
