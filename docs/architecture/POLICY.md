@@ -54,7 +54,7 @@ This policy is persistent and loaded on every run, guaranteeing that `!!!!` neve
 **Scope**: All CodeSentinel documentation, comments, and public-facing content  
 **Authority**: Core Principle - Elegant Professionalism
 
-### Directive Statement
+### Professional Standards Directive
 
 **All documentation will maintain professional elegance through consistent styling:**
 
@@ -84,14 +84,14 @@ This policy is persistent and loaded on every run, guaranteeing that `!!!!` neve
    - Tree structures rendered as clean ASCII (├──, └──, │) not Unicode box-drawing
    - All non-ASCII characters must be intentional and serve a purpose
 
-### Enforcement
+### Standards Enforcement
 
 - Code reviews will verify documentation meets these standards
 - CI/CD pipeline will validate UTF-8 encoding and character integrity
 - Policy applies to README files, architectural documents, code comments, and API documentation
 - Violations identified during `!!!!` audits will be flagged for correction
 
-### Rationale
+### Professional Standards Rationale
 
 Professional documentation builds trust with enterprise users and demonstrates security-first competence. Elegant simplicity in presentation reflects the same care applied to code security and reliability. This directive reinforces CodeSentinel's commitment to professionalism alongside its security principles.
 
@@ -124,7 +124,7 @@ CodeSentinel implements a 5-tier document classification system determining docu
 
 ### Archive Structure
 
-```
+```yaml
 archive/
 ├── active/
 │   ├── tier0_secret/
@@ -161,7 +161,51 @@ See `docs/architecture/DOCUMENT_CLASSIFICATION.md` for comprehensive policy deta
 
 ---
 
-## Validation & Quality Assurance (T4a-Permanent Directive)
+## Agent Instruction Optimization Strategy (T4a-Permanent Directive)
+
+**Classification**: T4a - Core Agent Foundation Documentation  
+**Effective Date**: November 7, 2025  
+**Reference**: `docs/architecture/AGENT_INSTRUCTION_STRATEGY.md`
+
+### Strategy Summary
+
+CodeSentinel implements a hierarchical agent instruction strategy to optimize comprehension efficiency while maintaining policy adherence:
+
+- **Global Foundation**: Universal principles and mandatory requirements
+- **Satellite Instructions**: Subtree-specific procedural guidance
+- **Quick References**: At-a-glance decision support during task execution
+
+### Strategic Rationale
+
+**Reduce Cognitive Overhead**:
+
+- Global policies read once per session: ~900 lines
+- Satellite instructions read per subtree: ~50-150 lines each
+- Quick references consulted for decisions: ~5-10 lines
+- 80-90% reduction in per-task policy consultation
+
+**Maintain Compliance**:
+
+- Satellite instructions explicitly reference global policies
+- Authority matrices embedded prevent unauthorized operations
+- Decision trees guide compliant actions
+- Periodic consistency audits ensure alignment
+
+### Satellite Architecture
+
+Satellite AGENT_INSTRUCTIONS.md files distributed throughout operational subtrees:
+
+- `codesentinel/AGENT_INSTRUCTIONS.md` - CLI/core operations
+- `tools/codesentinel/AGENT_INSTRUCTIONS.md` - Maintenance automation
+- `tests/AGENT_INSTRUCTIONS.md` - Testing procedures
+- `docs/AGENT_INSTRUCTIONS.md` - Documentation operations
+- Additional satellites per operational domain as needed
+
+**Usage Pattern**: Load satellite when working in specific subtree. Consult quick reference for operational decisions. Escalate to global policies for new situations or conflicts.
+
+See `docs/architecture/AGENT_INSTRUCTION_STRATEGY.md` for comprehensive strategy details, implementation templates, and satellite design patterns.
+
+---
 
 **Classification**: T4a - Core Agent Foundation Documentation  
 **Effective Date**: November 7, 2025  
@@ -171,7 +215,7 @@ See `docs/architecture/DOCUMENT_CLASSIFICATION.md` for comprehensive policy deta
 
 **All work must pass final validation before commits or task closure.**
 
-### Implementation Requirements
+### Validation Requirements
 
 1. **Pre-Commit Validation**
    - All changes reviewed for correctness and completeness
@@ -221,6 +265,6 @@ Before suggesting commits or closing tasks:
 - [ ] No outstanding blockers or TODOs
 - [ ] Final review passed
 
-### Rationale
+### Validation Rationale
 
 Validation before closure ensures high quality, prevents regressions, maintains policy compliance, and demonstrates professional execution. This directive reinforces CodeSentinel's commitment to security and reliability through careful verification practices.
