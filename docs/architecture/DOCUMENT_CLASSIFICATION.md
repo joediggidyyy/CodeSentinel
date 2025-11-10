@@ -147,12 +147,6 @@ Tier 1 documents are part of the core CodeSentinel package. Infrastructure and p
 - Creation: Agent discretion
 - Minor modifications: Agent discretion
 - Major modifications: User approval required
-- Deletion: User approval required, then archive
-- Archival: archive/[type]/[doc_name]/ (single version unless major revision)
-
-**Branding**:
-
-- Subtle professional identifier
 - CodeSentinel logo or name where appropriate
 - Professional formatting per Documentation Standards policy
 - No excessive decoration
@@ -299,15 +293,8 @@ Tier 1 documents are part of the core CodeSentinel package. Infrastructure and p
 - Backup location: parent directory/archive_backup/
 - Never deleted; only versioned and superseded
 
----
-
-#### Tier 4b: Infrastructure & Procedural Agent Documentation
-
 **Purpose**: Agent procedures for infrastructure management and operational tasks
 
-**Characteristics**:
-
-- Standard operating procedures for agent execution
 - Infrastructure maintenance documentation
 - Procedural checklists and workflows
 - Agent modification permitted; user verification for deletion of user-requested docs
@@ -319,9 +306,6 @@ Tier 1 documents are part of the core CodeSentinel package. Infrastructure and p
 - Backup and restore procedures
 - Release procedures
 - Maintenance checklists
-- CI/CD pipeline documentation
-
-**Storage**:
 
 - Git-tracked or separate as appropriate
 - Organized by procedure type
@@ -415,34 +399,12 @@ archive/
 │   │       └── [doc_name]/
 │   │           └── archived_versions/
 │   ├── tier2_informative/
-│   ├── tier3_temporary/
-│   └── tier4_agent/
-│
-└── metadata/
-    ├── archive_index.json
-    ├── classification_audit.log
-    └── backup_manifest.json
-```
 
 **Note on Tier 0**: Secret documents are NOT included in this archive structure. They are stored in separate encrypted storage managed by the user.
 
-### Archive Metadata
-
-```json
-{
-  "index_version": "1.0",
-  "last_updated": "2025-11-07",
-  "total_documents": 127,
   "tiers": {
     "tier1": {
       "count": 23,
-      "location": "archive/active/tier1_critical/"
-    },
-    "tier2": {
-      "count": 45,
-      "location": "archive/active/tier2_informative/"
-    },
-    "tier3": {
       "count": 34,
       "location": "archive/active/tier3_temporary/"
     },
@@ -464,25 +426,16 @@ archive/
 
 **Rule**: When a directory contains approximately 12 or more files, it will be assessed for categorical division.
 
-**Assessment Process**:
-
 1. **Identify Categories**: Analyze the files in the directory for clear categorical classifications
 2. **Determine Clarity**: Assess whether a clear categorical grouping exists (e.g., by type, function, tier, date range)
 3. **Evaluate Impact**: For each potential division, determine whether separating files into multiple subdirectories would:
    - **Enhance** overall usability and efficiency, OR
-   - **Detract** from overall usability and efficiency
 
 ### Decision Criteria
 
-**Enhance Usability & Efficiency When**:
-
-- Subcategories are functionally distinct (files serve different purposes)
 - Navigation time is reduced (users can locate needed files faster)
 - Maintenance is simplified (related files grouped together)
 - Future scalability is improved (room for growth within categories)
-- Tier or classification boundaries naturally align with categories
-- Users or agents regularly access only a subset of files
-
 **Detract from Usability & Efficiency When**:
 
 - Files are conceptually related despite surface differences
@@ -752,3 +705,23 @@ docs/agent_temp/
 | 1.0 | November 7, 2025 | CodeSentinel Policy Framework | Initial comprehensive classification system |
 
 **Next Review**: December 7, 2025
+
+---
+
+## Permanent Global Policy Amendment: Duplication Mitigation
+
+**Effective Immediately:**
+
+- All document tiers and lifecycle management procedures must enforce intelligent duplication mitigation.
+- Duplicates are to be merged or deleted if and only if:
+  - Data preservation is guaranteed (no unique content lost).
+  - Minimalism is enforced (no unnecessary files or redundancy).
+- Intelligent analysis (automated or manual) must be performed before any merger or deletion.
+- Legacy or ambiguous versions are archived if needed, but redundant files are removed to maintain a clean, minimal, and secure codebase.
+- This amendment is permanent and global, superseding previous non-destructive-only rules where duplication is present.
+
+**Integration:**
+
+- Applies to all document tiers (0-4), classification, archival, and deletion procedures.
+- All automation, audits, and agent-driven workflows must implement this policy.
+- The system remains whole, secure, and improved, with minimalism as a core principle.

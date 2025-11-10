@@ -8,7 +8,10 @@ Handles scheduling and execution of automated maintenance tasks.
 import json
 import logging
 import time
+import os
+import psutil
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, Any, Optional, Callable
 import threading
 
@@ -18,6 +21,9 @@ try:
 except ImportError:
     schedule = None
     SCHEDULE_AVAILABLE = False
+
+# State file location
+STATE_FILE = Path.home() / ".codesentinel" / "scheduler.state"
 
 
 class MaintenanceScheduler:
@@ -47,6 +53,38 @@ class MaintenanceScheduler:
             'monthly': self._run_monthly_tasks
         }
 
+    def _save_state(self, active: bool, pid: Optional[int] = None):
+        """Save scheduler state to file."""
+        try:
+            STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+            state = {
+                'active': active,
+                'pid': pid or os.getpid(),
+                'timestamp': datetime.now().isoformat()
+            }
+            with open(STATE_FILE, 'w') as f:
+                json.dump(state, f)
+        except Exception as e:
+            self.logger.warning(f"Failed to save scheduler state: {e}")
+
+    def _load_state(self) -> Dict[str, Any]:
+        """Load scheduler state from file."""
+        try:
+            if STATE_FILE.exists():
+                with open(STATE_FILE, 'r') as f:
+                    return json.load(f)
+        except Exception as e:
+            self.logger.warning(f"Failed to load scheduler state: {e}")
+        return {}
+
+    def _clear_state(self):
+        """Clear scheduler state file."""
+        try:
+            if STATE_FILE.exists():
+                STATE_FILE.unlink()
+        except Exception as e:
+            self.logger.warning(f"Failed to clear scheduler state: {e}")
+
     def start(self):
         """Start the maintenance scheduler."""
         if self.running:
@@ -54,8 +92,12 @@ class MaintenanceScheduler:
             return
 
         self.running = True
+        # Use daemon thread for in-process scheduling
         self.scheduler_thread = threading.Thread(target=self._run_scheduler, daemon=True)
         self.scheduler_thread.start()
+        
+        # Save state with current PID
+        self._save_state(active=True)
 
         self.logger.info("Maintenance scheduler started")
 
@@ -64,11 +106,34 @@ class MaintenanceScheduler:
         self.running = False
         if self.scheduler_thread:
             self.scheduler_thread.join(timeout=5)
+        
+        # Clear state file
+        self._clear_state()
+        
         self.logger.info("Maintenance scheduler stopped")
 
     def is_active(self) -> bool:
         """Check if scheduler is active."""
-        return bool(self.running and self.scheduler_thread and self.scheduler_thread.is_alive())
+        # Check in-process thread status first
+        if self.running and self.scheduler_thread and self.scheduler_thread.is_alive():
+            return True
+        
+        # Check persisted state from state file
+        state = self._load_state()
+        if state.get('active'):
+            pid = state.get('pid')
+            # Verify the process is still running
+            if pid:
+                try:
+                    process = psutil.Process(pid)
+                    # Check if it's a Python process (scheduler should be Python)
+                    if process.is_running() and 'python' in process.name().lower():
+                        return True
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    # Process no longer exists, clear stale state
+                    self._clear_state()
+        
+        return False
 
     def _run_scheduler(self):
         """Run the scheduler loop."""
@@ -215,11 +280,71 @@ class MaintenanceScheduler:
 
     def _run_daily_tasks(self) -> Dict[str, Any]:
         """Run daily maintenance tasks."""
-        # Placeholder for actual daily tasks
+        tasks_executed = []
+        errors = []
+        
+        # Root directory cleanup
+        try:
+            from tools.codesentinel.root_cleanup import RootDirectoryValidator
+            import os
+            
+            repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            validator = RootDirectoryValidator(repo_root, dry_run=False, logger=self.logger)
+            
+            # Validate root directory
+            validation_result = validator.validate()
+            if validation_result['summary']['total_issues'] > 0:
+                self.logger.info(f"Root directory issues found: {validation_result['summary']['total_issues']}")
+                
+                # Execute cleanup
+                cleanup_result = validator.cleanup()
+                tasks_executed.append('root_directory_cleanup')
+                
+                if cleanup_result['total_processed'] > 0:
+                    self.logger.info(f"Root cleanup processed {cleanup_result['total_processed']} items")
+            else:
+                tasks_executed.append('root_directory_validation')
+                
+        except ImportError:
+            self.logger.warning("Root cleanup module not available - skipping")
+            errors.append("Root cleanup module not available")
+        except Exception as e:
+            self.logger.error(f"Root cleanup error: {e}")
+            errors.append(f"Root cleanup failed: {str(e)}")
+        
+        # Document formatting and style checking
+        try:
+            from codesentinel.utils.document_formatter import DocumentFormatter, StyleChecker, FormattingScheme
+            import os
+            from pathlib import Path
+            
+            repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            docs_dir = Path(repo_root) / 'docs'
+            
+            if docs_dir.exists():
+                # Check document style
+                style_checker = StyleChecker(logger=self.logger)
+                check_result = style_checker.check_directory(docs_dir, pattern='**/*.md')
+                
+                if check_result['total_issues'] > 0:
+                    self.logger.info(f"Document style issues found: {check_result['total_issues']}")
+                    tasks_executed.append('document_style_check')
+                else:
+                    tasks_executed.append('document_style_validation')
+                    
+        except ImportError:
+            self.logger.warning("Document formatter not available - skipping")
+        except Exception as e:
+            self.logger.error(f"Document formatting error: {e}")
+            errors.append(f"Document formatting failed: {str(e)}")
+        
+        # Standard daily tasks
+        tasks_executed.extend(['security_check', 'dependency_update', 'log_cleanup'])
+        
         return {
             'task_type': 'daily',
-            'tasks_executed': ['security_check', 'dependency_update', 'log_cleanup'],
-            'errors': [],
+            'tasks_executed': tasks_executed,
+            'errors': errors,
             'warnings': []
         }
 

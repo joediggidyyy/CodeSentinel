@@ -7,6 +7,8 @@ CLI entry point for CodeSentinel operations.
 
 import argparse
 import sys
+import os
+import subprocess
 import atexit
 from pathlib import Path
 from typing import Optional
@@ -242,11 +244,67 @@ Examples:
         elif args.command == 'schedule':
             if args.action == 'start':
                 print("Starting maintenance scheduler...")
-                # codesentinel.scheduler.start()
-                print("Scheduler started")
+                try:
+                    # Create a Python script that runs the scheduler
+                    scheduler_script = Path.home() / ".codesentinel" / "run_scheduler.py"
+                    scheduler_script.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    # Find the CodeSentinel package location
+                    import codesentinel
+                    package_dir = Path(codesentinel.__file__).parent.parent
+                    
+                    script_content = f"""
+import sys
+import time
+from pathlib import Path
+
+# Add CodeSentinel to path
+sys.path.insert(0, r'{package_dir}')
+
+from codesentinel.core import CodeSentinel
+
+cs = CodeSentinel()
+cs.scheduler.start()
+
+# Keep process alive
+try:
+    while cs.scheduler.running:
+        time.sleep(60)
+except KeyboardInterrupt:
+    cs.scheduler.stop()
+"""
+                    with open(scheduler_script, 'w') as f:
+                        f.write(script_content)
+                    
+                    print(f"Scheduler script created: {scheduler_script}")
+                    
+                    # Start background process
+                    if sys.platform == 'win32':
+                        # Windows: use CREATE_NO_WINDOW flag (0x08000000)
+                        CREATE_NO_WINDOW = 0x08000000
+                        subprocess.Popen(
+                            [sys.executable, str(scheduler_script)],
+                            creationflags=CREATE_NO_WINDOW,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
+                    else:
+                        # Unix: standard background process
+                        subprocess.Popen(
+                            [sys.executable, str(scheduler_script)],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            preexec_fn=os.setsid
+                        )
+                    
+                    print("Scheduler started in background")
+                except Exception as e:
+                    print(f"Error starting scheduler: {e}")
+                    import traceback
+                    traceback.print_exc()
             elif args.action == 'stop':
                 print("Stopping maintenance scheduler...")
-                # codesentinel.scheduler.stop()
+                codesentinel.scheduler.stop()
                 print("Scheduler stopped")
             elif args.action == 'status':
                 print("Scheduler status:")

@@ -319,6 +319,7 @@ class WizardApp:
             ("IDE Integration", self._step_ide),
             ("GitHub Copilot Integration", self._step_copilot),
             ("Optional Features", self._step_optional),
+            ("Document Formatting", self._step_formatting),
             ("Summary", self._step_summary),
         ]
 
@@ -1343,6 +1344,91 @@ class WizardApp:
         # Separator
         if show_separator:
             ttk.Separator(feature_frame, orient='horizontal').pack(fill="x", pady=(6, 0))
+
+    def _step_formatting(self):
+        """Document formatting configuration step."""
+        f = ttk.Frame(self.body)
+        
+        # Compact header
+        ttk.Label(f, text="Configure document formatting rules for consistent code style and documentation.", 
+                 font=('Arial', 9), foreground="gray").pack(anchor="w", pady=(0, 10))
+        
+        # Import formatting GUI components
+        from .gui.formatting_config import FormattingSchemeSelector, FormattingCustomizationPanel
+        
+        # Initialize formatting data if not present
+        if "formatting" not in self.data:
+            self.data["formatting"] = {
+                "enabled": True,
+                "scheme": "black",
+                "custom_config": {}
+            }
+        
+        # Main content area - two columns
+        content_frame = ttk.Frame(f)
+        content_frame.pack(fill="both", expand=True, pady=(0, 10))
+        
+        # Left column: Style Convention Selection
+        left_frame = ttk.LabelFrame(content_frame, text="Step 1: Select Style Convention", padding=10)
+        left_frame.pack(side=tk.LEFT, fill="both", expand=True, padx=(0, 10))
+        
+        ttk.Label(left_frame, text="Choose a formatting scheme:", 
+                 font=('Arial', 9)).pack(anchor="w", pady=(0, 8))
+        
+        # Scheme selector - compact version
+        self.formatting_scheme_selector = FormattingSchemeSelector(left_frame, compact=True)
+        self.formatting_scheme_selector.pack(fill="both", expand=True)
+        
+        # Set default scheme
+        default_scheme = self.data["formatting"].get("scheme", "black")
+        self.formatting_scheme_selector.current_scheme.set(default_scheme)
+        
+        # Right column: Custom Configuration
+        right_frame = ttk.LabelFrame(content_frame, text="Step 2: Configure Options", padding=10)
+        right_frame.pack(side=tk.LEFT, fill="both", expand=True, padx=(10, 0))
+        
+        ttk.Label(right_frame, text="Fine-tune formatting:", 
+                 font=('Arial', 9)).pack(anchor="w", pady=(0, 8))
+        
+        # Custom configuration panel
+        self.formatting_custom_panel = FormattingCustomizationPanel(right_frame)
+        self.formatting_custom_panel.pack(fill="both", expand=True)
+        
+        # Connect scheme selector to options panel
+        self.formatting_scheme_selector.on_scheme_change = lambda s: self.formatting_custom_panel.set_scheme(s)
+        
+        # Set initial lock state
+        self.formatting_custom_panel.set_scheme(default_scheme)
+        
+        # Enable/Disable formatting
+        enable_frame = ttk.Frame(f)
+        enable_frame.pack(fill="x", pady=(8, 0))
+        
+        self.formatting_enabled = tk.BooleanVar(value=self.data["formatting"].get("enabled", True))
+        ttk.Checkbutton(
+            enable_frame,
+            text="Enable document formatting in daily maintenance",
+
+            variable=self.formatting_enabled
+        ).pack(anchor="w")
+        
+        ttk.Label(
+            enable_frame,
+            text="When enabled, document formatting checks run automatically during scheduled maintenance.",
+            font=('Arial', 8),
+            foreground="gray"
+        ).pack(anchor="w", padx=(20, 0), pady=(2, 0))
+        
+        def collect():
+            """Collect formatting configuration."""
+            self.data["formatting"] = {
+                "enabled": bool(self.formatting_enabled.get()),
+                "scheme": self.formatting_scheme_selector.get_scheme(),
+                "custom_config": self.formatting_custom_panel.get_settings()
+            }
+        
+        f.collect = collect  # type: ignore
+        return f
 
     def _step_summary(self):
         f = ttk.Frame(self.body)
