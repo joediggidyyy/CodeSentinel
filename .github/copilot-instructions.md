@@ -62,7 +62,7 @@ When working with this codebase:
 4. **SECURITY FIRST**: Security concerns always take priority
 5. **PERMANENT POLICY (T0-5)**: Framework compliance review required with every package release
    - Every pre-release and production release must include comprehensive framework compliance review
-   - Review must verify SECURITY > EFFICIENCY > MINIMALISM alignment
+   - Review must verify SEAM Protected™: Security, Efficiency, And Minimalism alignment
    - Review must validate all persistent policies (non-destructive, feature preservation, security-first)
    - Compliance review is a release-blocking requirement, cannot be deferred
    - Classified as Constitutional (Irreversible) tier in governance system

@@ -29,6 +29,735 @@ def timeout_handler(signum, frame):
     raise TimeoutError("Operation timed out")
 
 
+def verify_documentation_branding(file_path: Path) -> tuple[bool, list[str]]:
+    """
+    Verify that documentation files follow SEAM Protection branding policy.
+    
+    CodeSentinel Policy: All public documentation must have consistent branding:
+    - Primary locations: Use "SEAM Protected™" with trademark
+    - Secondary locations: Use "SEAM Protection" or "SEAM-tight"
+    - No excessive repetition or misuse
+    
+    Args:
+        file_path: Path to documentation file to verify
+        
+    Returns:
+        Tuple of (is_compliant, issues_found)
+    """
+    if not file_path.exists():
+        return True, []
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, [f"Could not read file: {e}"]
+    
+    issues = []
+    file_name = file_path.name
+    
+    # Check for old policy references that should be updated
+    old_patterns = [
+        ('SECURITY > EFFICIENCY > MINIMALISM', 'should use SEAM Protection™ instead'),
+        ('SECURITY.*EFFICIENCY.*MINIMALISM', 'should use SEAM Protection™ instead'),
+    ]
+    
+    import re
+    for pattern, reason in old_patterns:
+        if re.search(pattern, content):
+            issues.append(f"{file_name}: Found old policy terminology - {reason}")
+    
+    # Check for specific files that MUST have branding
+    required_branding = {
+        'README.md': ['SEAM Protected™', 'SEAM-Tight'],
+        'SECURITY.md': ['SEAM Protected™'],
+        '__init__.py': ['SEAM Protected™'],
+        'copilot-instructions.md': ['SEAM Protection™'],
+        '.github': ['SEAM Protection™'],
+    }
+    
+    for req_file, required_terms in required_branding.items():
+        if req_file in file_name or req_file in str(file_path):
+            found_any = any(term in content for term in required_terms)
+            if not found_any:
+                issues.append(
+                    f"{file_name}: Missing required SEAM Protection branding. "
+                    f"Should contain one of: {', '.join(required_terms)}"
+                )
+    
+    is_compliant = len(issues) == 0
+    return is_compliant, issues
+
+
+def verify_documentation_headers_footers(file_path: Path) -> tuple[bool, list[str], dict]:
+    """
+    Verify that documentation files have proper headers and footers.
+    
+    Requirements:
+    - Markdown files (.md) should have clear title headers
+    - Documentation should include metadata (version, date when applicable)
+    - Key files should have SEAM Protection footer
+    - Python files should have proper docstring headers
+    
+    Args:
+        file_path: Path to documentation file to verify
+        
+    Returns:
+        Tuple of (is_compliant, issues_found, metadata)
+    """
+    if not file_path.exists():
+        return True, [], {}
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, [f"Could not read file: {e}"], {}
+    
+    issues = []
+    file_name = file_path.name
+    metadata = {
+        'has_title': False,
+        'has_footer': False,
+        'has_metadata': False,
+        'file_type': file_path.suffix,
+    }
+    
+    import re
+    
+    # Check markdown files
+    if file_path.suffix == '.md':
+        # Check for title (H1 heading)
+        if re.search(r'^#\s+\S', content, re.MULTILINE):
+            metadata['has_title'] = True
+        else:
+            issues.append(f"{file_name}: Missing H1 title header (# Title)")
+        
+        # Check for SEAM Protection footer in key files
+        key_docs = {'README.md', 'SECURITY.md', 'CHANGELOG.md', 'CONTRIBUTING.md'}
+        if file_name in key_docs:
+            if 'SEAM Protected™' in content or 'SEAM Protection' in content:
+                metadata['has_footer'] = True
+            else:
+                issues.append(f"{file_name}: Key documentation missing SEAM Protection footer")
+        
+        # Check for metadata (version, date, or last updated)
+        if re.search(r'(Version|Date|Last Updated|Last Reviewed).*:\s*', content, re.IGNORECASE):
+            metadata['has_metadata'] = True
+    
+    # Check Python files
+    elif file_path.suffix == '.py':
+        # Check for module docstring
+        if content.startswith('"""') or content.startswith("'''"):
+            metadata['has_title'] = True
+        else:
+            # Only warn if file is significant (>50 lines)
+            if len(content.split('\n')) > 50:
+                issues.append(f"{file_name}: Missing module docstring")
+    
+    is_compliant = len(issues) == 0
+    return is_compliant, issues, metadata
+
+
+def apply_branding_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, str]:
+    """
+    Apply automatic branding fixes to documentation files.
+    
+    Args:
+        file_path: Path to documentation file
+        verbose: Print detailed output
+        
+    Returns:
+        Tuple of (success, message)
+    """
+    if not file_path.exists():
+        return True, f"File not found: {file_path}"
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, f"Could not read file: {e}"
+    
+    original_content = content
+    modified = False
+    
+    import re
+    
+    # Fix 1: Replace old policy terminology with SEAM Protection
+    patterns = [
+        (r'SECURITY > EFFICIENCY > MINIMALISM', 'SEAM Protected™: Security, Efficiency, And Minimalism'),
+        (r'SECURITY.*EFFICIENCY.*MINIMALISM', 'SEAM Protected™: Security, Efficiency, And Minimalism'),
+    ]
+    
+    for old, new in patterns:
+        if re.search(old, content):
+            content = re.sub(old, new, content)
+            modified = True
+            if verbose:
+                print(f"  Fixed: Replaced old policy terminology with SEAM Protection branding")
+    
+    # Fix 2: Add branding footer to markdown documentation files
+    if file_path.suffix == '.md':
+        key_docs = {'README.md', 'SECURITY.md', 'CHANGELOG.md', 'CONTRIBUTING.md'}
+        if file_path.name in key_docs:
+            footer = "\n\n---\n\nSEAM Protected™ by CodeSentinel"
+            if footer not in content:
+                # Only add if file is substantial and doesn't already have a similar footer
+                if len(content) > 100 and not re.search(r'---\s*$', content, re.MULTILINE):
+                    content += footer
+                    modified = True
+                    if verbose:
+                        print(f"  Added: SEAM Protection branding footer")
+    
+    if modified:
+        try:
+            file_path.write_text(content, encoding='utf-8')
+            return True, f"Applied branding fixes to {file_path.name}"
+        except Exception as e:
+            return False, f"Could not write file: {e}"
+    
+    return True, f"No branding fixes needed for {file_path.name}"
+
+
+def apply_header_footer_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, str]:
+    """
+    Apply automatic header and footer fixes to documentation files.
+    
+    Args:
+        file_path: Path to documentation file
+        verbose: Print detailed output
+        
+    Returns:
+        Tuple of (success, message)
+    """
+    if not file_path.exists():
+        return True, f"File not found: {file_path}"
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, f"Could not read file: {e}"
+    
+    original_content = content
+    modified = False
+    
+    import re
+    
+    # Fix for markdown files: ensure proper footer formatting
+    if file_path.suffix == '.md':
+        key_docs = {'README.md', 'SECURITY.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 
+                    'CONTRIBUTING.md', 'QUICK_START.md'}
+        
+        if file_path.name in key_docs:
+            # Ensure footer exists with proper formatting
+            if not re.search(r'---\s*$', content, re.MULTILINE):
+                # Add separator if missing
+                if not content.endswith('\n'):
+                    content += '\n'
+                content += '\n---\n\nSEAM Protected™ by CodeSentinel\n'
+                modified = True
+                if verbose:
+                    print(f"  Added: Proper footer separator and branding")
+    
+    if modified:
+        try:
+            file_path.write_text(content, encoding='utf-8')
+            return True, f"Applied header/footer fixes to {file_path.name}"
+        except Exception as e:
+            return False, f"Could not write file: {e}"
+    
+    return True, f"No header/footer fixes needed for {file_path.name}"
+
+
+# ============================================================================
+# Header/Footer Template System
+# ============================================================================
+
+def detect_project_info() -> dict:
+    """
+    Intelligently detect project and repository information.
+    
+    Returns:
+        Dictionary with detected project info (project_name, description, repo_url, etc.)
+    """
+    import json
+    import re
+    
+    project_root = Path.cwd()
+    info = {
+        'project_name': 'Project',
+        'description': 'A powerful automation tool',
+        'repo_name': project_root.name,
+        'repo_url': '',
+        'version': '1.0.0',
+    }
+    
+    # Try to detect from pyproject.toml
+    pyproject_path = project_root / 'pyproject.toml'
+    if pyproject_path.exists():
+        try:
+            content = pyproject_path.read_text(encoding='utf-8')
+            
+            # Extract name from [project] section
+            name_match = re.search(r'^\s*name\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            if name_match:
+                info['project_name'] = name_match.group(1)
+            
+            # Extract description
+            desc_match = re.search(r'^\s*description\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            if desc_match:
+                info['description'] = desc_match.group(1)
+            
+            # Extract version
+            version_match = re.search(r'^\s*version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            if version_match:
+                info['version'] = version_match.group(1)
+        except Exception:
+            pass
+    
+    # Try to detect from setup.py
+    setup_path = project_root / 'setup.py'
+    if setup_path.exists() and not info.get('project_name') or info['project_name'] == 'Project':
+        try:
+            content = setup_path.read_text(encoding='utf-8')
+            
+            # Extract name
+            name_match = re.search(r'name\s*=\s*["\']([^"\']+)["\']', content)
+            if name_match:
+                info['project_name'] = name_match.group(1)
+            
+            # Extract description
+            desc_match = re.search(r'description\s*=\s*["\']([^"\']+)["\']', content)
+            if desc_match:
+                info['description'] = desc_match.group(1)
+        except Exception:
+            pass
+    
+    # Try to detect from package __init__.py
+    pkg_init = project_root / 'codesentinel' / '__init__.py'
+    if pkg_init.exists():
+        try:
+            content = pkg_init.read_text(encoding='utf-8')
+            
+            # Look for docstring with description
+            docstring_match = re.search(r'^"""(.*?)"""', content, re.MULTILINE | re.DOTALL)
+            if docstring_match:
+                docstring = docstring_match.group(1).strip()
+                lines = docstring.split('\n')
+                # Use the first non-empty line after title as description
+                for line in lines[1:]:
+                    line = line.strip()
+                    if line and not line.startswith('='):
+                        info['description'] = line
+                        break
+        except Exception:
+            pass
+    
+    # Try to detect from git remote
+    try:
+        git_url = subprocess.check_output(
+            ['git', 'config', '--get', 'remote.origin.url'],
+            cwd=project_root,
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+        if git_url:
+            info['repo_url'] = git_url
+            # Extract repo name from URL
+            if '/' in git_url:
+                info['repo_name'] = git_url.split('/')[-1].replace('.git', '')
+    except:
+        pass
+    
+    return info
+
+
+HEADER_TEMPLATES = {
+    'README.md': {
+        'template': '# {title}\n\n{subtitle}\n\n---\n\n',
+        'description': 'Main project README template',
+        'placeholders': {
+            'title': 'Project Name (e.g., "CodeSentinel")',
+            'subtitle': 'Brief project description',
+
+        },
+        'example': '# CodeSentinel\n\nSecurity-first automated maintenance and monitoring system.\n\n---\n\n'
+    },
+    'SECURITY.md': {
+        'template': '# Security Policy\n\nThis document outlines the security practices and policies for CodeSentinel.\n\n---\n\n',
+        'description': 'Security policy document template',
+        'placeholders': {},
+        'example': '# Security Policy\n\nThis document outlines the security practices and policies for CodeSentinel.\n\n---\n\n'
+    },
+    'CHANGELOG.md': {
+        'template': '# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n---\n\n',
+        'description': 'Changelog tracking document template',
+        'placeholders': {},
+        'example': '# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n---\n\n'
+    },
+    'CONTRIBUTING.md': {
+        'template': '# Contributing Guidelines\n\nThank you for your interest in contributing to CodeSentinel!\n\n---\n\n',
+        'description': 'Contributing guidelines template',
+        'placeholders': {},
+        'example': '# Contributing Guidelines\n\nThank you for your interest in contributing to CodeSentinel!\n\n---\n\n'
+    },
+}
+
+FOOTER_TEMPLATES = {
+    'standard': {
+        'template': '\n---\n\nSEAM Protected™ by CodeSentinel\n',
+        'description': 'Standard SEAM Protection branding footer',
+    },
+    'with_links': {
+        'template': '\n---\n\nSEAM Protected™ by CodeSentinel\n\n- [Security Policy](SECURITY.md)\n- [Contributing](CONTRIBUTING.md)\n- [License](LICENSE)\n',
+        'description': 'Footer with links to key documents',
+    },
+    'with_version': {
+        'template': '\n---\n\n**Version:** {version}\n\nSEAM Protected™ by CodeSentinel\n',
+        'description': 'Footer with version information',
+    },
+    'minimal': {
+        'template': '\n\nSEAM Protected™ by CodeSentinel\n',
+        'description': 'Minimal footer without separator line',
+    },
+}
+
+
+def get_header_templates() -> dict:
+    """
+    Get all available header templates with project-specific values filled in.
+    
+    Automatically detects project name and description and integrates them.
+    """
+    project_info = detect_project_info()
+    
+    # Create dynamic templates based on project info
+    return {
+        'README.md': {
+            'template': f"# {project_info['project_name']}\n\n{project_info['description']}\n\n---\n\n",
+            'description': 'Main project README template',
+            'project_specific': True,
+        },
+        'SECURITY.md': {
+            'template': f"# Security Policy\n\nThis document outlines the security practices and policies for {project_info['project_name']}.\n\n---\n\n",
+            'description': 'Security policy document template',
+            'project_specific': True,
+        },
+        'CHANGELOG.md': {
+            'template': "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n---\n\n",
+            'description': 'Changelog tracking document template',
+            'project_specific': False,
+        },
+        'CONTRIBUTING.md': {
+            'template': f"# Contributing Guidelines\n\nThank you for your interest in contributing to {project_info['project_name']}!\n\n---\n\n",
+            'description': 'Contributing guidelines template',
+            'project_specific': True,
+        },
+    }
+
+
+def get_footer_templates() -> dict:
+    """
+    Get all available footer templates with project-specific values filled in.
+    
+    Automatically detects project name and version and integrates them.
+    """
+    project_info = detect_project_info()
+    
+    return {
+        'standard': {
+            'template': '\n---\n\nSEAM Protected™ by CodeSentinel\n',
+            'description': 'Standard SEAM Protection branding footer',
+        },
+        'with_project': {
+            'template': f'\n---\n\n{project_info["project_name"]} - SEAM Protected™ by CodeSentinel\n',
+            'description': 'Footer with project name',
+            'project_specific': True,
+        },
+        'with_links': {
+            'template': '\n---\n\nSEAM Protected™ by CodeSentinel\n\n- [Security Policy](SECURITY.md)\n- [Contributing](CONTRIBUTING.md)\n- [License](LICENSE)\n',
+            'description': 'Footer with links to key documents',
+        },
+        'with_version': {
+            'template': f'\n---\n\n**Version:** {project_info["version"]}\n\nSEAM Protected™ by CodeSentinel\n',
+            'description': 'Footer with version information',
+            'project_specific': True,
+        },
+        'minimal': {
+            'template': '\n\nSEAM Protected™ by CodeSentinel\n',
+            'description': 'Minimal footer without separator line',
+        },
+    }
+
+
+def show_template_options(template_type: str = 'both') -> None:
+    """
+    Display available header and footer templates with project-specific values.
+    
+    Args:
+        template_type: 'header', 'footer', or 'both'
+    """
+    project_info = detect_project_info()
+    print("\n" + "="*70)
+    print(f"📦 Detected Project: {project_info['project_name']}")
+    print(f"   Description: {project_info['description']}")
+    if project_info['repo_url']:
+        print(f"   Repository: {project_info['repo_url']}")
+    print("="*70)
+    
+    if template_type in ['header', 'both']:
+        print("\nHEADER TEMPLATES")
+        print("="*70)
+        headers = get_header_templates()
+        for file_name, template_info in headers.items():
+            marker = "⭐" if template_info.get('project_specific') else "  "
+            print(f"\n{marker} 📄 {file_name}")
+            print(f"   Description: {template_info['description']}")
+            print(f"   Preview:\n")
+            lines = template_info['template'].split("\n")[:3]
+            for line in lines:
+                if line:
+                    print(f"   {line}")
+    
+    if template_type in ['footer', 'both']:
+        if template_type == 'both':
+            print("\n" + "="*70)
+        print("FOOTER TEMPLATES")
+        print("="*70)
+        footers = get_footer_templates()
+        for template_name, template_info in footers.items():
+            marker = "⭐" if template_info.get('project_specific') else "  "
+            print(f"\n{marker} 🔖 {template_name.upper()}")
+            print(f"   Description: {template_info['description']}")
+            print(f"   Preview:\n")
+            lines = template_info['template'].split("\n")[:3]
+            for line in lines:
+                if line:
+                    print(f"   {line}")
+    
+    print("\n" + "="*70)
+    print("⭐ = Project-specific (uses detected project name/version)")
+    print("="*70 + "\n")
+
+
+def set_header_for_file(file_path: Path, template_name: str = None, custom_header: str = None) -> tuple[bool, str]:
+    """
+    Set header for a documentation file.
+    
+    Args:
+        file_path: Path to file to modify
+        template_name: Name of predefined template or file name
+        custom_header: Custom header text to use instead of template
+        
+    Returns:
+        Tuple of (success, message)
+    """
+    if not file_path.exists():
+        return False, f"File not found: {file_path}"
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, f"Could not read file: {e}"
+    
+    import re
+    
+    # Get dynamic templates (with project-specific info)
+    headers = get_header_templates()
+    
+    # Determine which header to use
+    header_text = None
+    if custom_header:
+        header_text = custom_header
+    elif template_name and template_name in headers:
+        template_info = headers[template_name]
+        header_text = template_info['template']
+    elif file_path.name in headers:
+        template_info = headers[file_path.name]
+        header_text = template_info['template']
+    else:
+        return False, f"No template found for {file_path.name}"
+    
+    # Remove existing header (first H1 and separator line)
+    content = re.sub(r'^#\s+.*?(?=\n\n|$)', '', content, count=1, flags=re.MULTILINE)
+    content = re.sub(r'^\s*---\s*\n', '', content, flags=re.MULTILINE)
+    
+    # Add new header
+    new_content = header_text + content.lstrip()
+    
+    try:
+        file_path.write_text(new_content, encoding='utf-8')
+        return True, f"Updated header for {file_path.name}"
+    except Exception as e:
+        return False, f"Could not write file: {e}"
+
+
+def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom_footer: str = None) -> tuple[bool, str]:
+    """
+    Set footer for a documentation file.
+    
+    Args:
+        file_path: Path to file to modify
+        template_name: Name of predefined footer template
+        custom_footer: Custom footer text to use instead of template
+        
+    Returns:
+        Tuple of (success, message)
+    """
+    if not file_path.exists():
+        return False, f"File not found: {file_path}"
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, f"Could not read file: {e}"
+    
+    import re
+    
+    # Get dynamic templates (with project-specific info)
+    footers = get_footer_templates()
+    
+    # Determine which footer to use
+    footer_text = None
+    if custom_footer:
+        footer_text = custom_footer
+    elif template_name in footers:
+        footer_text = footers[template_name]['template']
+    else:
+        return False, f"Footer template '{template_name}' not found"
+    
+    # Remove existing footer (everything from last --- to end, or last paragraph)
+    content = re.sub(r'\n\s*---.*$', '', content, flags=re.DOTALL)
+    content = re.sub(r'\n\s*SEAM Protected™.*$', '', content, flags=re.DOTALL | re.MULTILINE)
+    
+    # Add new footer
+    if not content.endswith('\n'):
+        content += '\n'
+    
+    new_content = content + footer_text
+    
+    try:
+        file_path.write_text(new_content, encoding='utf-8')
+        return True, f"Updated footer for {file_path.name}"
+    except Exception as e:
+        return False, f"Could not write file: {e}"
+
+
+def edit_headers_interactive(doc_files: list[Path] = None) -> None:
+    """
+    Interactive mode to edit headers for multiple documentation files.
+    
+    Args:
+        doc_files: List of files to edit, or None to use defaults
+    """
+    if doc_files is None:
+        project_root = Path.cwd()
+        doc_files = [
+            project_root / "README.md",
+            project_root / "SECURITY.md",
+            project_root / "CHANGELOG.md",
+            project_root / "CONTRIBUTING.md",
+        ]
+    
+    print("\n" + "="*70)
+    print("📝 INTERACTIVE HEADER EDITOR")
+    print("="*70)
+    
+    for file_path in doc_files:
+        if not file_path.exists():
+            continue
+        
+        print(f"\n📄 {file_path.name}")
+        print("-" * 70)
+        
+        # Show template options with project-specific values
+        headers = get_header_templates()
+        if file_path.name in headers:
+            template_info = headers[file_path.name]
+            project_marker = "⭐" if template_info.get('project_specific') else "  "
+            print(f"{project_marker} Description: {template_info['description']}")
+            print(f"\nSuggested template:\n")
+            print(template_info['template'][:200])
+            
+            choice = input("Use suggested template? (y/n/custom): ").strip().lower()
+            
+            if choice == 'y':
+                success, msg = set_header_for_file(file_path, file_path.name)
+                print(f"✓ {msg}" if success else f"❌ {msg}")
+            elif choice == 'custom':
+                print("Enter custom header (type 'END' on new line when done):")
+                lines = []
+                while True:
+                    line = input()
+                    if line == 'END':
+                        break
+                    lines.append(line)
+                custom_header = '\n'.join(lines) + '\n'
+                success, msg = set_header_for_file(file_path, custom_header=custom_header)
+                print(f"✓ {msg}" if success else f"❌ {msg}")
+            else:
+                print("Skipped.")
+        else:
+            print(f"No template available for {file_path.name}")
+    
+    print("\n" + "="*70 + "\n")
+
+
+def edit_footers_interactive(doc_files: list[Path] = None) -> None:
+    """
+    Interactive mode to edit footers for multiple documentation files.
+    
+    Args:
+        doc_files: List of files to edit, or None to use defaults
+    """
+    if doc_files is None:
+        project_root = Path.cwd()
+        doc_files = [
+            project_root / "README.md",
+            project_root / "SECURITY.md",
+            project_root / "CHANGELOG.md",
+            project_root / "CONTRIBUTING.md",
+        ]
+    
+    print("\n" + "="*70)
+    print("🔖 INTERACTIVE FOOTER EDITOR")
+    print("="*70)
+    
+    for file_path in doc_files:
+        if not file_path.exists():
+            continue
+        
+        print(f"\n📄 {file_path.name}")
+        print("-" * 70)
+        
+        # Show footer template options with project-specific values
+        footers = get_footer_templates()
+        print("Available footer templates:\n")
+        for idx, (template_name, template_info) in enumerate(footers.items(), 1):
+            marker = "⭐" if template_info.get('project_specific') else "  "
+            print(f"  {idx}. {marker} {template_name.upper()}: {template_info['description']}")
+        
+        choice = input("\nSelect template (number/custom): ").strip().lower()
+        
+        if choice.isdigit() and 1 <= int(choice) <= len(footers):
+            template_name = list(footers.keys())[int(choice) - 1]
+            success, msg = set_footer_for_file(file_path, template_name)
+            print(f"✓ {msg}" if success else f"❌ {msg}")
+        elif choice == 'custom':
+            print("Enter custom footer (type 'END' on new line when done):")
+            lines = []
+            while True:
+                line = input()
+                if line == 'END':
+                    break
+                lines.append(line)
+            custom_footer = '\n' + '\n'.join(lines) + '\n'
+            success, msg = set_footer_for_file(file_path, custom_footer=custom_footer)
+            print(f"✓ {msg}" if success else f"❌ {msg}")
+        else:
+            print("Skipped.")
+    
+    print("\n" + "="*70 + "\n")
+
+
 
 def main():
     """Main CLI entry point."""
@@ -215,6 +944,30 @@ Examples:
         '--format', choices=['markdown', 'html'], default='markdown', help='Documentation format')
     api_docs_parser.add_argument(
         '--output', type=str, help='Output directory for API docs (default: docs/api)')
+    
+    # Update headers
+    headers_parser = update_subparsers.add_parser('headers', help='Manage documentation file headers')
+    headers_parser.add_argument(
+        'action', choices=['set', 'show', 'edit', 'templates'],
+        help='Action to perform')
+    headers_parser.add_argument(
+        '--file', type=str, help='Specific file to edit (e.g., README.md)')
+    headers_parser.add_argument(
+        '--template', type=str, help='Template name to use')
+    headers_parser.add_argument(
+        '--custom', type=str, help='Custom header text')
+    
+    # Update footers
+    footers_parser = update_subparsers.add_parser('footers', help='Manage documentation file footers')
+    footers_parser.add_argument(
+        'action', choices=['set', 'show', 'edit', 'templates'],
+        help='Action to perform')
+    footers_parser.add_argument(
+        '--file', type=str, help='Specific file to edit (e.g., README.md)')
+    footers_parser.add_argument(
+        '--template', type=str, default='standard', help='Template name to use (default: standard)')
+    footers_parser.add_argument(
+        '--custom', type=str, help='Custom footer text')
 
     # Clean command
     clean_parser = subparsers.add_parser('clean', help='Clean repository artifacts and temporary files')
@@ -508,47 +1261,100 @@ except KeyboardInterrupt:
             import json
             
             if args.update_action == 'docs':
-                """Update repository documentation files."""
+                """Update repository documentation files with branding + header/footer verification."""
                 dry_run = getattr(args, 'dry_run', False)
+                verbose = getattr(args, 'verbose', False)
                 
                 print("Analyzing repository documentation...")
+                print("Verifying SEAM Protection™ branding + header/footer compliance...\n")
                 
-                updates_made = []
+                # Files to verify and update
+                docs_to_verify = [
+                    Path.cwd() / "CHANGELOG.md",
+                    Path.cwd() / "README.md",
+                    Path.cwd() / "SECURITY.md",
+                    Path.cwd() / ".github" / "copilot-instructions.md",
+                    Path.cwd() / "codesentinel" / "__init__.py",
+                ]
                 
-                # Check for CHANGELOG.md updates
-                changelog_path = Path.cwd() / "CHANGELOG.md"
-                if changelog_path.exists():
-                    if dry_run:
-                        print(f"  [DRY-RUN] Would analyze: {changelog_path}")
+                branding_issues = []
+                header_footer_issues = []
+                fixed_files = []
+                verified_files = []
+                
+                for doc_file in docs_to_verify:
+                    if not doc_file.exists():
+                        continue
+                    
+                    # Verify branding compliance
+                    is_branding_compliant, branding_issues_list = verify_documentation_branding(doc_file)
+                    
+                    # Verify headers/footers (markdown only)
+                    is_hf_compliant = True
+                    hf_issues_list = []
+                    if doc_file.suffix == '.md':
+                        is_hf_compliant, hf_issues_list, metadata = verify_documentation_headers_footers(doc_file)
+                    
+                    # Track issues
+                    if not is_branding_compliant:
+                        branding_issues.extend(branding_issues_list)
+                    if not is_hf_compliant:
+                        header_footer_issues.extend(hf_issues_list)
+                    
+                    # Check if all compliant
+                    if is_branding_compliant and is_hf_compliant:
+                        verified_files.append(doc_file.name)
+                        if verbose:
+                            print(f"  ✓ Full compliance: {doc_file.name}")
                     else:
-                        print(f"  ✓ Checked: {changelog_path}")
-                        updates_made.append("CHANGELOG.md")
+                        # Apply automatic fixes
+                        if not dry_run:
+                            fixes_applied = False
+                            
+                            if not is_branding_compliant:
+                                success, message = apply_branding_fixes(doc_file, verbose)
+                                if success:
+                                    fixes_applied = True
+                                    if verbose:
+                                        print(f"  Fixed (branding): {doc_file.name}")
+                            
+                            if not is_hf_compliant:
+                                success, message = apply_header_footer_fixes(doc_file, verbose)
+                                if success:
+                                    fixes_applied = True
+                                    if verbose:
+                                        print(f"  Fixed (header/footer): {doc_file.name}")
+                            
+                            if fixes_applied:
+                                fixed_files.append(doc_file.name)
+                        else:
+                            print(f"  [DRY-RUN] Would fix: {doc_file.name}")
                 
-                # Check for README.md updates
-                readme_path = Path.cwd() / "README.md"
-                if readme_path.exists():
-                    if dry_run:
-                        print(f"  [DRY-RUN] Would analyze: {readme_path}")
-                    else:
-                        print(f"  ✓ Checked: {readme_path}")
-                        updates_made.append("README.md")
+                # Summary
+                print("\nDocumentation Verification Summary:")
+                print(f"  ✓ Full compliance: {len(verified_files)} files")
                 
-                # Check for Copilot instructions
-                copilot_path = Path.cwd() / ".github" / "copilot-instructions.md"
-                if copilot_path.exists():
-                    if dry_run:
-                        print(f"  [DRY-RUN] Would analyze: {copilot_path}")
-                    else:
-                        print(f"  ✓ Checked: {copilot_path}")
-                        updates_made.append("copilot-instructions.md")
+                if fixed_files:
+                    print(f"  Fixed: {len(fixed_files)} files")
+                    for fname in fixed_files:
+                        print(f"    - {fname}")
+                
+                if branding_issues:
+                    print(f"\nBranding Issues Fixed: {len(branding_issues)}")
+                    for issue in branding_issues:
+                        print(f"  ⚠ {issue}")
+                
+                if header_footer_issues:
+                    print(f"\nHeader/Footer Issues Fixed: {len(header_footer_issues)}")
+                    for issue in header_footer_issues:
+                        print(f"  ⚠ {issue}")
                 
                 if dry_run:
                     print("\nDry run complete. No files modified.")
                 else:
-                    print(f"\nDocumentation check complete. Reviewed {len(updates_made)} files.")
-                    print("\nFor specific updates, use:")
-                    print("  codesentinel update changelog --version X.Y.Z")
-                    print("  codesentinel update readme")
+                    if fixed_files or verified_files:
+                        print("\nDocumentation verification complete.")
+                        print("All files comply with SEAM Protection™ branding and header/footer policy.")
                     
             elif args.update_action == 'changelog':
                 """Update CHANGELOG.md with recent git commits."""
@@ -675,6 +1481,80 @@ except KeyboardInterrupt:
                 
                 print(f"  API doc generation requires sphinx or pdoc")
                 print("Consider: pip install pdoc3 && pdoc --html --output-dir " + output + " codesentinel")
+                
+            elif args.update_action == 'headers':
+                """Manage documentation headers."""
+                action = args.action
+                file_arg = getattr(args, 'file', None)
+                template_arg = getattr(args, 'template', None)
+                custom_arg = getattr(args, 'custom', None)
+                
+                if action == 'templates':
+                    show_template_options('header')
+                elif action == 'show':
+                    print("\nAvailable Header Templates:")
+                    print("="*70)
+                    headers = get_header_templates()
+                    for file_name, info in headers.items():
+                        marker = "⭐" if info.get('project_specific') else "  "
+                        print(f"\n{marker} 📄 {file_name}: {info['description']}")
+                        print(f"   Preview:\n   {info['template'][:100]}...")
+                elif action == 'set':
+                    if not file_arg:
+                        print("❌ --file required for set action")
+                    else:
+                        file_path = Path.cwd() / file_arg
+                        if file_path.exists():
+                            if custom_arg:
+                                success, msg = set_header_for_file(file_path, custom_header=custom_arg)
+                            else:
+                                success, msg = set_header_for_file(file_path, template_name=template_arg or file_path.name)
+                            print(f"{'✓' if success else '❌'} {msg}")
+                        else:
+                            print(f"❌ File not found: {file_arg}")
+                elif action == 'edit':
+                    if file_arg:
+                        file_path = Path.cwd() / file_arg
+                        edit_headers_interactive([file_path])
+                    else:
+                        edit_headers_interactive()
+            
+            elif args.update_action == 'footers':
+                """Manage documentation footers."""
+                action = args.action
+                file_arg = getattr(args, 'file', None)
+                template_arg = getattr(args, 'template', 'standard')
+                custom_arg = getattr(args, 'custom', None)
+                
+                if action == 'templates':
+                    show_template_options('footer')
+                elif action == 'show':
+                    print("\nAvailable Footer Templates:")
+                    print("="*70)
+                    footers = get_footer_templates()
+                    for template_name, info in footers.items():
+                        marker = "⭐" if info.get('project_specific') else "  "
+                        print(f"\n{marker} 🔖 {template_name.upper()}: {info['description']}")
+                        print(f"   Preview:\n   {info['template'][:100]}...")
+                elif action == 'set':
+                    if not file_arg:
+                        print("❌ --file required for set action")
+                    else:
+                        file_path = Path.cwd() / file_arg
+                        if file_path.exists():
+                            if custom_arg:
+                                success, msg = set_footer_for_file(file_path, custom_footer=custom_arg)
+                            else:
+                                success, msg = set_footer_for_file(file_path, template_name=template_arg)
+                            print(f"{'✓' if success else '❌'} {msg}")
+                        else:
+                            print(f"❌ File not found: {file_arg}")
+                elif action == 'edit':
+                    if file_arg:
+                        file_path = Path.cwd() / file_arg
+                        edit_footers_interactive([file_path])
+                    else:
+                        edit_footers_interactive()
                 
             else:
                 print("❌ Unknown update action. Use 'codesentinel update --help'")

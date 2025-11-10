@@ -9,6 +9,7 @@ This directory contains comprehensive guides for publishing, deploying, and main
 ### For Immediate Publishing
 
 **→ Start here:** [`QUICK_PUBLISH_REFERENCE.md`](./QUICK_PUBLISH_REFERENCE.md)
+
 - One-page checklist for quick publication
 - Essential steps only
 - ~5-10 minutes
@@ -16,6 +17,7 @@ This directory contains comprehensive guides for publishing, deploying, and main
 ### For Detailed Publication Process
 
 **→ Full guide:** [`PYPI_PUBLICATION_GUIDE.md`](./PYPI_PUBLICATION_GUIDE.md)
+
 - Complete step-by-step instructions
 - Troubleshooting and verification steps
 - Test repository and production procedures
@@ -121,10 +123,10 @@ This directory contains comprehensive guides for publishing, deploying, and main
 
 ## Support Resources
 
-- PyPI Official: https://pypi.org/
-- TestPyPI: https://test.pypi.org/
-- PEP 440 (Versioning): https://peps.python.org/pep-0440/
-- setuptools Documentation: https://setuptools.pypa.io/
+- PyPI Official: <https://pypi.org/>
+- TestPyPI: <https://test.pypi.org/>
+- PEP 440 (Versioning): <https://peps.python.org/pep-0440/>
+- setuptools Documentation: <https://setuptools.pypa.io/>
 
 ## Related Documentation
 
