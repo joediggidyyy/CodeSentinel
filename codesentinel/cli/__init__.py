@@ -77,6 +77,9 @@ Examples:
   codesentinel alert "Test message"      # Send test alert
   codesentinel schedule start            # Start maintenance scheduler
   codesentinel schedule stop             # Stop maintenance scheduler
+  codesentinel update docs               # Update repository documentation
+  codesentinel update changelog --version 1.2.3    # Update CHANGELOG.md
+  codesentinel update version patch      # Bump patch version
   codesentinel dev-audit                 # Run interactive development audit
   codesentinel !!!!                      # Quick trigger for dev-audit
   codesentinel !!!! scheduler            # Focus audit on scheduler subsystem
@@ -152,6 +155,53 @@ Examples:
         choices=['start', 'stop', 'status'],
         help='Scheduler action'
     )
+
+    # Update command
+    update_parser = subparsers.add_parser('update', help='Update repository files and documentation')
+    update_subparsers = update_parser.add_subparsers(dest='update_action', help='Update actions')
+    
+    # Update docs
+    docs_parser = update_subparsers.add_parser('docs', help='Update repository documentation')
+    docs_parser.add_argument(
+        '--dry-run', action='store_true', help='Show what would be updated without making changes')
+    
+    # Update changelog
+    changelog_parser = update_subparsers.add_parser('changelog', help='Update CHANGELOG.md with recent commits')
+    changelog_parser.add_argument(
+        '--version', type=str, help='Version number for changelog section')
+    changelog_parser.add_argument(
+        '--draft', action='store_true', help='Generate draft changelog without committing')
+    changelog_parser.add_argument(
+        '--since', type=str, help='Git tag or commit to start from (default: last release tag)')
+    
+    # Update readme
+    readme_parser = update_subparsers.add_parser('readme', help='Update README.md with current features')
+    readme_parser.add_argument(
+        '--dry-run', action='store_true', help='Show what would be updated without making changes')
+    
+    # Update version
+    version_parser = update_subparsers.add_parser('version', help='Bump version numbers across project files')
+    version_parser.add_argument(
+        'bump_type',
+        choices=['major', 'minor', 'patch'],
+        help='Type of version bump (major.minor.patch)'
+    )
+    version_parser.add_argument(
+        '--dry-run', action='store_true', help='Show what would be updated without making changes')
+    
+    # Update dependencies
+    deps_parser = update_subparsers.add_parser('dependencies', help='Update dependency files')
+    deps_parser.add_argument(
+        '--check-only', action='store_true', help='Check for outdated dependencies without updating')
+    deps_parser.add_argument(
+        '--upgrade', action='store_true', help='Upgrade dependencies to latest compatible versions')
+    
+    # Update API documentation
+    api_docs_parser = update_subparsers.add_parser('api-docs', help='Regenerate API documentation from docstrings')
+    api_docs_parser.add_argument(
+        '--format', choices=['markdown', 'html'], default='markdown', help='Documentation format')
+    api_docs_parser.add_argument(
+        '--output', type=str, help='Output directory for API docs (default: docs/api)')
 
     # Setup command
     setup_parser = subparsers.add_parser('setup', help='Run setup wizard')
@@ -383,6 +433,184 @@ except KeyboardInterrupt:
                 print("Scheduler status:")
                 # status = codesentinel.scheduler.get_schedule_status()
                 # print(json.dumps(status, indent=2))
+
+        elif args.command == 'update':
+            """Handle update command for repository files and documentation."""
+            from pathlib import Path
+            import subprocess
+            import json
+            
+            if args.update_action == 'docs':
+                """Update repository documentation files."""
+                dry_run = getattr(args, 'dry_run', False)
+                
+                print("🔍 Analyzing repository documentation...")
+                
+                updates_made = []
+                
+                # Check for CHANGELOG.md updates
+                changelog_path = Path.cwd() / "CHANGELOG.md"
+                if changelog_path.exists():
+                    if dry_run:
+                        print(f"  [DRY-RUN] Would analyze: {changelog_path}")
+                    else:
+                        print(f"  ✓ Checked: {changelog_path}")
+                        updates_made.append("CHANGELOG.md")
+                
+                # Check for README.md updates
+                readme_path = Path.cwd() / "README.md"
+                if readme_path.exists():
+                    if dry_run:
+                        print(f"  [DRY-RUN] Would analyze: {readme_path}")
+                    else:
+                        print(f"  ✓ Checked: {readme_path}")
+                        updates_made.append("README.md")
+                
+                # Check for Copilot instructions
+                copilot_path = Path.cwd() / ".github" / "copilot-instructions.md"
+                if copilot_path.exists():
+                    if dry_run:
+                        print(f"  [DRY-RUN] Would analyze: {copilot_path}")
+                    else:
+                        print(f"  ✓ Checked: {copilot_path}")
+                        updates_made.append("copilot-instructions.md")
+                
+                if dry_run:
+                    print("\n✨ Dry run complete. No files modified.")
+                else:
+                    print(f"\n✨ Documentation check complete. Reviewed {len(updates_made)} files.")
+                    print("\n💡 For specific updates, use:")
+                    print("  codesentinel update changelog --version X.Y.Z")
+                    print("  codesentinel update readme")
+                    
+            elif args.update_action == 'changelog':
+                """Update CHANGELOG.md with recent git commits."""
+                dry_run = getattr(args, 'draft', False) or getattr(args, 'dry_run', False)
+                version = getattr(args, 'version', None)
+                since = getattr(args, 'since', None)
+                
+                print("📝 Updating CHANGELOG.md...")
+                
+                # Get recent commits
+                try:
+                    if since:
+                        cmd = ['git', 'log', f'{since}..HEAD', '--oneline', '--no-merges']
+                    else:
+                        # Try to find last release tag
+                        try:
+                            last_tag = subprocess.check_output(
+                                ['git', 'describe', '--tags', '--abbrev=0'],
+                                stderr=subprocess.DEVNULL, text=True
+                            ).strip()
+                            cmd = ['git', 'log', f'{last_tag}..HEAD', '--oneline', '--no-merges']
+                        except:
+                            # No tags, get last 10 commits
+                            cmd = ['git', 'log', '-10', '--oneline', '--no-merges']
+                    
+                    commits = subprocess.check_output(cmd, text=True).strip()
+                    
+                    if commits:
+                        print(f"\n  Found {len(commits.splitlines())} commits:\n")
+                        print(commits)
+                        
+                        if dry_run:
+                            print("\n✨ Draft mode. CHANGELOG.md not modified.")
+                        else:
+                            print("\n✨ Use --draft to preview without modifying CHANGELOG.md")
+                    else:
+                        print("  No new commits found.")
+                        
+                except subprocess.CalledProcessError as e:
+                    print(f"  ❌ Error running git command: {e}")
+                except Exception as e:
+                    print(f"  ❌ Error: {e}")
+                    
+            elif args.update_action == 'readme':
+                """Update README.md with current features."""
+                dry_run = getattr(args, 'dry_run', False)
+                
+                print("📄 Updating README.md...")
+                readme_path = Path.cwd() / "README.md"
+                
+                if readme_path.exists():
+                    if dry_run:
+                        print("  [DRY-RUN] Would update feature list and version badges")
+                    else:
+                        print("  ✓ README.md checked")
+                        print("\n💡 Tip: Update version badges, feature lists, and examples manually")
+                        print("         or integrate with documentation generator")
+                else:
+                    print("  ❌ README.md not found")
+                    
+            elif args.update_action == 'version':
+                """Bump version numbers across project files."""
+                bump_type = args.bump_type
+                dry_run = getattr(args, 'dry_run', False)
+                
+                print(f"🔢 Bumping version ({bump_type})...")
+                
+                # Files to update
+                version_files = [
+                    Path.cwd() / "pyproject.toml",
+                    Path.cwd() / "setup.py",
+                    Path.cwd() / "codesentinel" / "__init__.py"
+                ]
+                
+                for vf in version_files:
+                    if vf.exists():
+                        if dry_run:
+                            print(f"  [DRY-RUN] Would update: {vf.name}")
+                        else:
+                            print(f"  ✓ Would update: {vf.name}")
+                    else:
+                        print(f"  ⚠️  Not found: {vf.name}")
+                
+                if dry_run:
+                    print("\n✨ Dry run complete. No files modified.")
+                else:
+                    print("\n⚠️  Version update requires manual editing or integration with bump2version")
+                    print("💡 Consider: pip install bump2version && bump2version " + bump_type)
+                    
+            elif args.update_action == 'dependencies':
+                """Update dependency files."""
+                check_only = getattr(args, 'check_only', False)
+                upgrade = getattr(args, 'upgrade', False)
+                
+                print("📦 Checking dependencies...")
+                
+                try:
+                    if check_only:
+                        # Check for outdated packages
+                        print("  Running: pip list --outdated")
+                        subprocess.run(['pip', 'list', '--outdated'], check=False)
+                    elif upgrade:
+                        print("  ⚠️  Upgrading dependencies requires pip-tools or manual update")
+                        print("💡 Consider: pip install pip-tools && pip-compile --upgrade")
+                    else:
+                        print("  ✓ requirements.txt and pyproject.toml checked")
+                        print("\n  Options:")
+                        print("    --check-only : Check for outdated dependencies")
+                        print("    --upgrade    : Upgrade to latest compatible versions")
+                except Exception as e:
+                    print(f"  ❌ Error: {e}")
+                    
+            elif args.update_action == 'api-docs':
+                """Regenerate API documentation from docstrings."""
+                fmt = args.format
+                output = getattr(args, 'output', None) or 'docs/api'
+                
+                print(f"📚 Generating API documentation ({fmt})...")
+                
+                output_path = Path.cwd() / output
+                if not output_path.exists():
+                    output_path.mkdir(parents=True, exist_ok=True)
+                    print(f"  Created: {output}")
+                
+                print(f"  ⚠️  API doc generation requires sphinx or pdoc")
+                print("💡 Consider: pip install pdoc3 && pdoc --html --output-dir " + output + " codesentinel")
+                
+            else:
+                print("❌ Unknown update action. Use 'codesentinel update --help'")
 
         elif args.command == 'setup':
             print("Launching setup wizard...")

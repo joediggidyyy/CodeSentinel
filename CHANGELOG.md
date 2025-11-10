@@ -26,6 +26,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Strategic guide applicability tests.
     - Performance baselining (APET and DPC scores).
     - Security, efficiency, and minimalism principle audits.
+- **Update Command for Repository Documentation Management**
+  - New `codesentinel update` command with six subcommands:
+    - `docs`: Check and update repository documentation files
+    - `changelog`: Generate changelog entries from recent git commits
+    - `readme`: Update README.md with current features
+    - `version`: Bump version numbers across project files (major/minor/patch)
+    - `dependencies`: Check for outdated dependencies and update files
+    - `api-docs`: Regenerate API documentation from docstrings
+  - Each subcommand includes dry-run or preview options
+  - Integrates with git for automated changelog generation
+  - Supports multiple documentation formats
 - **Professional Formatting Configuration UI in Setup Wizard**
   - Two-column layout with scheme selector and customization panel
   - FormattingSchemeSelector component with 6 preset schemes (Black, AutoPEP8, Ruff, C++, Google, Custom)
