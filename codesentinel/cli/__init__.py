@@ -76,6 +76,7 @@ Examples:
   codesentinel maintenance daily         # Run daily maintenance
   codesentinel alert "Test message"      # Send test alert
   codesentinel schedule start            # Start maintenance scheduler
+  codesentinel schedule stop             # Stop maintenance scheduler
   codesentinel dev-audit                 # Run interactive development audit
   codesentinel !!!!                      # Quick trigger for dev-audit
   codesentinel !!!! scheduler            # Focus audit on scheduler subsystem
@@ -331,8 +332,53 @@ except KeyboardInterrupt:
                     traceback.print_exc()
             elif args.action == 'stop':
                 print("Stopping maintenance scheduler...")
-                codesentinel.scheduler.stop()
-                print("Scheduler stopped")
+                try:
+                    # Check if scheduler is running in background
+                    from pathlib import Path
+                    state_file = Path.home() / ".codesentinel" / "scheduler.state"
+                    
+                    if state_file.exists():
+                        import json
+                        try:
+                            with open(state_file, 'r') as f:
+                                state = json.load(f)
+                            pid = state.get('pid')
+                            
+                            if pid:
+                                # Try to terminate the background process
+                                try:
+                                    import psutil
+                                    process = psutil.Process(pid)
+                                    process.terminate()
+                                    process.wait(timeout=5)
+                                    print(f"Background scheduler process (PID {pid}) stopped")
+                                except psutil.NoSuchProcess:
+                                    print(f"Scheduler process (PID {pid}) not found (already stopped)")
+                                except psutil.TimeoutExpired:
+                                    print(f"Scheduler process (PID {pid}) did not stop gracefully, forcing...")
+                                    process.kill()
+                                    print("Scheduler process forcefully terminated")
+                                except ImportError:
+                                    # psutil not available, try basic kill
+                                    if sys.platform == 'win32':
+                                        os.system(f'taskkill /F /PID {pid}')
+                                    else:
+                                        os.kill(pid, 15)  # SIGTERM
+                                    print(f"Sent stop signal to scheduler process (PID {pid})")
+                                
+                                # Clean up state file
+                                state_file.unlink()
+                        except Exception as e:
+                            print(f"Error reading scheduler state: {e}")
+                    else:
+                        # No background scheduler, try stopping in-process
+                        codesentinel.scheduler.stop()
+                        print("In-process scheduler stopped")
+                    
+                except Exception as e:
+                    print(f"Error stopping scheduler: {e}")
+                    import traceback
+                    traceback.print_exc()
             elif args.action == 'status':
                 print("Scheduler status:")
                 # status = codesentinel.scheduler.get_schedule_status()
