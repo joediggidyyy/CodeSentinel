@@ -8,7 +8,11 @@ Welcome to CodeSentinel documentation. This folder contains comprehensive guides
 
 How to install CodeSentinel on Windows, macOS, and Linux. Includes GUI installers and Python package installation.
 
-### 📖 [Guides](guides/)
+### � [Header/Footer Management](HEADER_FOOTER_GUIDE.md)
+
+Comprehensive guide for managing documentation headers and footers with intelligent project detection. Includes template library, interactive editing, and branding integration.
+
+### �📖 [Guides](guides/)
 
 Step-by-step guides for common tasks and deployment:
 
