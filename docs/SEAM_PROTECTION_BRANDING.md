@@ -55,16 +55,19 @@ This document outlines the strategic integration of SEAM Protection branding thr
 ## Design Principles
 
 ### Minimalism
+
 - No excessive repetition of the trademark
 - Single-word tag "SEAM-tight" for technical contexts
 - Avoid overuse in comments or inline code
 
 ### Consistency
+
 - Always use "SEAM Protected™" with trademark symbol for branding
 - Technical references use "SEAM Protection" or "SEAM principle"
 - Informal contexts use "SEAM-tight" as appropriate
 
 ### Subtlety
+
 - Appears in strategic locations, not everywhere
 - Does not distract from code functionality
 - Enhances rather than clutters documentation

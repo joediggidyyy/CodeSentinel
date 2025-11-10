@@ -10,11 +10,13 @@ How to install CodeSentinel on Windows, macOS, and Linux. Includes GUI installer
 
 ### 📖 [Guides](guides/)
 
-Step-by-step guides for common tasks:
+Step-by-step guides for common tasks and deployment:
 
+- **Quick Links:** [Publication & Deployment Index](guides/INDEX.md)
 - Getting started with CodeSentinel
+- Quick publication reference (~5-10 minutes)
+- Complete PyPI publication guide (30-45 minutes)
 - Contributing to the project
-- Publishing to PyPI
 - Legacy feature mapping
 
 ### 🏗️ [Architecture](architecture/)

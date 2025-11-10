@@ -11,7 +11,6 @@ CodeSentinel/
 ├── README.md                          (main documentation)
 ├── CHANGELOG.md                       (release notes)
 ├── QUICK_START.md                     (user installation guide)
-├── PUBLISH_NOW.md                     (1.0.3: PyPI publication steps)
 ├── setup.py, pyproject.toml           (packaging configuration)
 ├── requirements.txt                   (dependencies)
 ├── requirements/                      (dev requirements)
@@ -32,14 +31,16 @@ CodeSentinel/
 │
 ├── docs/                              (documentation & reference)
 │   ├── audit/                         (audit reports)
+│   ├── guides/                        (publication, deployment, integration guides)
+│   │   ├── PYPI_PUBLICATION_GUIDE.md  (v1.0.3 PyPI publication steps)
+│   │   ├── QUICK_PUBLISH_REFERENCE.md (quick reference for publishing)
+│   │   └── QUICK_START.md             (user installation guide)
 │   ├── reports/                       (completion and summary reports)
 │   ├── planning/                      (roadmaps, plans, strategies)
 │   ├── quick_reference/               (one-page reference cards)
 │   ├── ADVANCED_ANALYTICS_FRAMEWORK.md
 │   ├── ENTERPRISE_INTEGRATION_GUIDE.md
-│   ├── V1_0_3_DISTRIBUTION_REPORT.md
-│   ├── V1_0_3_BETA_TEST_REPORT.md
-│   ├── PYPI_PUBLICATION_GUIDE.md
+│   ├── SEAM_PROTECTION_BRANDING.md    (trademark and governance branding)
 │   └── [other reference files]
 │
 ├── logs/                              (integrity and operational logs)
@@ -48,6 +49,7 @@ CodeSentinel/
 │   └── codesentinel.log
 │
 ├── scripts/                           (utility scripts)
+│   └── publish_to_pypi.py
 │   └── publish_to_pypi.py
 │
 └── .github/                           (GitHub configuration & CI/CD)
