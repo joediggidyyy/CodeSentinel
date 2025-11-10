@@ -42,54 +42,61 @@ def main():
     
     # Quick trigger: allow '!!!!' as an alias for interactive dev audit
     # Support optional focus parameter: '!!!! <focus_area>'
-    if any(arg.startswith('!!!!') for arg in sys.argv[1:]):
-        # Extract focus parameter if present
-        focus_param = None
-        for i, arg in enumerate(sys.argv[1:], 1):
-            if arg.startswith('!!!!'):
-                if arg == '!!!!':
-                    # Simple '!!!!' without focus
-                    sys.argv[i] = 'dev-audit'
-                else:
-                    # '!!!!<space><focus>' format - extract focus
-                    # This shouldn't happen as shell splits arguments
-                    sys.argv[i] = 'dev-audit'
-            elif i > 1 and sys.argv[i-1] == 'dev-audit' and not arg.startswith('-'):
-                # First non-flag argument after dev-audit is focus
-                focus_param = arg
-                break
-        
-        # If we have a focus parameter, add it as --focus flag
-        if focus_param:
-            # Find position of dev-audit command
-            dev_audit_idx = sys.argv.index('dev-audit')
-            # Insert --focus flag after dev-audit
-            sys.argv.insert(dev_audit_idx + 1, '--focus')
-            sys.argv.insert(dev_audit_idx + 2, focus_param)
+    # Process !!!! arguments before creating parser
+    processed_argv = []
+    focus_param = None
+    
+    i = 0
+    while i < len(sys.argv):
+        arg = sys.argv[i]
+        if arg.startswith('!!!!'):
+            if arg == '!!!!':
+                processed_argv.append('dev-audit')
+            else:
+                processed_argv.append('dev-audit')
+        elif processed_argv and processed_argv[-1] == 'dev-audit' and not arg.startswith('-') and focus_param is None:
+            # First non-flag argument after dev-audit is focus
+            focus_param = arg
+        else:
+            processed_argv.append(arg)
+        i += 1
+    
+    # Apply focus parameter
+    if focus_param and 'dev-audit' in processed_argv:
+        dev_audit_idx = processed_argv.index('dev-audit')
+        processed_argv.insert(dev_audit_idx + 1, '--focus')
+        processed_argv.insert(dev_audit_idx + 2, focus_param)
+    
+    # Replace sys.argv if we made changes
+    if processed_argv != list(sys.argv):
+        sys.argv = processed_argv
     parser = argparse.ArgumentParser(
         description="CodeSentinel - Automated Maintenance & Security Monitoring",
         formatter_class=argparse.RawDescriptionHelpFormatter,
       epilog="""
 Examples:
-  codesentinel status                    # Show current status
-  codesentinel scan                      # Run security scan
-  codesentinel maintenance daily         # Run daily maintenance
-  codesentinel alert "Test message"      # Send test alert
-  codesentinel schedule start            # Start maintenance scheduler
-  codesentinel schedule stop             # Stop maintenance scheduler
-  codesentinel clean                     # Clean all (cache + temp + logs)
-  codesentinel clean --root              # Clean root directory clutter
-  codesentinel clean --build --test      # Clean build and test artifacts
-  codesentinel clean --emojis --dry-run  # Preview policy-violating emoji removal (smart detection)
-  codesentinel clean --emojis --include-gui  # Include GUI files in emoji scan
-  codesentinel clean --dry-run           # Preview what would be deleted
-  codesentinel update docs               # Update repository documentation
-  codesentinel update changelog --version 1.2.3    # Update CHANGELOG.md
-  codesentinel update version patch      # Bump patch version
-  codesentinel dev-audit                 # Run interactive development audit
-  codesentinel !!!!                      # Quick trigger for dev-audit
-  codesentinel !!!! scheduler            # Focus audit on scheduler subsystem
-  codesentinel !!!! "new feature"        # Focus audit on new feature development
+  codesentinel status                           # Show current status
+  codesentinel scan                             # Run security scan
+  codesentinel maintenance daily                # Run daily maintenance
+  codesentinel alert "Test message"             # Send test alert
+  codesentinel schedule start                   # Start maintenance scheduler
+  codesentinel schedule stop                    # Stop maintenance scheduler
+  codesentinel clean                            # Clean all (cache + temp + logs)
+  codesentinel clean --root                     # Clean root directory clutter
+  codesentinel clean --build --test             # Clean build and test artifacts
+  codesentinel clean --emojis --dry-run         # Preview policy-violating emoji removal (smart detection)
+  codesentinel clean --emojis --include-gui     # Include GUI files in emoji scan
+  codesentinel clean --dry-run                  # Preview what would be deleted
+  codesentinel update docs                      # Update repository documentation
+  codesentinel update changelog --version 1.2.3 # Update CHANGELOG.md
+  codesentinel update version patch             # Bump patch version
+  codesentinel integrate --new                  # Integrate new CLI commands into workflows
+  codesentinel integrate --all --dry-run        # Preview all integration opportunities
+  codesentinel integrate --workflow ci-cd       # Integrate into CI/CD workflows
+  codesentinel dev-audit                        # Run interactive development audit
+  codesentinel !!!!                             # Quick trigger for dev-audit
+  codesentinel !!!! scheduler                   # Focus audit on scheduler subsystem
+  codesentinel !!!! "new feature"               # Focus audit on new feature development
         """
     )
 
@@ -242,6 +249,27 @@ Examples:
         '--older-than', type=int, metavar='DAYS', 
         help='Only clean files older than N days (applies to logs and temp files)')
 
+    # Integrate command
+    integrate_parser = subparsers.add_parser('integrate', help='Integrate new CLI commands into existing workflows')
+    integrate_parser.add_argument(
+        '--new', action='store_true', default=True,
+        help='Integrate newly added commands into workflows (default)')
+    integrate_parser.add_argument(
+        '--all', action='store_true',
+        help='Integrate all available commands into workflows')
+    integrate_parser.add_argument(
+        '--workflow', choices=['scheduler', 'ci-cd', 'all'], default='scheduler',
+        help='Target workflow for integration (default: scheduler)')
+    integrate_parser.add_argument(
+        '--dry-run', action='store_true',
+        help='Show integration opportunities without making changes')
+    integrate_parser.add_argument(
+        '--force', action='store_true',
+        help='Force integration even if conflicts detected')
+    integrate_parser.add_argument(
+        '--backup', action='store_true',
+        help='Create backup before integration')
+
     # Setup command
     setup_parser = subparsers.add_parser('setup', help='Run setup wizard')
     setup_parser.add_argument(
@@ -371,12 +399,12 @@ Examples:
                     package_dir = Path(codesentinel.__file__).parent.parent
                     
                     script_content = f"""
-import sys
+import sys as s
 import time
 from pathlib import Path
 
 # Add CodeSentinel to path
-sys.path.insert(0, r'{package_dir}')
+s.path.insert(0, r'{package_dir}')
 
 from codesentinel.core import CodeSentinel
 
@@ -483,7 +511,7 @@ except KeyboardInterrupt:
                 """Update repository documentation files."""
                 dry_run = getattr(args, 'dry_run', False)
                 
-                print("🔍 Analyzing repository documentation...")
+                print("Analyzing repository documentation...")
                 
                 updates_made = []
                 
@@ -515,10 +543,10 @@ except KeyboardInterrupt:
                         updates_made.append("copilot-instructions.md")
                 
                 if dry_run:
-                    print("\n✨ Dry run complete. No files modified.")
+                    print("\nDry run complete. No files modified.")
                 else:
-                    print(f"\n✨ Documentation check complete. Reviewed {len(updates_made)} files.")
-                    print("\n💡 For specific updates, use:")
+                    print(f"\nDocumentation check complete. Reviewed {len(updates_made)} files.")
+                    print("\nFor specific updates, use:")
                     print("  codesentinel update changelog --version X.Y.Z")
                     print("  codesentinel update readme")
                     
@@ -528,7 +556,7 @@ except KeyboardInterrupt:
                 version = getattr(args, 'version', None)
                 since = getattr(args, 'since', None)
                 
-                print("📝 Updating CHANGELOG.md...")
+                print("Updating CHANGELOG.md...")
                 
                 # Get recent commits
                 try:
@@ -553,9 +581,9 @@ except KeyboardInterrupt:
                         print(commits)
                         
                         if dry_run:
-                            print("\n✨ Draft mode. CHANGELOG.md not modified.")
+                            print("\nDraft mode. CHANGELOG.md not modified.")
                         else:
-                            print("\n✨ Use --draft to preview without modifying CHANGELOG.md")
+                            print("\nUse --draft to preview without modifying CHANGELOG.md")
                     else:
                         print("  No new commits found.")
                         
@@ -568,7 +596,7 @@ except KeyboardInterrupt:
                 """Update README.md with current features."""
                 dry_run = getattr(args, 'dry_run', False)
                 
-                print("📄 Updating README.md...")
+                print("Updating README.md...")
                 readme_path = Path.cwd() / "README.md"
                 
                 if readme_path.exists():
@@ -576,7 +604,7 @@ except KeyboardInterrupt:
                         print("  [DRY-RUN] Would update feature list and version badges")
                     else:
                         print("  ✓ README.md checked")
-                        print("\n💡 Tip: Update version badges, feature lists, and examples manually")
+                        print("\nTip: Update version badges, feature lists, and examples manually")
                         print("         or integrate with documentation generator")
                 else:
                     print("  ❌ README.md not found")
@@ -586,7 +614,7 @@ except KeyboardInterrupt:
                 bump_type = args.bump_type
                 dry_run = getattr(args, 'dry_run', False)
                 
-                print(f"🔢 Bumping version ({bump_type})...")
+                print(f"Bumping version ({bump_type})...")
                 
                 # Files to update
                 version_files = [
@@ -605,17 +633,17 @@ except KeyboardInterrupt:
                         print(f"  ⚠️  Not found: {vf.name}")
                 
                 if dry_run:
-                    print("\n✨ Dry run complete. No files modified.")
+                    print("\nDry run complete. No files modified.")
                 else:
-                    print("\n⚠️  Version update requires manual editing or integration with bump2version")
-                    print("💡 Consider: pip install bump2version && bump2version " + bump_type)
+                    print("\nVersion update requires manual editing or integration with bump2version")
+                    print("Consider: pip install bump2version && bump2version " + bump_type)
                     
             elif args.update_action == 'dependencies':
                 """Update dependency files."""
                 check_only = getattr(args, 'check_only', False)
                 upgrade = getattr(args, 'upgrade', False)
                 
-                print("📦 Checking dependencies...")
+                print("Checking dependencies...")
                 
                 try:
                     if check_only:
@@ -623,8 +651,8 @@ except KeyboardInterrupt:
                         print("  Running: pip list --outdated")
                         subprocess.run(['pip', 'list', '--outdated'], check=False)
                     elif upgrade:
-                        print("  ⚠️  Upgrading dependencies requires pip-tools or manual update")
-                        print("💡 Consider: pip install pip-tools && pip-compile --upgrade")
+                        print("  Upgrading dependencies requires pip-tools or manual update")
+                        print("Consider: pip install pip-tools && pip-compile --upgrade")
                     else:
                         print("  ✓ requirements.txt and pyproject.toml checked")
                         print("\n  Options:")
@@ -645,8 +673,8 @@ except KeyboardInterrupt:
                     output_path.mkdir(parents=True, exist_ok=True)
                     print(f"  Created: {output}")
                 
-                print(f"  ⚠️  API doc generation requires sphinx or pdoc")
-                print("💡 Consider: pip install pdoc3 && pdoc --html --output-dir " + output + " codesentinel")
+                print(f"  API doc generation requires sphinx or pdoc")
+                print("Consider: pip install pdoc3 && pdoc --html --output-dir " + output + " codesentinel")
                 
             else:
                 print("❌ Unknown update action. Use 'codesentinel update --help'")
@@ -788,12 +816,13 @@ except KeyboardInterrupt:
             # Emoji cleaning
             files_with_emoji_changes = []
             if clean_targets['emojis']:
-                print("🔍 Scanning for policy-violating emoji usage...")
+                print("Scanning for policy-violating emoji usage...")
                 import re
                 
                 include_gui = getattr(args, 'include_gui', False)
                 
                 # Emoji pattern - matches most common emojis
+                # Policy: Only allow checkmark and X - all others removed
                 emoji_pattern = re.compile(
                     "["
                     "\U0001F600-\U0001F64F"  # emoticons
@@ -805,6 +834,9 @@ except KeyboardInterrupt:
                     "]+", 
                     flags=re.UNICODE
                 )
+                
+                # Policy-allowed emojis: checkmark and X
+                allowed_emojis = {'✓', '✔', '✅', '❌', '✗', '❎'}
                 
                 # Allowed emoji contexts (user-facing messages)
                 # These patterns indicate legitimate emoji usage in user output
@@ -851,44 +883,26 @@ except KeyboardInterrupt:
                             for line in lines:
                                 emoji_matches = emoji_pattern.findall(line)
                                 if emoji_matches:
-                                    # Check if this is an allowed context
-                                    is_allowed = False
+                                    # Check if ALL emojis in this line are policy-allowed
+                                    all_allowed = all(emoji in allowed_emojis for emoji in emoji_matches)
                                     
-                                    # Allow emojis in user-facing print/logging statements
-                                    if any(re.search(ctx, line) for ctx in allowed_contexts):
-                                        is_allowed = True
+                                    if all_allowed:
+                                        # All emojis are checkmark/X - keep the line
                                         cleaned_lines.append(line)
                                         continue
                                     
-                                    # Allow emojis in comment markers for output examples
-                                    if re.match(r'\s*#.*Example output:|.*Output:|\s*#\s*User message:', line):
-                                        is_allowed = True
-                                        cleaned_lines.append(line)
-                                        continue
+                                    # Filter out non-allowed emojis
+                                    policy_violating = [e for e in emoji_matches if e not in allowed_emojis]
                                     
-                                    # Python files: Allow in docstrings describing user output
-                                    if file_path.suffix == '.py':
-                                        # Check if in docstring (simple heuristic)
-                                        if '"""' in line or "'''" in line:
-                                            is_allowed = True
-                                            cleaned_lines.append(line)
-                                            continue
-                                    
-                                    # Markdown files: More lenient for headers/titles only
-                                    if file_path.suffix == '.md':
-                                        # Allow single emoji in headers/titles (not excessive)
-                                        if line.strip().startswith('#') and len(emoji_matches) <= 1:
-                                            is_allowed = True
-                                            cleaned_lines.append(line)
-                                            continue
-                                    
-                                    # If not allowed, remove emojis (policy violation)
-                                    if not is_allowed:
-                                        violation_emojis.extend(emoji_matches)
-                                        cleaned_line = emoji_pattern.sub('', line)
+                                    if policy_violating:
+                                        # Has policy-violating emojis, remove them
+                                        violation_emojis.extend(policy_violating)
+                                        # Remove only policy-violating emojis, keep allowed ones
+                                        for emoji in policy_violating:
+                                            line = line.replace(emoji, '')
                                         # Clean up resulting double spaces
-                                        cleaned_line = re.sub(r'  +', ' ', cleaned_line)
-                                        cleaned_lines.append(cleaned_line)
+                                        line = re.sub(r'  +', ' ', line)
+                                        cleaned_lines.append(line)
                                     else:
                                         cleaned_lines.append(line)
                                 else:
@@ -912,7 +926,7 @@ except KeyboardInterrupt:
                                         print(f"  Found violations: {file_path.relative_to(workspace_root)} ({len(violation_emojis)} policy-violating emojis)")
                         except Exception as e:
                             if verbose:
-                                print(f"  ⚠️  Error scanning {file_path.name}: {e}")
+                                print(f"  Error scanning {file_path.name}: {e}")
                 
                 if files_with_emoji_changes:
                     total_emojis = sum(f['emoji_count'] for f in files_with_emoji_changes)
@@ -930,7 +944,7 @@ except KeyboardInterrupt:
             print(f"  Space to reclaim: {(total_size + emoji_size) / 1024 / 1024:.2f} MB")
             
             if not items_to_delete and not files_with_emoji_changes:
-                print("\n✨ Repository is already clean!")
+                print("\nRepository is already clean!")
                 if clean_targets['git']:
                     print("\n🔧 Running git optimization...")
                     if not dry_run:
@@ -940,7 +954,7 @@ except KeyboardInterrupt:
                                          capture_output=not verbose)
                             print("  ✓ Git garbage collection completed")
                         except Exception as e:
-                            print(f"  ⚠️  Git optimization failed: {e}")
+                            print(f"  Git optimization failed: {e}")
                     else:
                         print("  [DRY-RUN] Would run: git gc --auto")
                 return
@@ -960,18 +974,18 @@ except KeyboardInterrupt:
                     if len(files_with_emoji_changes) > 10:
                         print(f"  ... and {len(files_with_emoji_changes) - 10} more files")
                 
-                print("\n✨ Dry run complete. No files modified.")
+                print("\nDry run complete. No files modified.")
                 return
             
             if not force:
                 total_changes = len(items_to_delete) + len(files_with_emoji_changes)
-                response = input(f"\n⚠️  Delete {len(items_to_delete)} items and clean {len(files_with_emoji_changes)} files? (y/N): ")
+                response = input(f"\nDelete {len(items_to_delete)} items and clean {len(files_with_emoji_changes)} files? (y/N): ")
                 if response.lower() != 'y':
                     print("❌ Cleanup cancelled.")
                     return
             
             # Perform deletion
-            print("\n🗑️  Cleaning...")
+            print("\nCleaning...")
             deleted_count = 0
             errors = []
             
@@ -991,7 +1005,7 @@ except KeyboardInterrupt:
             
             # Git optimization if requested
             if clean_targets['git']:
-                print("\n🔧 Running git optimization...")
+                print("\nRunning git optimization...")
                 try:
                     import subprocess
                     result = subprocess.run(['git', 'gc', '--auto'], 
@@ -1043,6 +1057,463 @@ except KeyboardInterrupt:
                     print(f"  {path.name}: {error}")
                 if len(emoji_errors) > 5:
                     print(f"  ... and {len(emoji_errors) - 5} more errors")
+
+        elif args.command == 'integrate':
+            """Handle integrate command for automated workflow integration."""
+            from pathlib import Path
+            import subprocess
+            import os
+            from datetime import datetime
+            
+            dry_run = args.dry_run
+            force = args.force
+            backup = args.backup
+            workflow = args.workflow
+            
+            print("🔗 CodeSentinel Integration Analysis")
+            print("=" * 50)
+            
+            if dry_run:
+                print("🔍 DRY-RUN MODE: Analyzing integration opportunities...")
+            else:
+                print("🔧 Integrating CLI commands into workflows...")
+            
+            # Get repository root
+            repo_root = Path.cwd()
+            
+            # Create backup if requested
+            if backup and not dry_run:
+                backup_dir = repo_root / "backups" / f"integration_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                backup_dir.mkdir(parents=True, exist_ok=True)
+                print(f"📦 Creating backup in: {backup_dir}")
+                
+                # Backup key files
+                key_files = [
+                    "codesentinel/utils/scheduler.py",
+                    "codesentinel/cli/__init__.py"
+                ]
+                for file_path in key_files:
+                    src = repo_root / file_path
+                    if src.exists():
+                        dst = backup_dir / file_path
+                        dst.parent.mkdir(parents=True, exist_ok=True)
+                        import shutil
+                        shutil.copy2(src, dst)
+                        print(f"  ✓ Backed up: {file_path}")
+            
+            # Analyze available CLI commands
+            print("\n🔍 Analyzing available CLI commands...")
+            available_commands = {}
+            
+            # Check clean command capabilities
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'clean', '--help'
+                ], capture_output=True, text=True, timeout=30)
+                
+                if result.returncode == 0 and '--cache' in result.stdout:
+                    available_commands['clean'] = [
+                        'cache', 'temp', 'logs', 'build', 'test', 'root', 'emojis'
+                    ]
+                    print("  ✓ Clean command: available with multiple targets")
+                else:
+                    print("  ⚠️  Clean command: not available or incomplete")
+            except Exception as e:
+                print(f"  ❌ Clean command analysis failed: {e}")
+            
+            # Check update command capabilities
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'update', '--help'
+                ], capture_output=True, text=True, timeout=30)
+                
+                if result.returncode == 0 and 'dependencies' in result.stdout:
+                    available_commands['update'] = [
+                        'docs', 'changelog', 'readme', 'version', 'dependencies', 'api-docs'
+                    ]
+                    print("  ✓ Update command: available with multiple targets")
+                else:
+                    print("  ⚠️  Update command: not available or incomplete")
+            except Exception as e:
+                print(f"  ❌ Update command analysis failed: {e}")
+            
+            if not available_commands:
+                print("\n❌ No integrable commands found!")
+                return
+            
+            # Analyze integration opportunities
+            integration_opportunities = []
+            
+            if workflow in ['scheduler', 'all']:
+                print("\n🔍 Analyzing scheduler integration opportunities...")
+                
+                # Check scheduler file
+                scheduler_file = repo_root / "codesentinel" / "utils" / "scheduler.py"
+                if scheduler_file.exists():
+                    content = scheduler_file.read_text()
+                    
+                    # Check daily tasks
+                    if "_run_daily_tasks" in content:
+                        print("  ✓ Daily tasks method found")
+                        
+                        # Check for existing integrations
+                        existing_integrations = []
+                        if "clean --root" in content:
+                            existing_integrations.append("root cleanup")
+                        if "clean --cache" in content:
+                            existing_integrations.append("cache cleanup")
+                        if "update --dependencies" in content:
+                            existing_integrations.append("dependency check")
+                        
+                        if existing_integrations:
+                            print(f"  ✓ Existing integrations: {', '.join(existing_integrations)}")
+                        
+                        # Find new opportunities
+                        opportunities = []
+                        
+                        # Clean command opportunities
+                        if 'clean' in available_commands:
+                            clean_targets = available_commands['clean']
+                            if "clean --temp" not in content and "temp" in clean_targets:
+                                opportunities.append({
+                                    'command': 'clean --temp --logs',
+                                    'target': 'daily_tasks',
+                                    'benefit': 'Automated temp file and log cleanup'
+                                })
+                            if "clean --emojis" not in content and "emojis" in clean_targets:
+                                opportunities.append({
+                                    'command': 'clean --emojis',
+                                    'target': 'daily_tasks',
+                                    'benefit': 'Automated emoji policy enforcement'
+                                })
+                        
+                        # Update command opportunities
+                        if 'update' in available_commands:
+                            update_targets = available_commands['update']
+                            if "'update', 'docs'" not in content and "docs" in update_targets:
+                                opportunities.append({
+                                    'command': 'update --docs',
+                                    'target': 'weekly_tasks',
+                                    'benefit': 'Automated documentation validation'
+                                })
+                            if "'update', 'changelog'" not in content and "changelog" in update_targets:
+                                opportunities.append({
+                                    'command': 'update --changelog',
+                                    'target': 'weekly_tasks',
+                                    'benefit': 'Automated changelog maintenance'
+                                })
+                        
+                        if opportunities:
+                            integration_opportunities.extend(opportunities)
+                            print(f"  🔍 Found {len(opportunities)} integration opportunities")
+                        else:
+                            print("  ✓ No new integration opportunities found")
+                    else:
+                        print("  ⚠️  Daily tasks method not found")
+                else:
+                    print("  ❌ Scheduler file not found")
+            
+            # Display integration plan
+            if integration_opportunities:
+                print(f"\n📋 Integration Plan ({len(integration_opportunities)} opportunities):")
+                for i, opp in enumerate(integration_opportunities, 1):
+                    print(f"  {i}. {opp['command']} → {opp['target'].replace('_', ' ')}")
+                    print(f"     Benefit: {opp['benefit']}")
+                
+                if dry_run:
+                    print("\n✨ Dry run complete. Use --force to apply integrations.")
+                    return
+                
+                # Apply integrations
+                print("\n🔧 Applying integrations...")
+                
+                # Change to repo root for operations
+                original_cwd = os.getcwd()
+                os.chdir(repo_root)
+                
+                try:
+                    applied_count = 0
+                    
+                    def integrate_into_daily_tasks(command, force=False):
+                        """Integrate command into daily tasks."""
+                        try:
+                            scheduler_path = Path("codesentinel/utils/scheduler.py")
+                            content = scheduler_path.read_text()
+                            
+                            # Find the right place to insert (after dependency check, before duplication detection)
+                            insert_marker = "# Dependency check using CLI update command"
+                            if insert_marker in content:
+                                # Find the end of the dependency check block
+                                lines = content.split('\n')
+                                insert_index = -1
+                                for i, line in enumerate(lines):
+                                    if insert_marker in line:
+                                        # Find the end of this block
+                                        for j in range(i + 1, len(lines)):
+                                            if lines[j].strip().startswith('except Exception as e:'):
+                                                # Find the next blank line after this block
+                                                for k in range(j + 1, len(lines)):
+                                                    if not lines[k].strip():
+                                                        insert_index = k
+                                                        break
+                                                break
+                                    break
+                                
+                                if insert_index > 0:
+                                    # Create the integration code
+                                    integration_code = f"""
+            # {command.split()[1].title()} cleanup using CLI command
+            try:
+                # Run {command} command
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', '{command}'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('{command.replace(" --", "_").replace("-", "_")}_cleanup')
+                    self.logger.info("{command.split()[1].title()} cleanup completed successfully")
+                else:
+                    self.logger.warning(f"{command.split()[1].title()} cleanup failed: {{result.stderr}}")
+                    errors.append(f"{command.split()[1].title()} cleanup failed: {{result.stderr}}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("{command.split()[1].title()} cleanup timed out")
+                errors.append("{command.split()[1].title()} cleanup timed out")
+            except Exception as e:
+                self.logger.error(f"{command.split()[1].title()} cleanup error: {{e}}")
+                errors.append(f"{command.split()[1].title()} cleanup failed: {{str(e)}}")
+            
+            # Duplication detection"""
+                                    
+                                    # Insert the code
+                                    lines.insert(insert_index, integration_code)
+                                    new_content = '\n'.join(lines)
+                                    
+                                    if not dry_run:
+                                        scheduler_path.write_text(new_content)
+                                    return True
+                            
+                            return False
+                            
+                        except Exception as e:
+                            print(f"  ❌ Integration failed: {e}")
+                            return False
+                    
+                    def integrate_into_weekly_tasks(command, force=False):
+                        """Integrate command into weekly tasks."""
+                        try:
+                            scheduler_path = Path("codesentinel/utils/scheduler.py")
+                            content = scheduler_path.read_text()
+                            
+                            # Find the weekly tasks method
+                            if "_run_weekly_tasks" in content:
+                                lines = content.split('\n')
+                                
+                                # Find where to insert (before the return statement)
+                                return_index = -1
+                                for i, line in enumerate(lines):
+                                    if "_run_weekly_tasks" in line:
+                                        # Find the return statement
+                                        for j in range(i + 1, len(lines)):
+                                            if lines[j].strip().startswith('return {'):
+                                                return_index = j - 1  # Insert before return
+                                                break
+                                    break
+                                
+                                if return_index > 0:
+                                    # Create the integration code
+                                    integration_code = f"""
+                # {command.split()[1].title()} update using CLI command
+                try:
+                    result = subprocess.run([
+                        sys.executable, '-m', 'codesentinel.cli', '{command}'
+                    ], capture_output=True, text=True, timeout=300)
+
+                    if result.returncode == 0:
+                        tasks_executed.append('{command.replace(" --", "_").replace("-", "_")}_update')
+                        self.logger.info("{command.split()[1].title()} update completed successfully")
+                    else:
+                        self.logger.warning(f"{command.split()[1].title()} update failed: {{result.stderr}}")
+                        errors.append(f"{command.split()[1].title()} update failed: {{result.stderr}}")
+
+                except subprocess.TimeoutExpired:
+                    self.logger.error("{command.split()[1].title()} update timed out")
+                    errors.append("{command.split()[1].title()} update timed out")
+                except Exception as e:
+                    self.logger.error(f"{command.split()[1].title()} update error: {{e}}")
+                    errors.append(f"{command.split()[1].title()} update failed: {{str(e)}}")
+"""
+                                    
+                                    # Insert the code
+                                    lines.insert(return_index, integration_code)
+                                    new_content = '\n'.join(lines)
+                                    
+                                    if not dry_run:
+                                        scheduler_path.write_text(new_content)
+                                    return True
+                            
+                            return False
+                            
+                        except Exception as e:
+                            print(f"  ❌ Integration failed: {e}")
+                            return False
+                    
+                    for opp in integration_opportunities:
+                        if opp['target'] == 'daily_tasks':
+                            # Integrate into daily tasks
+                            success = integrate_into_daily_tasks(opp['command'], force)
+                            if success:
+                                applied_count += 1
+                                print(f"  ✓ Integrated {opp['command']} into daily tasks")
+                            else:
+                                print(f"  ⚠️  Failed to integrate {opp['command']} into daily tasks")
+                        
+                        elif opp['target'] == 'weekly_tasks':
+                            # Integrate into weekly tasks
+                            success = integrate_into_weekly_tasks(opp['command'], force)
+                            if success:
+                                applied_count += 1
+                                print(f"  ✓ Integrated {opp['command']} into weekly tasks")
+                            else:
+                                print(f"  ⚠️  Failed to integrate {opp['command']} into weekly tasks")
+                    
+                    print(f"\n✨ Integration complete! Applied {applied_count}/{len(integration_opportunities)} integrations.")
+                    
+                    if applied_count > 0:
+                        print("\n💡 Test the integrations:")
+                        print("  codesentinel maintenance daily    # Test daily tasks")
+                        print("  codesentinel maintenance weekly   # Test weekly tasks")
+                        print("  codesentinel maintenance monthly  # Test monthly tasks")
+                
+                finally:
+                    os.chdir(original_cwd)
+            
+            else:
+                print("\n✨ No integration opportunities found. All commands are already integrated!")
+            
+            def integrate_into_daily_tasks(command, force=False):
+                """Integrate command into daily tasks."""
+                try:
+                    scheduler_path = Path("codesentinel/utils/scheduler.py")
+                    content = scheduler_path.read_text()
+                    
+                    # Find the right place to insert (after dependency check, before duplication detection)
+                    insert_marker = "# Dependency check using CLI update command"
+                    if insert_marker in content:
+                        # Find the end of the dependency check block
+                        lines = content.split('\n')
+                        insert_index = -1
+                        for i, line in enumerate(lines):
+                            if insert_marker in line:
+                                # Find the end of this block
+                                for j in range(i + 1, len(lines)):
+                                    if lines[j].strip().startswith('except Exception as e:'):
+                                        # Find the next blank line after this block
+                                        for k in range(j + 1, len(lines)):
+                                            if not lines[k].strip():
+                                                insert_index = k
+                                                break
+                                        break
+                                break
+                        
+                        if insert_index > 0:
+                            # Create the integration code
+                            integration_code = f"""
+        # {command.split()[1].title()} cleanup using CLI command
+        try:
+            # Run {command} command
+            result = subprocess.run([
+                sys.executable, '-m', 'codesentinel.cli', '{command}'
+            ], capture_output=True, text=True, timeout=300)
+
+            if result.returncode == 0:
+                tasks_executed.append('{command.replace(" --", "_").replace("-", "_")}_cleanup')
+                self.logger.info("{command.split()[1].title()} cleanup completed successfully")
+            else:
+                self.logger.warning(f"{command.split()[1].title()} cleanup failed: {{result.stderr}}")
+                errors.append(f"{command.split()[1].title()} cleanup failed: {{result.stderr}}")
+
+        except subprocess.TimeoutExpired:
+            self.logger.error("{command.split()[1].title()} cleanup timed out")
+            errors.append("{command.split()[1].title()} cleanup timed out")
+        except Exception as e:
+            self.logger.error(f"{command.split()[1].title()} cleanup error: {{e}}")
+            errors.append(f"{command.split()[1].title()} cleanup failed: {{str(e)}}")
+        
+        # Duplication detection"""
+                            
+                            # Insert the code
+                            lines.insert(insert_index, integration_code)
+                            new_content = '\n'.join(lines)
+                            
+                            if not dry_run:
+                                scheduler_path.write_text(new_content)
+                            return True
+                    
+                    return False
+                    
+                except Exception as e:
+                    print(f"  ❌ Integration failed: {e}")
+                    return False
+            
+            def integrate_into_weekly_tasks(command, force=False):
+                """Integrate command into weekly tasks."""
+                try:
+                    scheduler_path = Path("codesentinel/utils/scheduler.py")
+                    content = scheduler_path.read_text()
+                    
+                    # Find the weekly tasks method
+                    if "_run_weekly_tasks" in content:
+                        lines = content.split('\n')
+                        
+                        # Find where to insert (before the return statement)
+                        return_index = -1
+                        for i, line in enumerate(lines):
+                            if "_run_weekly_tasks" in line:
+                                # Find the return statement
+                                for j in range(i + 1, len(lines)):
+                                    if lines[j].strip().startswith('return {'):
+                                        return_index = j - 1  # Insert before return
+                                        break
+                                break
+                        
+                        if return_index > 0:
+                            # Create the integration code
+                            integration_code = f"""
+            # {command.split()[1].title()} update using CLI command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', '{command}'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('{command.replace(" --", "_").replace("-", "_")}_update')
+                    self.logger.info("{command.split()[1].title()} update completed successfully")
+                else:
+                    self.logger.warning(f"{command.split()[1].title()} update failed: {{result.stderr}}")
+                    errors.append(f"{command.split()[1].title()} update failed: {{result.stderr}}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("{command.split()[1].title()} update timed out")
+                errors.append("{command.split()[1].title()} update timed out")
+            except Exception as e:
+                self.logger.error(f"{command.split()[1].title()} update error: {{e}}")
+                errors.append(f"{command.split()[1].title()} update failed: {{str(e)}}")
+"""
+                            
+                            # Insert the code
+                            lines.insert(return_index, integration_code)
+                            new_content = '\n'.join(lines)
+                            
+                            if not dry_run:
+                                scheduler_path.write_text(new_content)
+                            return True
+                    
+                    return False
+                    
+                except Exception as e:
+                    print(f"  ❌ Integration failed: {e}")
+                    return False
 
         elif args.command == 'setup':
             print("Launching setup wizard...")
