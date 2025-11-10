@@ -26,6 +26,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Strategic guide applicability tests.
     - Performance baselining (APET and DPC scores).
     - Security, efficiency, and minimalism principle audits.
+- **Clean Command for Repository Maintenance**
+  - New codesentinel clean command for removing build artifacts and temporary files
+  - Eight cleaning targets:
+    - --all (default): Clean cache + temp + logs
+    - --root: Clean root directory clutter only
+    - --cache: Remove Python cache files (__pycache__, *.pyc, *.pyo)
+    - --temp: Remove temporary files (*.tmp, .cache directories)
+    - --logs: Remove old log files (*.log)
+    - --build: Remove build artifacts (dist/, build/, *.egg-info)
+    - --test: Remove test artifacts (.pytest_cache, .coverage, htmlcov/)
+    - --git: Optimize git repository (gc, prune)
+  - Safety features:
+    - --dry-run: Preview deletions without executing
+    - --force: Skip confirmation prompts
+    - --verbose: Show detailed output
+    - --older-than DAYS: Filter by file age
+  - Calculates and reports space reclaimed
+  - Confirmation prompt before deletion (unless --force)
 - **Update Command for Repository Documentation Management**
   - New `codesentinel update` command with six subcommands:
     - `docs`: Check and update repository documentation files

@@ -77,6 +77,10 @@ Examples:
   codesentinel alert "Test message"      # Send test alert
   codesentinel schedule start            # Start maintenance scheduler
   codesentinel schedule stop             # Stop maintenance scheduler
+  codesentinel clean                     # Clean all (cache + temp + logs)
+  codesentinel clean --root              # Clean root directory clutter
+  codesentinel clean --build --test      # Clean build and test artifacts
+  codesentinel clean --dry-run           # Preview what would be deleted
   codesentinel update docs               # Update repository documentation
   codesentinel update changelog --version 1.2.3    # Update CHANGELOG.md
   codesentinel update version patch      # Bump patch version
@@ -202,6 +206,35 @@ Examples:
         '--format', choices=['markdown', 'html'], default='markdown', help='Documentation format')
     api_docs_parser.add_argument(
         '--output', type=str, help='Output directory for API docs (default: docs/api)')
+
+    # Clean command
+    clean_parser = subparsers.add_parser('clean', help='Clean repository artifacts and temporary files')
+    clean_parser.add_argument(
+        '--all', action='store_true', default=False,
+        help='Clean all safe targets (cache + temp + logs) - this is the default if no options specified')
+    clean_parser.add_argument(
+        '--root', action='store_true', help='Clean root directory clutter (__pycache__, .pyc files)')
+    clean_parser.add_argument(
+        '--cache', action='store_true', help='Clean Python cache files (__pycache__, *.pyc, *.pyo)')
+    clean_parser.add_argument(
+        '--temp', action='store_true', help='Clean temporary files (*.tmp, .cache directories)')
+    clean_parser.add_argument(
+        '--logs', action='store_true', help='Clean old log files (*.log)')
+    clean_parser.add_argument(
+        '--build', action='store_true', help='Clean build artifacts (dist/, build/, *.egg-info)')
+    clean_parser.add_argument(
+        '--test', action='store_true', help='Clean test artifacts (.pytest_cache, .coverage, htmlcov/)')
+    clean_parser.add_argument(
+        '--git', action='store_true', help='Optimize git repository (gc, prune)')
+    clean_parser.add_argument(
+        '--dry-run', action='store_true', help='Show what would be deleted without deleting')
+    clean_parser.add_argument(
+        '--force', action='store_true', help='Skip confirmation prompts')
+    clean_parser.add_argument(
+        '--verbose', action='store_true', help='Show detailed output')
+    clean_parser.add_argument(
+        '--older-than', type=int, metavar='DAYS', 
+        help='Only clean files older than N days (applies to logs and temp files)')
 
     # Setup command
     setup_parser = subparsers.add_parser('setup', help='Run setup wizard')
@@ -611,6 +644,224 @@ except KeyboardInterrupt:
                 
             else:
                 print("❌ Unknown update action. Use 'codesentinel update --help'")
+
+        elif args.command == 'clean':
+            """Handle clean command for repository cleanup."""
+            from pathlib import Path
+            import shutil
+            from datetime import datetime, timedelta
+            
+            dry_run = args.dry_run
+            force = args.force
+            verbose = args.verbose
+            older_than = args.older_than
+            
+            # Determine what to clean
+            # If no specific flags, default to --all behavior
+            clean_targets = {
+                'cache': args.cache,
+                'temp': args.temp,
+                'logs': args.logs,
+                'build': args.build,
+                'test': args.test,
+                'git': args.git,
+                'root': args.root
+            }
+            
+            # If nothing specified, enable --all behavior (cache + temp + logs)
+            if not any(clean_targets.values()):
+                clean_targets['cache'] = True
+                clean_targets['temp'] = True
+                clean_targets['logs'] = True
+                print("🧹 Running clean (default: --all)\n")
+            elif args.all:
+                clean_targets['cache'] = True
+                clean_targets['temp'] = True
+                clean_targets['logs'] = True
+            
+            workspace_root = Path.cwd()
+            items_to_delete = []
+            size_saved = 0
+            
+            def get_size(path):
+                """Calculate size of file or directory."""
+                if path.is_file():
+                    return path.stat().st_size
+                total = 0
+                try:
+                    for item in path.rglob('*'):
+                        if item.is_file():
+                            total += item.stat().st_size
+                except:
+                    pass
+                return total
+            
+            def is_older_than(path, days):
+                """Check if file is older than specified days."""
+                if not days:
+                    return True
+                try:
+                    mtime = datetime.fromtimestamp(path.stat().st_mtime)
+                    return datetime.now() - mtime > timedelta(days=days)
+                except:
+                    return False
+            
+            # Collect items to delete
+            if clean_targets['cache']:
+                print("🔍 Scanning for Python cache files...")
+                # Find __pycache__ directories
+                for pycache in workspace_root.rglob('__pycache__'):
+                    items_to_delete.append(('dir', pycache, get_size(pycache)))
+                    if verbose:
+                        print(f"  Found: {pycache.relative_to(workspace_root)}")
+                
+                # Find .pyc and .pyo files
+                for pattern in ['*.pyc', '*.pyo']:
+                    for pyc_file in workspace_root.rglob(pattern):
+                        items_to_delete.append(('file', pyc_file, get_size(pyc_file)))
+                        if verbose:
+                            print(f"  Found: {pyc_file.relative_to(workspace_root)}")
+            
+            if clean_targets['temp']:
+                print("🔍 Scanning for temporary files...")
+                # Find .tmp files
+                for tmp_file in workspace_root.rglob('*.tmp'):
+                    if is_older_than(tmp_file, older_than):
+                        items_to_delete.append(('file', tmp_file, get_size(tmp_file)))
+                        if verbose:
+                            print(f"  Found: {tmp_file.relative_to(workspace_root)}")
+                
+                # Find .cache directories
+                for cache_dir in workspace_root.rglob('.cache'):
+                    items_to_delete.append(('dir', cache_dir, get_size(cache_dir)))
+                    if verbose:
+                        print(f"  Found: {cache_dir.relative_to(workspace_root)}")
+            
+            if clean_targets['logs']:
+                print("🔍 Scanning for log files...")
+                for log_file in workspace_root.rglob('*.log'):
+                    if is_older_than(log_file, older_than):
+                        items_to_delete.append(('file', log_file, get_size(log_file)))
+                        if verbose:
+                            print(f"  Found: {log_file.relative_to(workspace_root)}")
+            
+            if clean_targets['build']:
+                print("🔍 Scanning for build artifacts...")
+                build_dirs = ['dist', 'build', '*.egg-info']
+                for pattern in build_dirs:
+                    for build_item in workspace_root.glob(pattern):
+                        items_to_delete.append(('dir', build_item, get_size(build_item)))
+                        if verbose:
+                            print(f"  Found: {build_item.relative_to(workspace_root)}")
+            
+            if clean_targets['test']:
+                print("🔍 Scanning for test artifacts...")
+                test_items = ['.pytest_cache', '.coverage', 'htmlcov', '.tox']
+                for test_pattern in test_items:
+                    for test_item in workspace_root.rglob(test_pattern):
+                        items_to_delete.append(('dir' if test_item.is_dir() else 'file', 
+                                               test_item, get_size(test_item)))
+                        if verbose:
+                            print(f"  Found: {test_item.relative_to(workspace_root)}")
+            
+            if clean_targets['root']:
+                print("🔍 Scanning root directory for clutter...")
+                # Only scan root directory, not subdirectories
+                for item in workspace_root.glob('__pycache__'):
+                    items_to_delete.append(('dir', item, get_size(item)))
+                    if verbose:
+                        print(f"  Found: {item.name}")
+                
+                for pattern in ['*.pyc', '*.pyo', '*.tmp']:
+                    for item in workspace_root.glob(pattern):
+                        items_to_delete.append(('file', item, get_size(item)))
+                        if verbose:
+                            print(f"  Found: {item.name}")
+            
+            # Calculate total size
+            total_size = sum(size for _, _, size in items_to_delete)
+            
+            # Display summary
+            print(f"\n📊 Summary:")
+            print(f"  Items found: {len(items_to_delete)}")
+            print(f"  Space to reclaim: {total_size / 1024 / 1024:.2f} MB")
+            
+            if not items_to_delete:
+                print("\n✨ Repository is already clean!")
+                if clean_targets['git']:
+                    print("\n🔧 Running git optimization...")
+                    if not dry_run:
+                        try:
+                            import subprocess
+                            subprocess.run(['git', 'gc', '--auto'], check=False, 
+                                         capture_output=not verbose)
+                            print("  ✓ Git garbage collection completed")
+                        except Exception as e:
+                            print(f"  ⚠️  Git optimization failed: {e}")
+                    else:
+                        print("  [DRY-RUN] Would run: git gc --auto")
+                return
+            
+            # Confirm deletion
+            if dry_run:
+                print("\n[DRY-RUN] Would delete:")
+                for item_type, path, size in items_to_delete[:10]:  # Show first 10
+                    print(f"  {item_type:4s} {path.relative_to(workspace_root)} ({size / 1024:.1f} KB)")
+                if len(items_to_delete) > 10:
+                    print(f"  ... and {len(items_to_delete) - 10} more items")
+                print("\n✨ Dry run complete. No files deleted.")
+                return
+            
+            if not force:
+                response = input(f"\n⚠️  Delete {len(items_to_delete)} items? (y/N): ")
+                if response.lower() != 'y':
+                    print("❌ Cleanup cancelled.")
+                    return
+            
+            # Perform deletion
+            print("\n🗑️  Cleaning...")
+            deleted_count = 0
+            errors = []
+            
+            for item_type, path, size in items_to_delete:
+                try:
+                    if item_type == 'dir':
+                        shutil.rmtree(path)
+                    else:
+                        path.unlink()
+                    deleted_count += 1
+                    if verbose:
+                        print(f"  ✓ Deleted: {path.relative_to(workspace_root)}")
+                except Exception as e:
+                    errors.append((path, str(e)))
+                    if verbose:
+                        print(f"  ✗ Failed: {path.relative_to(workspace_root)} - {e}")
+            
+            # Git optimization if requested
+            if clean_targets['git']:
+                print("\n🔧 Running git optimization...")
+                try:
+                    import subprocess
+                    result = subprocess.run(['git', 'gc', '--auto'], 
+                                          capture_output=not verbose, text=True)
+                    if result.returncode == 0:
+                        print("  ✓ Git garbage collection completed")
+                    else:
+                        print(f"  ⚠️  Git gc returned code {result.returncode}")
+                except Exception as e:
+                    print(f"  ✗ Git optimization failed: {e}")
+            
+            # Final summary
+            print(f"\n✨ Cleanup complete!")
+            print(f"  Deleted: {deleted_count}/{len(items_to_delete)} items")
+            print(f"  Space reclaimed: {total_size / 1024 / 1024:.2f} MB")
+            
+            if errors:
+                print(f"\n⚠️  Encountered {len(errors)} errors:")
+                for path, error in errors[:5]:
+                    print(f"  {path.name}: {error}")
+                if len(errors) > 5:
+                    print(f"  ... and {len(errors) - 5} more errors")
 
         elif args.command == 'setup':
             print("Launching setup wizard...")
