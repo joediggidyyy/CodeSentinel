@@ -31,13 +31,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Nine cleaning targets:
     - --all (default): Clean cache + temp + logs
     - --root: Clean root directory clutter only
-    - --cache: Remove Python cache files (__pycache__, *.pyc, *.pyo)
+    - --cache: Remove Python cache files (**pycache**, *.pyc,*.pyo)
     - --temp: Remove temporary files (*.tmp, .cache directories)
     - --logs: Remove old log files (*.log)
     - --build: Remove build artifacts (dist/, build/, *.egg-info)
     - --test: Remove test artifacts (.pytest_cache, .coverage, htmlcov/)
     - --git: Optimize git repository (gc, prune)
     - --emojis: Remove excessive emojis from code and documentation (policy enforcement)
+      - **Intelligent detection**: Distinguishes between policy violations and legitimate usage
+      - Excludes GUI files by default (user-facing messages allowed)
+      - Allows emojis in print/logging statements (user output)
+      - Allows emojis in docstrings describing output examples
+      - Allows single emoji in markdown headers (not excessive)
+      - Use `--include-gui` to scan GUI files explicitly
+      - Reports only policy-violating emojis (reduced from 2,317 to 1,811 in testing)
   - Safety features:
     - --dry-run: Preview deletions without executing
     - --force: Skip confirmation prompts

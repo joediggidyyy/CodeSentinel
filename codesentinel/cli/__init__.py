@@ -80,7 +80,8 @@ Examples:
   codesentinel clean                     # Clean all (cache + temp + logs)
   codesentinel clean --root              # Clean root directory clutter
   codesentinel clean --build --test      # Clean build and test artifacts
-  codesentinel clean --emojis --dry-run  # Preview emoji removal (policy violation)
+  codesentinel clean --emojis --dry-run  # Preview policy-violating emoji removal (smart detection)
+  codesentinel clean --emojis --include-gui  # Include GUI files in emoji scan
   codesentinel clean --dry-run           # Preview what would be deleted
   codesentinel update docs               # Update repository documentation
   codesentinel update changelog --version 1.2.3    # Update CHANGELOG.md
@@ -229,6 +230,8 @@ Examples:
         '--git', action='store_true', help='Optimize git repository (gc, prune)')
     clean_parser.add_argument(
         '--emojis', action='store_true', help='Remove excessive emojis from code and documentation (policy violation)')
+    clean_parser.add_argument(
+        '--include-gui', action='store_true', help='Include GUI files in emoji scanning (default: excluded)')
     clean_parser.add_argument(
         '--dry-run', action='store_true', help='Show what would be deleted without deleting')
     clean_parser.add_argument(
@@ -785,8 +788,10 @@ except KeyboardInterrupt:
             # Emoji cleaning
             files_with_emoji_changes = []
             if clean_targets['emojis']:
-                print("🔍 Scanning for excessive emoji usage...")
+                print("🔍 Scanning for policy-violating emoji usage...")
                 import re
+                
+                include_gui = getattr(args, 'include_gui', False)
                 
                 # Emoji pattern - matches most common emojis
                 emoji_pattern = re.compile(
@@ -801,8 +806,24 @@ except KeyboardInterrupt:
                     flags=re.UNICODE
                 )
                 
+                # Allowed emoji contexts (user-facing messages)
+                # These patterns indicate legitimate emoji usage in user output
+                allowed_contexts = [
+                    r'print\([f]?["\'].*?[emoji].*?["\']\)',  # print statements
+                    r'\.format\(.*?[emoji].*?\)',              # format strings
+                    r'f["\'].*?[emoji].*?["\']',                # f-strings
+                    r'logging\.\w+\([f]?["\'].*?[emoji].*?["\']\)',  # logging
+                    r'#\s*User-facing:',                        # Marked as user-facing
+                ]
+                
                 # File patterns to scan
                 file_patterns = ['*.py', '*.md', '*.txt', '*.rst']
+                
+                # GUI file patterns to exclude (unless --include-gui)
+                gui_patterns = [
+                    'gui', 'GUI', 'tkinter', 'wx', 'qt', 'pyqt',
+                    'launcher', 'wizard', 'dialog', 'window'
+                ]
                 
                 for pattern in file_patterns:
                     for file_path in workspace_root.rglob(pattern):
@@ -810,31 +831,85 @@ except KeyboardInterrupt:
                         if any(skip in str(file_path) for skip in ['.git', '__pycache__', 'venv', '.venv', 'node_modules']):
                             continue
                         
+                        # Skip GUI files unless explicitly included
+                        if not include_gui:
+                            path_str = str(file_path).lower()
+                            if any(gui_term in path_str for gui_term in gui_patterns):
+                                if verbose:
+                                    print(f"  Skipped (GUI): {file_path.relative_to(workspace_root)}")
+                                continue
+                        
                         try:
                             content = file_path.read_text(encoding='utf-8')
                             original_content = content
+                            lines = content.split('\n')
                             
-                            # Count emojis
-                            emoji_matches = emoji_pattern.findall(content)
-                            if emoji_matches:
-                                # Remove emojis from content
-                                cleaned_content = emoji_pattern.sub('', content)
-                                
-                                # Clean up any resulting double spaces or empty lines
-                                cleaned_content = re.sub(r'  +', ' ', cleaned_content)
+                            # Intelligent detection: check each line
+                            violation_emojis = []
+                            cleaned_lines = []
+                            
+                            for line in lines:
+                                emoji_matches = emoji_pattern.findall(line)
+                                if emoji_matches:
+                                    # Check if this is an allowed context
+                                    is_allowed = False
+                                    
+                                    # Allow emojis in user-facing print/logging statements
+                                    if any(re.search(ctx, line) for ctx in allowed_contexts):
+                                        is_allowed = True
+                                        cleaned_lines.append(line)
+                                        continue
+                                    
+                                    # Allow emojis in comment markers for output examples
+                                    if re.match(r'\s*#.*Example output:|.*Output:|\s*#\s*User message:', line):
+                                        is_allowed = True
+                                        cleaned_lines.append(line)
+                                        continue
+                                    
+                                    # Python files: Allow in docstrings describing user output
+                                    if file_path.suffix == '.py':
+                                        # Check if in docstring (simple heuristic)
+                                        if '"""' in line or "'''" in line:
+                                            is_allowed = True
+                                            cleaned_lines.append(line)
+                                            continue
+                                    
+                                    # Markdown files: More lenient for headers/titles only
+                                    if file_path.suffix == '.md':
+                                        # Allow single emoji in headers/titles (not excessive)
+                                        if line.strip().startswith('#') and len(emoji_matches) <= 1:
+                                            is_allowed = True
+                                            cleaned_lines.append(line)
+                                            continue
+                                    
+                                    # If not allowed, remove emojis (policy violation)
+                                    if not is_allowed:
+                                        violation_emojis.extend(emoji_matches)
+                                        cleaned_line = emoji_pattern.sub('', line)
+                                        # Clean up resulting double spaces
+                                        cleaned_line = re.sub(r'  +', ' ', cleaned_line)
+                                        cleaned_lines.append(cleaned_line)
+                                    else:
+                                        cleaned_lines.append(line)
+                                else:
+                                    cleaned_lines.append(line)
+                            
+                            if violation_emojis:
+                                cleaned_content = '\n'.join(cleaned_lines)
+                                # Clean up excessive blank lines
                                 cleaned_content = re.sub(r'\n\n\n+', '\n\n', cleaned_content)
                                 
                                 if cleaned_content != original_content:
                                     files_with_emoji_changes.append({
                                         'path': file_path,
-                                        'emoji_count': len(emoji_matches),
+                                        'emoji_count': len(violation_emojis),
                                         'original': original_content,
                                         'cleaned': cleaned_content,
                                         'size': len(original_content) - len(cleaned_content)
                                     })
                                     
                                     if verbose:
-                                        print(f"  Found: {file_path.relative_to(workspace_root)} ({len(emoji_matches)} emojis)")
+                                        print(f"  Found violations: {file_path.relative_to(workspace_root)} ({len(violation_emojis)} policy-violating emojis)")
                         except Exception as e:
                             if verbose:
                                 print(f"  ⚠️  Error scanning {file_path.name}: {e}")
