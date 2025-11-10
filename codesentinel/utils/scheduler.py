@@ -338,6 +338,95 @@ class MaintenanceScheduler:
             self.logger.error(f"Document formatting error: {e}")
             errors.append(f"Document formatting failed: {str(e)}")
         
+        # Duplication detection (AI tool bug mitigation)
+        try:
+            import os
+            import re
+            from pathlib import Path
+            
+            repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            duplications_found = []
+            
+            # Simple inline duplication detector
+            duplication_patterns = [
+                re.compile(r"^(.+)\1$"),  # texttext on same line
+                re.compile(r"^(#\s*.+)#"),  # #comment#comment
+            ]
+            
+            scan_extensions = {'.py', '.md', '.txt', '.json', '.toml', '.ini'}
+            
+            for file_path in Path(repo_root).iterdir():
+                if file_path.is_file() and file_path.suffix in scan_extensions:
+                    try:
+                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            for line_num, line in enumerate(f, 1):
+                                line = line.rstrip()
+                                if not line.strip():
+                                    continue
+                                for pattern in duplication_patterns:
+                                    if pattern.match(line):
+                                        duplications_found.append({
+                                            'file': file_path.name,
+                                            'line': line_num
+                                        })
+                                        break
+                    except:
+                        pass
+            
+            if duplications_found:
+                self.logger.warning(f"Duplication detected in {len(duplications_found)} locations")
+                tasks_executed.append('duplication_detection_alert')
+            else:
+                tasks_executed.append('duplication_detection_passed')
+                
+        except Exception as e:
+            self.logger.error(f"Duplication detection error: {e}")
+            errors.append(f"Duplication detection failed: {str(e)}")
+        
+        # File duplication detection (AI tool bug mitigation)
+        try:
+            import re
+            import os
+            from pathlib import Path
+            
+            repo_root = Path(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+            duplications_found = 0
+            
+            # Known duplication patterns from AI create_file bug
+            patterns = [
+                re.compile(r"^(.+)\1$"),  # texttext on same line
+                re.compile(r"^(#\s*.+)#"),  # #comment#comment
+                re.compile(r"^([\"\'`]{1,3})\1+"),  # """ duplication
+            ]
+            
+            # Scan root directory files
+            scan_extensions = {'.py', '.md', '.txt', '.json', '.toml', '.ini', '.yml', '.yaml'}
+            for file_path in repo_root.iterdir():
+                if file_path.is_file() and file_path.suffix in scan_extensions:
+                    try:
+                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            for line_num, line in enumerate(f, 1):
+                                line = line.rstrip()
+                                if not line.strip():
+                                    continue
+                                for pattern in patterns:
+                                    if pattern.match(line):
+                                        duplications_found += 1
+                                        self.logger.warning(f"Duplication found in {file_path.name}:{line_num}")
+                                        break
+                    except Exception:
+                        pass
+            
+            if duplications_found > 0:
+                self.logger.warning(f"Found {duplications_found} line duplications - AI tool bug detected")
+                tasks_executed.append(f'duplication_detection_{duplications_found}_issues')
+            else:
+                tasks_executed.append('duplication_scan_clean')
+                
+        except Exception as e:
+            self.logger.error(f"Duplication detection error: {e}")
+            errors.append(f"Duplication detection failed: {str(e)}")
+        
         # Standard daily tasks
         tasks_executed.extend(['security_check', 'dependency_update', 'log_cleanup'])
         
