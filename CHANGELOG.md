@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Security, efficiency, and minimalism principle audits.
 - **Clean Command for Repository Maintenance**
   - New codesentinel clean command for removing build artifacts and temporary files
-  - Eight cleaning targets:
+  - Nine cleaning targets:
     - --all (default): Clean cache + temp + logs
     - --root: Clean root directory clutter only
     - --cache: Remove Python cache files (__pycache__, *.pyc, *.pyo)
@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - --build: Remove build artifacts (dist/, build/, *.egg-info)
     - --test: Remove test artifacts (.pytest_cache, .coverage, htmlcov/)
     - --git: Optimize git repository (gc, prune)
+    - --emojis: Remove excessive emojis from code and documentation (policy enforcement)
   - Safety features:
     - --dry-run: Preview deletions without executing
     - --force: Skip confirmation prompts

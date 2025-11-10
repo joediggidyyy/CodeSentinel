@@ -80,6 +80,7 @@ Examples:
   codesentinel clean                     # Clean all (cache + temp + logs)
   codesentinel clean --root              # Clean root directory clutter
   codesentinel clean --build --test      # Clean build and test artifacts
+  codesentinel clean --emojis --dry-run  # Preview emoji removal (policy violation)
   codesentinel clean --dry-run           # Preview what would be deleted
   codesentinel update docs               # Update repository documentation
   codesentinel update changelog --version 1.2.3    # Update CHANGELOG.md
@@ -226,6 +227,8 @@ Examples:
         '--test', action='store_true', help='Clean test artifacts (.pytest_cache, .coverage, htmlcov/)')
     clean_parser.add_argument(
         '--git', action='store_true', help='Optimize git repository (gc, prune)')
+    clean_parser.add_argument(
+        '--emojis', action='store_true', help='Remove excessive emojis from code and documentation (policy violation)')
     clean_parser.add_argument(
         '--dry-run', action='store_true', help='Show what would be deleted without deleting')
     clean_parser.add_argument(
@@ -665,7 +668,8 @@ except KeyboardInterrupt:
                 'build': args.build,
                 'test': args.test,
                 'git': args.git,
-                'root': args.root
+                'root': args.root,
+                'emojis': args.emojis
             }
             
             # If nothing specified, enable --all behavior (cache + temp + logs)
@@ -778,15 +782,79 @@ except KeyboardInterrupt:
                         if verbose:
                             print(f"  Found: {item.name}")
             
+            # Emoji cleaning
+            files_with_emoji_changes = []
+            if clean_targets['emojis']:
+                print("🔍 Scanning for excessive emoji usage...")
+                import re
+                
+                # Emoji pattern - matches most common emojis
+                emoji_pattern = re.compile(
+                    "["
+                    "\U0001F600-\U0001F64F"  # emoticons
+                    "\U0001F300-\U0001F5FF"  # symbols & pictographs
+                    "\U0001F680-\U0001F6FF"  # transport & map symbols
+                    "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                    "\U00002702-\U000027B0"  # dingbats
+                    "\U000024C2-\U0001F251"
+                    "]+", 
+                    flags=re.UNICODE
+                )
+                
+                # File patterns to scan
+                file_patterns = ['*.py', '*.md', '*.txt', '*.rst']
+                
+                for pattern in file_patterns:
+                    for file_path in workspace_root.rglob(pattern):
+                        # Skip certain directories
+                        if any(skip in str(file_path) for skip in ['.git', '__pycache__', 'venv', '.venv', 'node_modules']):
+                            continue
+                        
+                        try:
+                            content = file_path.read_text(encoding='utf-8')
+                            original_content = content
+                            
+                            # Count emojis
+                            emoji_matches = emoji_pattern.findall(content)
+                            if emoji_matches:
+                                # Remove emojis from content
+                                cleaned_content = emoji_pattern.sub('', content)
+                                
+                                # Clean up any resulting double spaces or empty lines
+                                cleaned_content = re.sub(r'  +', ' ', cleaned_content)
+                                cleaned_content = re.sub(r'\n\n\n+', '\n\n', cleaned_content)
+                                
+                                if cleaned_content != original_content:
+                                    files_with_emoji_changes.append({
+                                        'path': file_path,
+                                        'emoji_count': len(emoji_matches),
+                                        'original': original_content,
+                                        'cleaned': cleaned_content,
+                                        'size': len(original_content) - len(cleaned_content)
+                                    })
+                                    
+                                    if verbose:
+                                        print(f"  Found: {file_path.relative_to(workspace_root)} ({len(emoji_matches)} emojis)")
+                        except Exception as e:
+                            if verbose:
+                                print(f"  ⚠️  Error scanning {file_path.name}: {e}")
+                
+                if files_with_emoji_changes:
+                    total_emojis = sum(f['emoji_count'] for f in files_with_emoji_changes)
+                    print(f"  Found {total_emojis} emojis in {len(files_with_emoji_changes)} files")
+            
             # Calculate total size
             total_size = sum(size for _, _, size in items_to_delete)
+            emoji_size = sum(f['size'] for f in files_with_emoji_changes)
             
             # Display summary
             print(f"\n📊 Summary:")
             print(f"  Items found: {len(items_to_delete)}")
-            print(f"  Space to reclaim: {total_size / 1024 / 1024:.2f} MB")
+            if files_with_emoji_changes:
+                print(f"  Files with emojis: {len(files_with_emoji_changes)}")
+            print(f"  Space to reclaim: {(total_size + emoji_size) / 1024 / 1024:.2f} MB")
             
-            if not items_to_delete:
+            if not items_to_delete and not files_with_emoji_changes:
                 print("\n✨ Repository is already clean!")
                 if clean_targets['git']:
                     print("\n🔧 Running git optimization...")
@@ -809,11 +877,20 @@ except KeyboardInterrupt:
                     print(f"  {item_type:4s} {path.relative_to(workspace_root)} ({size / 1024:.1f} KB)")
                 if len(items_to_delete) > 10:
                     print(f"  ... and {len(items_to_delete) - 10} more items")
-                print("\n✨ Dry run complete. No files deleted.")
+                
+                if files_with_emoji_changes:
+                    print("\n[DRY-RUN] Would remove emojis from:")
+                    for file_info in files_with_emoji_changes[:10]:
+                        print(f"  file {file_info['path'].relative_to(workspace_root)} ({file_info['emoji_count']} emojis)")
+                    if len(files_with_emoji_changes) > 10:
+                        print(f"  ... and {len(files_with_emoji_changes) - 10} more files")
+                
+                print("\n✨ Dry run complete. No files modified.")
                 return
             
             if not force:
-                response = input(f"\n⚠️  Delete {len(items_to_delete)} items? (y/N): ")
+                total_changes = len(items_to_delete) + len(files_with_emoji_changes)
+                response = input(f"\n⚠️  Delete {len(items_to_delete)} items and clean {len(files_with_emoji_changes)} files? (y/N): ")
                 if response.lower() != 'y':
                     print("❌ Cleanup cancelled.")
                     return
@@ -851,17 +928,46 @@ except KeyboardInterrupt:
                 except Exception as e:
                     print(f"  ✗ Git optimization failed: {e}")
             
+            # Clean emojis from files
+            emoji_cleaned_count = 0
+            emoji_errors = []
+            
+            if files_with_emoji_changes:
+                print("\n🧹 Removing emojis from files...")
+                for file_info in files_with_emoji_changes:
+                    try:
+                        file_info['path'].write_text(file_info['cleaned'], encoding='utf-8')
+                        emoji_cleaned_count += 1
+                        if verbose:
+                            print(f"  ✓ Cleaned: {file_info['path'].relative_to(workspace_root)} ({file_info['emoji_count']} emojis removed)")
+                    except Exception as e:
+                        emoji_errors.append((file_info['path'], str(e)))
+                        if verbose:
+                            print(f"  ✗ Failed: {file_info['path'].relative_to(workspace_root)} - {e}")
+            
             # Final summary
             print(f"\n✨ Cleanup complete!")
-            print(f"  Deleted: {deleted_count}/{len(items_to_delete)} items")
-            print(f"  Space reclaimed: {total_size / 1024 / 1024:.2f} MB")
+            if items_to_delete:
+                print(f"  Deleted: {deleted_count}/{len(items_to_delete)} items")
+                print(f"  Space reclaimed: {total_size / 1024 / 1024:.2f} MB")
+            if files_with_emoji_changes:
+                print(f"  Files cleaned: {emoji_cleaned_count}/{len(files_with_emoji_changes)}")
+                total_emojis_removed = sum(f['emoji_count'] for f in files_with_emoji_changes[:emoji_cleaned_count])
+                print(f"  Emojis removed: {total_emojis_removed}")
             
             if errors:
-                print(f"\n⚠️  Encountered {len(errors)} errors:")
+                print(f"\n⚠️  Encountered {len(errors)} deletion errors:")
                 for path, error in errors[:5]:
                     print(f"  {path.name}: {error}")
                 if len(errors) > 5:
                     print(f"  ... and {len(errors) - 5} more errors")
+            
+            if emoji_errors:
+                print(f"\n⚠️  Encountered {len(emoji_errors)} emoji cleaning errors:")
+                for path, error in emoji_errors[:5]:
+                    print(f"  {path.name}: {error}")
+                if len(emoji_errors) > 5:
+                    print(f"  ... and {len(emoji_errors) - 5} more errors")
 
         elif args.command == 'setup':
             print("Launching setup wizard...")
