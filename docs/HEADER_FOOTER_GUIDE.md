@@ -117,6 +117,7 @@ codesentinel update headers set --file README.md
 ```
 
 This will apply:
+
 ```markdown
 # codesentinel
 
@@ -132,6 +133,7 @@ codesentinel update footers set --file README.md --template with_project
 ```
 
 This will add:
+
 ```markdown
 ---
 
@@ -145,6 +147,7 @@ codesentinel update footers set --file CHANGELOG.md --template with_version
 ```
 
 This will add:
+
 ```markdown
 ---
 
@@ -160,6 +163,7 @@ codesentinel update headers edit
 ```
 
 The system will prompt you through each documentation file:
+
 - Show the suggested template with project values
 - Ask if you want to use the suggestion
 - Option to provide custom header text
@@ -200,13 +204,16 @@ All footer templates maintain SEAM Protection™ branding:
 ## Troubleshooting
 
 **Templates show generic values instead of project name?**
+
 - Check that `pyproject.toml` or `setup.py` exists in project root
 - Verify git remote is configured: `git config --get remote.origin.url`
 
 **Can't apply templates to custom documentation files?**
+
 - Specify the full file path: `codesentinel update headers set --file docs/custom.md`
 
 **Want to override detected project name?**
+
 - Use the `--custom` option to provide your own template text
 
 ---

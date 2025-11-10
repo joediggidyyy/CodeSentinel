@@ -975,7 +975,9 @@ Examples:
         '--all', action='store_true', default=False,
         help='Clean all safe targets (cache + temp + logs) - this is the default if no options specified')
     clean_parser.add_argument(
-        '--root', action='store_true', help='Clean root directory clutter (__pycache__, .pyc files)')
+        '--root', action='store_true', help='Clean root directory clutter (__pycache__, .pyc files). Use --full for policy compliance')
+    clean_parser.add_argument(
+        '--full', action='store_true', help='When used with --root, also enforce policy compliance (remove unauthorized files/dirs)')
     clean_parser.add_argument(
         '--cache', action='store_true', help='Clean Python cache files (__pycache__, *.pyc, *.pyo)')
     clean_parser.add_argument(
@@ -1047,36 +1049,113 @@ Examples:
     dev_audit_parser.add_argument(
         '--focus', type=str, metavar='AREA', 
         help='Focus audit analysis on specific area (e.g., "scheduler", "new feature", "duplication detection"). Only available with Copilot integration.')
-
-    # File integrity command
-    integrity_parser = subparsers.add_parser('integrity', help='Manage file integrity validation')
+    # File integrity command - robust management interface
+    integrity_parser = subparsers.add_parser(
+        'integrity',
+        help='Manage file integrity validation and monitoring',
+        description='CodeSentinel Integrity Manager - SEAM Protection™ for file stability'
+    )
     integrity_subparsers = integrity_parser.add_subparsers(dest='integrity_action', help='Integrity actions')
     
-    # Generate baseline
-    generate_parser = integrity_subparsers.add_parser('generate', help='Generate integrity baseline')
-    generate_parser.add_argument(
-        '--patterns', nargs='+', help='File patterns to include (default: all files)')
-    generate_parser.add_argument(
-        '--output', type=str, help='Output path for baseline file')
+    # Status: Show current integrity state
+    status_parser = integrity_subparsers.add_parser(
+        'status',
+        help='Show current integrity state and monitoring status'
+    )
+    status_parser.add_argument(
+        '--detailed', action='store_true', help='Show detailed statistics'
+    )
     
-    # Verify integrity
-    verify_parser = integrity_subparsers.add_parser('verify', help='Verify files against baseline')
+    # Start: Enable integrity monitoring
+    start_parser = integrity_subparsers.add_parser(
+        'start',
+        help='Enable integrity monitoring and validation'
+    )
+    start_parser.add_argument(
+        '--baseline', type=str, help='Path to baseline file (auto-detect if not specified)'
+    )
+    start_parser.add_argument(
+        '--watch', action='store_true', help='Enable real-time file monitoring'
+    )
+    
+    # Stop: Disable integrity monitoring
+    stop_parser = integrity_subparsers.add_parser(
+        'stop',
+        help='Disable integrity monitoring'
+    )
+    stop_parser.add_argument(
+        '--save-state', action='store_true', help='Save current state before stopping'
+    )
+    
+    # Reset: Clear integrity baseline and state
+    reset_parser = integrity_subparsers.add_parser(
+        'reset',
+        help='Clear integrity baseline and reset monitoring state'
+    )
+    reset_parser.add_argument(
+        '--force', action='store_true', help='Skip confirmation prompt'
+    )
+    
+    # Verify: Check files against baseline (kept for direct verification)
+    verify_parser = integrity_subparsers.add_parser(
+        'verify',
+        help='Verify files against baseline'
+    )
     verify_parser.add_argument(
-        '--baseline', type=str, help='Path to baseline file')
+        '--baseline', type=str, help='Path to baseline file'
+    )
+    verify_parser.add_argument(
+        '--report', type=str, help='Save report to file'
+    )
     
-    # Update whitelist
-    whitelist_parser = integrity_subparsers.add_parser('whitelist', help='Manage whitelist patterns')
-    whitelist_parser.add_argument(
-        'patterns', nargs='+', help='Glob patterns to add to whitelist')
-    whitelist_parser.add_argument(
-        '--replace', action='store_true', help='Replace existing whitelist')
+    # Config: Manage integrity configuration
+    config_parser = integrity_subparsers.add_parser(
+        'config',
+        help='Manage integrity configuration'
+    )
+    config_subparsers = config_parser.add_subparsers(dest='config_action', help='Config actions')
     
-    # Mark critical files
-    critical_parser = integrity_subparsers.add_parser('critical', help='Mark files as critical')
+    # Config -> Generate baseline
+    gen_parser = config_subparsers.add_parser(
+        'baseline',
+        help='Generate file integrity baseline'
+    )
+    gen_parser.add_argument(
+        '--patterns', nargs='+', help='File patterns to include (default: all files)'
+    )
+    gen_parser.add_argument(
+        '--output', type=str, help='Output path for baseline file'
+    )
+    
+    # Config -> Whitelist
+    whitelist_parser = config_subparsers.add_parser(
+        'whitelist',
+        help='Manage whitelist patterns'
+    )
+    whitelist_parser.add_argument(
+        'patterns', nargs='+', help='Glob patterns to add to whitelist'
+    )
+    whitelist_parser.add_argument(
+        '--replace', action='store_true', help='Replace existing whitelist'
+    )
+    whitelist_parser.add_argument(
+        '--show', action='store_true', help='Show current whitelist'
+    )
+    
+    # Config -> Critical files
+    critical_parser = config_subparsers.add_parser(
+        'critical',
+        help='Mark files as critical for integrity'
+    )
     critical_parser.add_argument(
-        'files', nargs='+', help='Files to mark as critical (relative paths)')
+        'files', nargs='*', help='Files to mark as critical (relative paths)'
+    )
     critical_parser.add_argument(
-        '--replace', action='store_true', help='Replace existing critical files list')
+        '--replace', action='store_true', help='Replace existing critical files list'
+    )
+    critical_parser.add_argument(
+        '--show', action='store_true', help='Show current critical files'
+    )
 
     args = parser.parse_args()
 
@@ -1681,6 +1760,8 @@ except KeyboardInterrupt:
             
             if clean_targets['root']:
                 print("🔍 Scanning root directory for clutter...")
+                
+                # Standard clutter removal (always done)
                 # Only scan root directory, not subdirectories
                 for item in workspace_root.glob('__pycache__'):
                     items_to_delete.append(('dir', item, get_size(item)))
@@ -1692,6 +1773,142 @@ except KeyboardInterrupt:
                         items_to_delete.append(('file', item, get_size(item)))
                         if verbose:
                             print(f"  Found: {item.name}")
+                
+                # Full policy validation (only if --full flag is used)
+                if getattr(args, 'full', False):
+                    print("🔍 Scanning for policy violations (--full mode)...")
+                    
+                    # Define allowed files and directories (from root_cleanup.py)
+                    ALLOWED_ROOT_FILES = {
+                        'setup.py', 'pyproject.toml', 'MANIFEST.in', 'pytest.ini',
+                        'requirements.txt', 'requirements-dev.txt', 'run_tests.py',
+                        'publish_to_pypi.py', 'README.md', 'LICENSE', 'CHANGELOG.md',
+                        'CONTRIBUTING.md', 'SECURITY.md', 'QUICK_START.md',
+                        'codesentinel.json', 'codesentinel.log', '.codesentinel_integrity.json',
+                        '.test_integrity.json', '.gitignore',
+                    }
+                    
+                    ALLOWED_ROOT_DIRS = {
+                        '.git', '.github', 'archive', 'codesentinel', 'deployment',
+                        'docs', 'github', 'infrastructure', 'logs', 'requirements',
+                        'scripts', 'tests', 'tools', 'quarantine_legacy_archive',
+                    }
+                    
+                    # Assess unauthorized items for proper placement (NON-DESTRUCTIVE approach)
+                    # Policy: Never delete without archiving first
+                    policy_violations = []
+                    
+                    # Check all items at root level
+                    for item in workspace_root.iterdir():
+                        # Skip git-related items
+                        if item.name in {'.git', '.gitignore'}:
+                            continue
+                        
+                        if item.is_dir():
+                            # Check if directory is allowed
+                            if item.name not in ALLOWED_ROOT_DIRS:
+                                reason = ''
+                                target_location = 'quarantine_legacy_archive/'  # Always archive first
+                                
+                                if item.name.startswith('.'):
+                                    reason = 'unauthorized dot directory'
+                                else:
+                                    reason = 'unauthorized directory'
+                                
+                                policy_violations.append({
+                                    'type': 'directory',
+                                    'path': item,
+                                    'name': item.name,
+                                    'reason': reason,
+                                    'target': target_location,
+                                    'action': 'archive'  # Always archive, never delete
+                                })
+                                
+                                if verbose:
+                                    print(f"  Found (policy violation): {item.name} [{reason}]")
+                        else:
+                            # Check if file is allowed
+                            if item.name not in ALLOWED_ROOT_FILES:
+                                reason = 'unauthorized file'
+                                target_location = 'quarantine_legacy_archive/'
+                                
+                                # Assess file type and suggest proper action
+                                if item.name.startswith('test_') or item.name.endswith('_test.py'):
+                                    reason = 'test/diagnostic file'
+                                elif item.name.endswith('.md'):
+                                    reason = 'documentation file - review placement'
+                                elif item.name.endswith('.json'):
+                                    reason = 'configuration/state file - review placement'
+                                
+                                policy_violations.append({
+                                    'type': 'file',
+                                    'path': item,
+                                    'name': item.name,
+                                    'reason': reason,
+                                    'target': target_location,
+                                    'action': 'archive'  # Always archive, never delete
+                                })
+                                
+                                if verbose:
+                                    print(f"  Found (policy violation): {item.name} [{reason}] → archive to {target_location}")
+                    
+                    # If violations found, show assessment and ask for approval
+                    if policy_violations:
+                        print(f"\n⚠️  Found {len(policy_violations)} policy violations:")
+                        print("All items will be ARCHIVED (not deleted) per NON-DESTRUCTIVE policy\n")
+                        
+                        for i, violation in enumerate(policy_violations, 1):
+                            print(f"  {i}. [{violation['type'].upper()}] {violation['name']}")
+                            print(f"     Reason: {violation['reason']}")
+                            print(f"     Action: Archive to {violation['target']}")
+                        
+                        if dry_run:
+                            print("\n[DRY-RUN] Would archive the items above")
+                        else:
+                            if not force:
+                                response = input("\nArchive these items to quarantine_legacy_archive/? (y/N): ").strip().lower()
+                                if response != 'y':
+                                    print("Policy compliance cleanup cancelled.")
+                                    return
+                            
+                            # Archive all violations (non-destructive)
+                            archive_dir = workspace_root / 'quarantine_legacy_archive'
+                            archive_dir.mkdir(parents=True, exist_ok=True)
+                            
+                            archived_count = 0
+                            for violation in policy_violations:
+                                try:
+                                    import shutil
+                                    target_path = archive_dir / violation['path'].name
+                                    
+                                    # If target already exists, create timestamped copy
+                                    if target_path.exists():
+                                        from datetime import datetime
+                                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                                        base_name = violation['path'].name
+                                        if '.' in base_name:
+                                            name_parts = base_name.rsplit('.', 1)
+                                            target_path = archive_dir / f"{name_parts[0]}_{timestamp}.{name_parts[1]}"
+                                        else:
+                                            target_path = archive_dir / f"{base_name}_{timestamp}"
+                                    
+                                    if violation['type'] == 'directory':
+                                        shutil.move(str(violation['path']), str(target_path))
+                                    else:
+                                        shutil.move(str(violation['path']), str(target_path))
+                                    
+                                    archived_count += 1
+                                    if verbose:
+                                        print(f"  ✓ Archived: {violation['name']} → quarantine_legacy_archive/")
+                                except Exception as e:
+                                    print(f"  ✗ Failed to archive {violation['name']}: {e}")
+                            
+                            print(f"\n✓ Successfully archived {archived_count}/{len(policy_violations)} items")
+                            print("  Items are preserved in quarantine_legacy_archive/ for review")
+                            return
+
+
+
             
             # Emoji cleaning
             files_with_emoji_changes = []
@@ -2532,6 +2749,8 @@ While the full audit context is provided below, you should:
             return
 
         elif args.command == 'integrity':
+            """Robust file integrity management interface."""
+            from pathlib import Path
             from ..utils.file_integrity import FileIntegrityValidator
             import json as _json
             
@@ -2545,64 +2764,158 @@ While the full audit context is provided below, you should:
             # Initialize validator
             validator = FileIntegrityValidator(workspace_root, integrity_config)
             
-            if args.integrity_action == 'generate':
-                print("Generating file integrity baseline (timeout: 30 seconds)...")
-                
-                # Set timeout to prevent indefinite hangs
-                timeout_seconds = 30
-                baseline = None
-                error_message = None
-                
-                def generate_with_timeout():
-                    nonlocal baseline, error_message
+            # State file for tracking monitoring status
+            state_file = workspace_root / '.codesentinel' / 'integrity.state'
+            state_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            def load_integrity_state():
+                """Load monitoring state from file."""
+                if state_file.exists():
                     try:
-                        baseline = validator.generate_baseline(patterns=args.patterns)
-                    except Exception as e:
-                        error_message = str(e)
+                        return _json.loads(state_file.read_text())
+                    except:
+                        return {}
+                return {}
+            
+            def save_integrity_state(state):
+                """Save monitoring state to file."""
+                state_file.write_text(_json.dumps(state, indent=2))
+            
+            if args.integrity_action == 'status':
+                """Show current integrity monitoring status."""
+                state = load_integrity_state()
+                is_monitoring = state.get('monitoring', False)
+                baseline_path = state.get('baseline_path')
                 
-                # Run generation in thread with timeout
-                thread = threading.Thread(target=generate_with_timeout, daemon=True)
-                thread.start()
-                thread.join(timeout=timeout_seconds)
+                print("\n" + "="*70)
+                print("🔒 INTEGRITY MONITORING STATUS")
+                print("="*70)
+                print(f"\nMonitoring Status: {'🟢 ACTIVE' if is_monitoring else '🔴 INACTIVE'}")
                 
-                if thread.is_alive():
-                    print(f"\n❌ ERROR: Baseline generation timed out after {timeout_seconds} seconds")
-                    print("The file enumeration may be stuck on a large or slow filesystem.")
-                    print("\nPossible causes:")
-                    print("  - Large number of files (>100,000) in workspace")
-                    print("  - Slow/network filesystem causing I/O hangs")
-                    print("  - Symlinks or junction points causing infinite traversal")
-                    print("\nTry with specific patterns to limit scope:")
-                    print("  codesentinel integrity generate --patterns '**/*.py' '**/*.md'")
+                if baseline_path:
+                    baseline_file = Path(baseline_path)
+                    if baseline_file.exists():
+                        baseline_data = _json.loads(baseline_file.read_text())
+                        stats = baseline_data.get('statistics', {})
+                        print(f"\nBaseline File: {baseline_path}")
+                        print(f"  Files tracked: {stats.get('total_files', 0)}")
+                        print(f"  Critical files: {stats.get('critical_files', 0)}")
+                        print(f"  Last generated: {baseline_data.get('timestamp', 'Unknown')}")
+                    else:
+                        print(f"\nBaseline File: {baseline_path} (not found)")
+                else:
+                    print("\nBaseline File: None configured")
+                
+                if getattr(args, 'detailed', False):
+                    print(f"\nDetailed State:")
+                    for key, value in state.items():
+                        print(f"  {key}: {value}")
+                
+                print("\n" + "="*70 + "\n")
+            
+            elif args.integrity_action == 'start':
+                """Enable integrity monitoring."""
+                baseline_arg = getattr(args, 'baseline', None)
+                watch_enabled = getattr(args, 'watch', False)
+                
+                # Find or use specified baseline
+                if baseline_arg:
+                    baseline_path = Path(baseline_arg)
+                else:
+                    # Look for baseline in standard locations
+                    standard_paths = [
+                        workspace_root / '.codesentinel' / 'integrity_baseline.json',
+                        workspace_root / 'integrity_baseline.json',
+                    ]
+                    baseline_path = None
+                    for baseline_file in standard_paths:
+                        if baseline_file.exists():
+                            baseline_path = baseline_file
+                            break
+                
+                if not baseline_path or not baseline_path.exists():
+                    print("❌ ERROR: No baseline found!")
+                    print("\nGenerate a baseline first:")
+                    print("  codesentinel integrity config baseline")
                     sys.exit(1)
                 
-                if error_message:
-                    print(f"\n❌ ERROR: Baseline generation failed: {error_message}")
-                    sys.exit(1)
+                # Save state
+                state = {
+                    'monitoring': True,
+                    'baseline_path': str(baseline_path),
+                    'watch_enabled': watch_enabled,
+                    'started_at': _json.dumps(str(Path.cwd().stat().st_mtime)),
+                }
+                save_integrity_state(state)
                 
-                if baseline is None:
-                    print(f"\n❌ ERROR: Baseline generation failed (no data)")
-                    sys.exit(1)
+                print("\n✓ Integrity monitoring ENABLED")
+                print(f"  Baseline: {baseline_path.name}")
+                if watch_enabled:
+                    print(f"  Real-time monitoring: Active")
+                print("\nIntegrity checks will run during maintenance cycles.")
+                print("Use 'codesentinel integrity verify' for immediate verification.\n")
+            
+            elif args.integrity_action == 'stop':
+                """Disable integrity monitoring."""
+                state = load_integrity_state()
+                save_state_arg = getattr(args, 'save_state', False)
                 
-                output_path = Path(args.output) if args.output else None
-                saved_path = validator.save_baseline(output_path)
+                if save_state_arg:
+                    # Optionally verify before stopping
+                    if state.get('baseline_path'):
+                        validator.load_baseline(Path(state['baseline_path']))
+                        results = validator.verify_integrity()
+                        print(f"Final integrity check: {results['status'].upper()}")
                 
-                print(f"\n✓ Baseline generated successfully!")
-                print(f"Saved to: {saved_path}")
-                print(f"\nStatistics:")
-                stats = baseline['statistics']
-                print(f"  Total files: {stats['total_files']}")
-                print(f"  Critical files: {stats['critical_files']}")
-                print(f"  Whitelisted files: {stats['whitelisted_files']}")
-                print(f"  Excluded files: {stats['excluded_files']}")
-                print(f"  Skipped files: {stats.get('skipped_files', 0)}")
-                print(f"\nEnable integrity checking in config to use during audits.")
+                state['monitoring'] = False
+                save_integrity_state(state)
                 
+                print("\n✓ Integrity monitoring DISABLED")
+                print("  Files will not be checked during maintenance cycles.")
+                print("  Use 'codesentinel integrity start' to re-enable.\n")
+            
+            elif args.integrity_action == 'reset':
+                """Clear baseline and reset integrity state."""
+                force = getattr(args, 'force', False)
+                
+                if not force:
+                    response = input("⚠️  Reset all integrity data? This cannot be undone. (y/N): ").strip().lower()
+                    if response != 'y':
+                        print("Reset cancelled.")
+                        return
+                
+                # Clear state file
+                if state_file.exists():
+                    state_file.unlink()
+                
+                # Clear baseline
+                baseline_paths = [
+                    workspace_root / '.codesentinel' / 'integrity_baseline.json',
+                    workspace_root / 'integrity_baseline.json',
+                ]
+                for baseline_file in baseline_paths:
+                    if baseline_file.exists():
+                        baseline_file.unlink()
+                
+                print("\n✓ Integrity state RESET")
+                print("  All baselines and monitoring state cleared.")
+                print("  Generate a new baseline to resume monitoring.")
+                print("  Command: codesentinel integrity config baseline\n")
+            
             elif args.integrity_action == 'verify':
-                print("Verifying file integrity...")
-                if args.baseline:
-                    validator.load_baseline(Path(args.baseline))
+                """Verify files against baseline."""
+                baseline_arg = getattr(args, 'baseline', None)
+                report_arg = getattr(args, 'report', None)
                 
+                # Load baseline
+                if baseline_arg:
+                    validator.load_baseline(Path(baseline_arg))
+                else:
+                    state = load_integrity_state()
+                    if state.get('baseline_path'):
+                        validator.load_baseline(Path(state['baseline_path']))
+                
+                print("Verifying file integrity...")
                 results = validator.verify_integrity()
                 
                 print(f"\nIntegrity Check: {results['status'].upper()}")
@@ -2621,32 +2934,119 @@ While the full audit context is provided below, you should:
                     for violation in [v for v in results['violations'] if v.get('severity') == 'critical'][:10]:
                         print(f"  ! {violation['type']}: {violation['file']}")
                     
+                    if report_arg:
+                        report_path = Path(report_arg)
+                        report_path.write_text(_json.dumps(results, indent=2))
+                        print(f"\nFull report saved to: {report_arg}")
+                    
                     print("\nRun 'codesentinel !!!! --agent' for AI-assisted remediation.")
                 else:
                     print("\n✓ All files passed integrity check!")
+            
+            elif args.integrity_action == 'config':
+                """Manage integrity configuration."""
+                if args.config_action == 'baseline':
+                    # Generate baseline
+                    print("Generating file integrity baseline (timeout: 30 seconds)...")
+                    
+                    timeout_seconds = 30
+                    baseline = None
+                    error_message = None
+                    
+                    def generate_with_timeout():
+                        nonlocal baseline, error_message
+                        try:
+                            baseline = validator.generate_baseline(patterns=getattr(args, 'patterns', None))
+                        except Exception as e:
+                            error_message = str(e)
+                    
+                    thread = threading.Thread(target=generate_with_timeout, daemon=True)
+                    thread.start()
+                    thread.join(timeout=timeout_seconds)
+                    
+                    if thread.is_alive():
+                        print(f"\n❌ ERROR: Baseline generation timed out after {timeout_seconds} seconds")
+                        print("The file enumeration may be stuck on a large or slow filesystem.")
+                        print("\nPossible causes:")
+                        print("  - Large number of files (>100,000) in workspace")
+                        print("  - Slow/network filesystem causing I/O hangs")
+                        print("  - Symlinks or junction points causing infinite traversal")
+                        print("\nTry with specific patterns to limit scope:")
+                        print("  codesentinel integrity config baseline --patterns '**/*.py' '**/*.md'")
+                        sys.exit(1)
+                    
+                    if error_message:
+                        print(f"\n❌ ERROR: Baseline generation failed: {error_message}")
+                        sys.exit(1)
+                    
+                    if baseline is None:
+                        print(f"\n❌ ERROR: Baseline generation failed (no data)")
+                        sys.exit(1)
+                    
+                    output_path = Path(args.output) if args.output else None
+                    saved_path = validator.save_baseline(output_path)
+                    
+                    print(f"\n✓ Baseline generated successfully!")
+                    print(f"Saved to: {saved_path}")
+                    print(f"\nStatistics:")
+                    stats = baseline['statistics']
+                    print(f"  Total files: {stats['total_files']}")
+                    print(f"  Critical files: {stats['critical_files']}")
+                    print(f"  Whitelisted files: {stats['whitelisted_files']}")
+                    print(f"  Excluded files: {stats['excluded_files']}")
+                    print(f"  Skipped files: {stats.get('skipped_files', 0)}")
+                    print(f"\nNext: codesentinel integrity start --baseline {saved_path}")
                 
-            elif args.integrity_action == 'whitelist':
-                print(f"Updating whitelist with {len(args.patterns)} pattern(s)...")
-                validator.update_whitelist(args.patterns, replace=args.replace)
+                elif args.config_action == 'whitelist':
+                    if getattr(args, 'show', False):
+                        # Show current whitelist
+                        print("Current whitelist patterns:")
+                        whitelist = integrity_config.get('whitelist', [])
+                        if whitelist:
+                            for pattern in whitelist:
+                                print(f"  - {pattern}")
+                        else:
+                            print("  (empty)")
+                    else:
+                        # Update whitelist
+                        print(f"Updating whitelist with {len(args.patterns)} pattern(s)...")
+                        validator.update_whitelist(args.patterns, replace=args.replace)
+                        print(f"Whitelist updated: {', '.join(args.patterns)}")
+                        print("Note: Update your config file to persist these changes.")
                 
-                # Save updated config (would need to persist this properly)
-                print(f"Whitelist updated: {', '.join(args.patterns)}")
-                print("Note: Update your config file to persist these changes.")
+                elif args.config_action == 'critical':
+                    if getattr(args, 'show', False):
+                        # Show current critical files
+                        print("Current critical files:")
+                        critical = integrity_config.get('critical_files', [])
+                        if critical:
+                            for file in critical:
+                                print(f"  - {file}")
+                        else:
+                            print("  (empty)")
+                    else:
+                        # Update critical files
+                        if not args.files:
+                            print("❌ ERROR: Specify files to mark as critical")
+                        else:
+                            print(f"Marking {len(args.files)} file(s) as critical...")
+                            validator.update_critical_files(args.files, replace=args.replace)
+                            print(f"Critical files updated: {', '.join(args.files)}")
+                            print("Note: Update your config file to persist these changes.")
                 
-            elif args.integrity_action == 'critical':
-                print(f"Marking {len(args.files)} file(s) as critical...")
-                validator.update_critical_files(args.files, replace=args.replace)
-                
-                print(f"Critical files updated: {', '.join(args.files)}")
-                print("Note: Update your config file to persist these changes.")
-                
+                else:
+                    print("❌ Unknown config action. Use 'codesentinel integrity config --help'")
+            
             else:
-                integrity_parser.print_help()
+                print("❌ Unknown integrity action. Use 'codesentinel integrity --help'")
             
             return
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        import traceback
+        if str(e):
+            print(f"Error: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 

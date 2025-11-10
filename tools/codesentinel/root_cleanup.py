@@ -45,6 +45,11 @@ class RootDirectoryValidator:
         'SECURITY.md',
         'QUICK_START.md',
         
+        # Policy and Implementation Documentation
+        'ARCHIVE_COMPRESSION_IMPLEMENTATION.md',
+        'POLICY_VIOLATION_PREVENTION.md',
+        'ROOT_DIRECTORY_ASSESSMENT.md',
+        
         # Project-specific
         'codesentinel.json',
         'codesentinel.log',
@@ -68,6 +73,7 @@ class RootDirectoryValidator:
         'scripts',
         'tests',
         'tools',
+        'quarantine_legacy_archive',
     }
 
     # Files that belong in specific subdirectories

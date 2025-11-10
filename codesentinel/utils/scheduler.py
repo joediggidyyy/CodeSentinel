@@ -12,6 +12,7 @@ import os
 import sys
 import subprocess
 import psutil
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Any, Optional, Callable
@@ -673,6 +674,36 @@ class MaintenanceScheduler:
             except Exception as e:
                 self.logger.error(f"README update error: {e}")
                 errors.append(f"README update failed: {str(e)}")
+            
+            # Archive compression with mandatory security scanning
+            try:
+                compression_result = self._compress_quarantine_archive()
+                if compression_result['archive_found']:
+                    if compression_result['compressed']:
+                        tasks_executed.append('archive_compression')
+                        self.logger.info(f"Archive compression completed: "
+                                       f"{compression_result['archive_size_before']} -> "
+                                       f"{compression_result['archive_size_after']} bytes")
+                    else:
+                        self.logger.info("Archive not yet inactive for compression (< 30 days)")
+                    
+                    # Report security scan issues if found
+                    if compression_result['security_scan_results'].get('suspicious_patterns_found', 0) > 0:
+                        msg = (f"Security scan found {compression_result['security_scan_results']['suspicious_patterns_found']} "
+                               f"suspicious patterns in archive")
+                        self.logger.warning(msg)
+                        # Don't add to errors - logged but doesn't fail monthly tasks
+                else:
+                    self.logger.debug("No quarantine archive found to compress")
+                
+                # Report any compression issues
+                if compression_result['issues']:
+                    for issue in compression_result['issues']:
+                        self.logger.warning(f"Archive compression issue: {issue}")
+                
+            except Exception as e:
+                self.logger.error(f"Archive compression error: {e}")
+                errors.append(f"Archive compression failed: {str(e)}")
         
         finally:
             # Restore original working directory
@@ -706,6 +737,133 @@ class MaintenanceScheduler:
             'next_weekly_run': self._get_next_run_time('weekly'),
             'next_monthly_run': self._get_next_run_time('monthly')
         }
+
+    def _compress_quarantine_archive(self) -> Dict[str, Any]:
+        """
+        Compress quarantine_legacy_archive directory if inactive for 30+ days.
+        Performs mandatory security scanning before compression.
+        
+        Returns:
+            Dict containing compression results.
+        """
+        result = {
+            'archive_found': False,
+            'archive_size_before': 0,
+            'archive_size_after': 0,
+            'compressed': False,
+            'security_scan_results': {},
+            'issues': []
+        }
+        
+        try:
+            import tarfile
+            import hashlib
+            
+            repo_root = Path(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+            archive_dir = repo_root / 'quarantine_legacy_archive'
+            
+            if not archive_dir.exists():
+                self.logger.info("No quarantine_legacy_archive directory found")
+                return result
+            
+            result['archive_found'] = True
+            
+            # Calculate current size
+            def get_dir_size(path):
+                total = 0
+                for entry in path.rglob('*'):
+                    if entry.is_file():
+                        total += entry.stat().st_size
+                return total
+            
+            result['archive_size_before'] = get_dir_size(archive_dir)
+            
+            # Check for inactivity (30+ days)
+            archive_stat = archive_dir.stat()
+            last_modified = datetime.fromtimestamp(archive_stat.st_mtime)
+            days_inactive = (datetime.now() - last_modified).days
+            
+            if days_inactive < 30:
+                self.logger.info(f"Archive is only {days_inactive} days old - no compression needed")
+                return result
+            
+            # SECURITY SCAN: Check for malicious files before compression
+            self.logger.info("Performing security scan on archive before compression...")
+            security_issues = []
+            file_hashes = {}
+            
+            # Scan for suspicious patterns
+            suspicious_patterns = [
+                r'(?i)(password|secret|api[_-]?key|token|credential)',  # Credentials
+                r'(?i)(rm\s+-rf|delete|unlink|shutil\.remove)',  # Dangerous commands
+                r'(?i)(exec|eval|__import__|system)',  # Code execution patterns
+                r'\.exe$|\.cmd$|\.bat$|\.ps1$',  # Executable files
+                r'(?i)(malware|trojan|virus|backdoor)',  # Malware indicators
+            ]
+            compiled_patterns = [re.compile(p) for p in suspicious_patterns]
+            
+            for file_path in archive_dir.rglob('*'):
+                if file_path.is_file():
+                    try:
+                        # Hash each file for integrity verification
+                        with open(file_path, 'rb') as f:
+                            file_hashes[str(file_path)] = hashlib.sha256(f.read()).hexdigest()
+                        
+                        # Scan file content for suspicious patterns
+                        try:
+                            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                content = f.read()
+                                for pattern in compiled_patterns:
+                                    if pattern.search(content):
+                                        security_issues.append({
+                                            'file': str(file_path.relative_to(archive_dir)),
+                                            'pattern': pattern.pattern[:50]
+                                        })
+                        except:
+                            pass
+                    except Exception as e:
+                        self.logger.warning(f"Could not scan file {file_path}: {e}")
+            
+            result['security_scan_results'] = {
+                'total_files_scanned': len(file_hashes),
+                'suspicious_patterns_found': len(security_issues),
+                'issues': security_issues[:10]  # Cap at 10 for display
+            }
+            
+            if security_issues:
+                self.logger.warning(f"Found {len(security_issues)} files with suspicious patterns")
+                result['issues'].append(f"Security scan found {len(security_issues)} suspicious patterns")
+                # Log but continue - human review required
+            
+            # Create compression archive
+            archive_name = f"quarantine_legacy_archive_{datetime.now().strftime('%Y%m%d_%H%M%S')}.tar.gz"
+            archive_path = repo_root / archive_name
+            
+            self.logger.info(f"Compressing archive to {archive_name}...")
+            
+            with tarfile.open(archive_path, 'w:gz') as tar:
+                tar.add(archive_dir, arcname='quarantine_legacy_archive')
+            
+            # Calculate compressed size
+            result['archive_size_after'] = archive_path.stat().st_size
+            result['compressed'] = True
+            
+            # Store file hashes for integrity verification
+            hashes_file = repo_root / f"{archive_name}.hashes.json"
+            with open(hashes_file, 'w') as f:
+                json.dump(file_hashes, f, indent=2)
+            
+            self.logger.info(f"Archive compressed successfully")
+            self.logger.info(f"Size reduction: {result['archive_size_before']} -> {result['archive_size_after']} bytes")
+            
+            # Don't delete original - keep for reference (per QUARANTINE policy)
+            self.logger.info("Original archive retained for reference (per policy)")
+            
+        except Exception as e:
+            self.logger.error(f"Archive compression error: {e}")
+            result['issues'].append(f"Compression failed: {str(e)}")
+        
+        return result
 
     def _get_next_run_time(self, task_type: str) -> Optional[str]:
         """Get next run time for a task type."""
