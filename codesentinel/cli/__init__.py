@@ -41,9 +41,31 @@ def main():
         print(f"Warning: Process monitor not started: {e}", file=sys.stderr)
     
     # Quick trigger: allow '!!!!' as an alias for interactive dev audit
-    if any(arg == '!!!!' for arg in sys.argv[1:]):
-        # Replace all '!!!!' tokens with 'dev-audit'
-        sys.argv = [sys.argv[0]] + ['dev-audit' if a == '!!!!' else a for a in sys.argv[1:]]
+    # Support optional focus parameter: '!!!! <focus_area>'
+    if any(arg.startswith('!!!!') for arg in sys.argv[1:]):
+        # Extract focus parameter if present
+        focus_param = None
+        for i, arg in enumerate(sys.argv[1:], 1):
+            if arg.startswith('!!!!'):
+                if arg == '!!!!':
+                    # Simple '!!!!' without focus
+                    sys.argv[i] = 'dev-audit'
+                else:
+                    # '!!!!<space><focus>' format - extract focus
+                    # This shouldn't happen as shell splits arguments
+                    sys.argv[i] = 'dev-audit'
+            elif i > 1 and sys.argv[i-1] == 'dev-audit' and not arg.startswith('-'):
+                # First non-flag argument after dev-audit is focus
+                focus_param = arg
+                break
+        
+        # If we have a focus parameter, add it as --focus flag
+        if focus_param:
+            # Find position of dev-audit command
+            dev_audit_idx = sys.argv.index('dev-audit')
+            # Insert --focus flag after dev-audit
+            sys.argv.insert(dev_audit_idx + 1, '--focus')
+            sys.argv.insert(dev_audit_idx + 2, focus_param)
     parser = argparse.ArgumentParser(
         description="CodeSentinel - Automated Maintenance & Security Monitoring",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -56,6 +78,8 @@ Examples:
   codesentinel schedule start            # Start maintenance scheduler
   codesentinel dev-audit                 # Run interactive development audit
   codesentinel !!!!                      # Quick trigger for dev-audit
+  codesentinel !!!! scheduler            # Focus audit on scheduler subsystem
+  codesentinel !!!! "new feature"        # Focus audit on new feature development
         """
     )
 
@@ -149,6 +173,9 @@ Examples:
         '--agent', action='store_true', help='Export audit context for AI agent remediation (requires GitHub Copilot)')
     dev_audit_parser.add_argument(
         '--export', type=str, help='Export audit results to JSON file')
+    dev_audit_parser.add_argument(
+        '--focus', type=str, metavar='AREA', 
+        help='Focus audit analysis on specific area (e.g., "scheduler", "new feature", "duplication detection"). Only available with Copilot integration.')
 
     # File integrity command
     integrity_parser = subparsers.add_parser('integrity', help='Manage file integrity validation')
@@ -351,11 +378,33 @@ except KeyboardInterrupt:
             interactive = not getattr(args, 'silent', False)
             agent_mode = getattr(args, 'agent', False)
             export_path = getattr(args, 'export', None)
+            focus_area = getattr(args, 'focus', None)
             
             if agent_mode:
                 # Export comprehensive context for AI agent
                 print("Generating audit context for AI agent...")
+                if focus_area:
+                    print(f"Focus area: {focus_area}")
                 agent_context = codesentinel.dev_audit.get_agent_context()
+                
+                # Add focus area to agent context if specified
+                if focus_area:
+                    agent_context['focus_area'] = focus_area
+                    agent_context['agent_guidance'] = f"""
+FOCUSED AUDIT ANALYSIS
+
+Focus Area: {focus_area}
+
+You have been requested to perform a targeted analysis on: "{focus_area}"
+
+While the full audit context is provided below, you should:
+1. Prioritize issues and opportunities related to {focus_area}
+2. Consider how changes in this area affect the broader system
+3. Ensure all remediation respects SECURITY > EFFICIENCY > MINIMALISM
+4. Maintain non-destructive, feature-preserving principles
+
+{agent_context.get('agent_guidance', '')}
+"""
                 
                 if export_path:
                     import json as _json
@@ -373,19 +422,32 @@ except KeyboardInterrupt:
                     
                     print("\n" + "=" * 60)
                     print("AGENT REMEDIATION MODE")
+                    if focus_area:
+                        print(f"FOCUS: {focus_area}")
                     print("=" * 60)
                     print("\nThis audit has detected issues that require intelligent remediation.")
                     print("An AI agent (GitHub Copilot) can now analyze these findings and build")
                     print("a remediation pipeline while respecting all persistent policies.\n")
+                    
+                    if focus_area:
+                        print(f"\n🎯 Analysis will prioritize: {focus_area}")
+                        print("   (while maintaining awareness of system-wide impact)\n")
                     
                     # Output structured data for agent to consume
                     print("\n@agent Here is the comprehensive audit context:")
                     print(_json.dumps(agent_context, indent=2))
                     
                     print("\n\nPlease analyze the audit findings and propose a remediation plan.")
+                    if focus_area:
+                        print(f"Focus your analysis on: {focus_area}")
                     print("Remember: All actions must be non-destructive and preserve features.")
                 
                 return
+            
+            # Non-agent mode with focus
+            if focus_area:
+                print(f"\n🎯 Focus Area: {focus_area}")
+                print("Note: Focus parameter is most effective with --agent mode for Copilot integration.\n")
             
             results = codesentinel.run_dev_audit(interactive=interactive)
             if interactive:
@@ -398,6 +460,10 @@ except KeyboardInterrupt:
                     print(f"\nThe audit detected {total_issues} issues.")
                     print("\nIf you have GitHub Copilot integrated, you can run:")
                     print("  codesentinel !!!! --agent")
+                    if focus_area:
+                        print(f"  codesentinel !!!! {focus_area} --agent  (focused analysis)")
+                    else:
+                        print("  codesentinel !!!! scheduler --agent       (focus on specific area)")
                     print("\nThis will provide comprehensive context for the AI agent to")
                     print("intelligently build a remediation pipeline while respecting")
                     print("all security, efficiency, and minimalism principles.")
