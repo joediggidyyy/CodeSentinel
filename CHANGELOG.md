@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - **Phase 3: Extended Governance & Automation**
   - **New T4b Satellites**: Introduced three new core governance satellites for procedural instructions:
     - `github/AGENT_INSTRUCTIONS.md`: Manages source code, PRs, and repository workflows.
@@ -25,6 +26,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Strategic guide applicability tests.
     - Performance baselining (APET and DPC scores).
     - Security, efficiency, and minimalism principle audits.
+- **Professional Formatting Configuration UI in Setup Wizard**
+  - Two-column layout with scheme selector and customization panel
+  - FormattingSchemeSelector component with 6 preset schemes (Black, AutoPEP8, Ruff, C++, Google, Custom)
+  - FormattingCustomizationPanel with basic and advanced settings
+  - Lock-out feature: options disabled for preset schemes, enabled for Custom
+  - Visual feedback with lock notice when preset scheme selected
+  - Integrated into `codesentinel setup --gui` workflow
+- **Duplication Detection in Daily Maintenance**
+  - Automated detection of file duplication patterns caused by AI tool bugs
+  - Scans for line duplication (`texttext`), comment duplication (`#comment#comment`), and quote duplication
+  - Integrated into daily maintenance workflow via scheduler
+  - Non-destructive detection with warning logs
+  - Scans `.py`, `.md`, `.txt`, `.json`, `.toml`, `.ini` files in root directory
+
+### Fixed
+
+- **File Duplication Bug in .gitignore**
+  - Fixed severe line duplication issue where every line was doubled on same line
+  - Recreated clean `.gitignore` file using safe Python file writing methods
+  - Added `*.egg-info/` pattern to prevent future build metadata commits
 
 ## [1.0.3] - 2025-11-06
 

@@ -1,11 +1,14 @@
 # Automated Root Directory Cleanup & Document Formatting
 
 **Date**: November 7, 2025  
+**Last Updated**: November 10, 2025  
 **Status**: ✅ Complete
 
 ## Summary
 
 Automated root directory cleanup and document formatting have been successfully implemented and integrated into CodeSentinel's maintenance workflows.
+
+**NEW (Nov 10, 2025)**: Duplication detection added to daily maintenance workflow to mitigate AI tool file creation bugs.
 
 ---
 
@@ -55,15 +58,75 @@ python tools/codesentinel/root_cleanup.py --verbose
 
 ---
 
-### 2. Daily Maintenance Integration
+## Part 2: Duplication Detection (NEW - Nov 10, 2025)
+
+**Location**: `codesentinel/utils/scheduler.py` (inline implementation)
+
+**Purpose**: Detect and alert on file content duplication caused by AI tool bugs
+
+**Background**: 
+During development, AI file creation tools (`create_file`) were found to systematically duplicate content:
+- Line duplication: `texttext` on same line
+- Comment duplication: `# comment# comment`
+- Quote duplication: `""""""` instead of `"""`
+
+**Features**:
+
+- **Inline duplication detector** integrated into daily maintenance
+- **Pattern detection**:
+  - Line duplication: `^(.+)\1$` (same text repeated on one line)
+  - Comment duplication: `^(#\s*.+)#` (comment text duplicated)
+  - Quote duplication: `^(["'`]{1,3})\1+` (quotes multiplied)
+- **File coverage**: Scans `.py`, `.md`, `.txt`, `.json`, `.toml`, `.ini` in root directory
+- **Non-destructive**: Detection only, logs warnings
+- **Automatic execution**: Runs as part of daily maintenance workflow
+
+**Detection Output**:
+
+```
+WARNING: Duplication detected in 3 locations
+- file.py:42
+- config.toml:15
+- README.md:8
+```
+
+**Mitigation Strategy**:
+
+1. **Avoid AI `create_file` tool**: Known to duplicate content
+2. **Use safe alternatives**:
+   - PowerShell: `Out-File -Encoding utf8`
+   - Python: `open('file', 'w').write(content)`
+   - Terminal commands: Direct file operations
+3. **Manual fixes**: Recreate affected files using safe methods
+4. **Automated detection**: Daily scans catch new issues
+
+**Integration**:
+
+- Runs after root directory cleanup in daily maintenance
+- Results logged via maintenance logger
+- Task marked as `duplication_detection_alert` if issues found
+- Task marked as `duplication_detection_passed` if clean
+
+---
+
+### 3. Daily Maintenance Integration
 
 **Location**: `codesentinel/utils/scheduler.py`
 
 **Changes**:
 
-- Modified `_run_daily_tasks()` method to include root directory cleanup
-- Cleanup runs automatically as part of daily maintenance workflow
-- Errors are caught and reported; daily tasks continue if cleanup fails
+- Modified `_run_daily_tasks()` method to include:
+  - Root directory cleanup
+  - Document formatting style checks
+  - **Duplication detection** (NEW - Nov 10, 2025)
+- All tasks run automatically as part of daily maintenance workflow
+- Errors are caught and reported; daily tasks continue if any task fails
+
+**Task Execution Order**:
+
+1. Root directory validation and cleanup
+2. Document formatting and style checking
+3. **Duplication detection** (scans for AI tool bugs)
 
 **Execution Flow**:
 

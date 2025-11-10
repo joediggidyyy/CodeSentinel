@@ -1,6 +1,7 @@
 # Document Formatting Automation - Complete Implementation Summary
 
 **Date**: November 7, 2025  
+**Last Updated**: November 10, 2025  
 **Status**: ✅ COMPLETE
 
 ---
@@ -8,6 +9,8 @@
 ## Overview
 
 **Document formatting and style checking automation** have been fully implemented and integrated into CodeSentinel's daily maintenance workflow. The legacy formatting GUI has been successfully recreated with modern architecture and integrated into the setup pipeline.
+
+**NEW (Nov 10, 2025)**: Professional formatting configuration UI integrated into setup wizard with two-column layout, lock-out features, and enhanced user experience.
 
 ---
 
@@ -23,7 +26,7 @@
   - Comprehensive linting
   - File and directory processing
 
-### 2. Legacy-Inspired GUI
+### 2. Legacy-Inspired GUI (Standalone)
 
 - **File**: `codesentinel/gui/formatting_config.py`
 - **Features**:
@@ -33,7 +36,36 @@
   - Style rules checklist
   - Professional legacy design
 
-### 3. Command-Line Interface
+### 3. Setup Wizard Integration (NEW - Nov 10, 2025)
+
+- **Files**: 
+  - `codesentinel/gui/formatting_config.py` - New components
+  - `codesentinel/gui_wizard_v2.py` - Integration
+- **Components**:
+  - **FormattingSchemeSelector**: Radio button group with 6 schemes
+    - Black (strict Python formatter)
+    - AutoPEP8 (automatic PEP8 compliance)
+    - Ruff (fast Python linter)
+    - C++ (C++ style guidelines)
+    - Google (Google style guide)
+    - Custom (user-defined settings)
+  - **FormattingCustomizationPanel**: Two-column layout
+    - Left column: ⚙️ Basic Settings (line length, quotes, indentation, operator spacing)
+    - Right column: 🎯 Advanced Settings (whitespace, newlines, blank lines)
+- **Features**:
+  - **Two-column side-by-side layout** for better visibility
+  - **Lock-out mechanism**: Options disabled when preset scheme selected, enabled for Custom
+  - **Visual feedback**: Orange lock notice displayed when preset scheme active
+  - **Dynamic state management**: Scheme changes trigger lock/unlock automatically
+  - **Professional styling**: LabelFrames, icons, and consistent spacing
+  - **Integrated workflow**: Part of `codesentinel setup --gui` wizard
+- **User Experience**:
+  - All content visible without scrollbars
+  - Clear separation between scheme selection (Step 1) and customization (Step 2)
+  - Prevents accidental modification of preset schemes
+  - Smooth navigation with back/next buttons
+
+### 4. Command-Line Interface
 
 - **File**: `codesentinel/cli/document_formatter_cli.py`
 - **Commands**:
