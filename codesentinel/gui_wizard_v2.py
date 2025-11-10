@@ -142,7 +142,7 @@ class WizardApp:
         self.header = ttk.Frame(self.root)
         self.header.pack(fill="x", padx=20, pady=(16, 8))
         ttk.Label(self.header, text="CodeSentinel Setup Wizard", style='Title.TLabel').pack()
-        ttk.Label(self.header, text="SECURITY > EFFICIENCY > MINIMALISM", font=('Arial', 9), foreground=self.colors['info']).pack(pady=(2, 0))
+        ttk.Label(self.header, text="SEAM Protected™", font=('Arial', 9), foreground=self.colors['info']).pack(pady=(2, 0))
         # Subtle attribution and version line
         ttk.Label(
             self.header,
@@ -1775,7 +1775,8 @@ class WizardApp:
         
         instructions_content = """# CodeSentinel AI Agent Instructions
 
-CodeSentinel is a security-first automated maintenance and monitoring system with the core principle: **SECURITY > EFFICIENCY > MINIMALISM**.
+CodeSentinel is a security-first automated maintenance and monitoring system with SEAM Protection™:
+**Security, Efficiency, And Minimalism** (with Security taking absolute priority).
 
 ## Architecture Overview
 

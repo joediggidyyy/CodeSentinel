@@ -38,7 +38,7 @@
 
 ### 3. Setup Wizard Integration (NEW - Nov 10, 2025)
 
-- **Files**: 
+- **Files**:
   - `codesentinel/gui/formatting_config.py` - New components
   - `codesentinel/gui_wizard_v2.py` - Integration
 - **Components**:

@@ -75,7 +75,7 @@ This layered approach ensures that information is accessible at the right level 
 
 ## Core Features
 
-- **Security-First Architecture**: Automated vulnerability scanning and security monitoring
+- **SEAM-Tight Security**: Security-first architecture with automated vulnerability scanning
 - **Multi-Channel Alerts**: Console, file logging, email, and Slack integration
 - **GitHub Integration**: Seamless GitHub and Copilot AI support
 - **IDE Integration**: Support for VS Code, PyCharm, IntelliJ, Visual Studio, and more

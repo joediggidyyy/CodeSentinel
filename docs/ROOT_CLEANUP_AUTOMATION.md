@@ -64,8 +64,9 @@ python tools/codesentinel/root_cleanup.py --verbose
 
 **Purpose**: Detect and alert on file content duplication caused by AI tool bugs
 
-**Background**: 
+**Background**:
 During development, AI file creation tools (`create_file`) were found to systematically duplicate content:
+
 - Line duplication: `texttext` on same line
 - Comment duplication: `# comment# comment`
 - Quote duplication: `""""""` instead of `"""`

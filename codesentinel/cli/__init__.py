@@ -71,7 +71,7 @@ def main():
     if processed_argv != list(sys.argv):
         sys.argv = processed_argv
     parser = argparse.ArgumentParser(
-        description="CodeSentinel - Automated Maintenance & Security Monitoring",
+        description="CodeSentinel - SEAM Protected™ Automated Maintenance & Security Monitoring",
         formatter_class=argparse.RawDescriptionHelpFormatter,
       epilog="""
 Examples:
@@ -1577,12 +1577,11 @@ You have been requested to perform a targeted analysis on: "{focus_area}"
 While the full audit context is provided below, you should:
 1. Prioritize issues and opportunities related to {focus_area}
 2. Consider how changes in this area affect the broader system
-3. Ensure all remediation respects SECURITY > EFFICIENCY > MINIMALISM
+3. Ensure all remediation respects SEAM Protection (Security, Efficiency, And Minimalism)
 4. Maintain non-destructive, feature-preserving principles
 
 {agent_context.get('agent_guidance', '')}
 """
-                
                 if export_path:
                     import json as _json
                     with open(export_path, 'w') as f:
@@ -1642,8 +1641,8 @@ While the full audit context is provided below, you should:
                     else:
                         print("  codesentinel !!!! scheduler --agent       (focus on specific area)")
                     print("\nThis will provide comprehensive context for the AI agent to")
-                    print("intelligently build a remediation pipeline while respecting")
-                    print("all security, efficiency, and minimalism principles.")
+                    print("intelligently build a remediation pipeline while maintaining")
+                    print("SEAM Protection (Security, Efficiency, And Minimalism).")
                 
                 print("\nInteractive dev audit completed.")
                 print("A brief audit is running in the background; results will arrive via alerts.")

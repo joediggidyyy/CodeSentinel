@@ -1,6 +1,7 @@
 # CodeSentinel AI Agent Instructions
 
-CodeSentinel is a security-first automated maintenance and monitoring system with the core principle: **SECURITY > EFFICIENCY > MINIMALISM**.
+CodeSentinel is a security-first automated maintenance and monitoring system with SEAM Protection™:
+**Security, Efficiency, And Minimalism** (with Security taking absolute priority).
 
 ## Architecture Overview
 

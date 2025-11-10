@@ -9,6 +9,8 @@ import json
 import logging
 import time
 import os
+import sys
+import subprocess
 import psutil
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -283,34 +285,74 @@ class MaintenanceScheduler:
         tasks_executed = []
         errors = []
         
-        # Root directory cleanup
+        # Root directory cleanup using CLI clean command
         try:
-            from tools.codesentinel.root_cleanup import RootDirectoryValidator
-            import os
-            
             repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            validator = RootDirectoryValidator(repo_root, dry_run=False, logger=self.logger)
-            
-            # Validate root directory
-            validation_result = validator.validate()
-            if validation_result['summary']['total_issues'] > 0:
-                self.logger.info(f"Root directory issues found: {validation_result['summary']['total_issues']}")
-                
-                # Execute cleanup
-                cleanup_result = validator.cleanup()
+            os.chdir(repo_root)  # Change to repo root for CLI command
+
+            # Run clean --root command
+            result = subprocess.run([
+                sys.executable, '-m', 'codesentinel.cli', 'clean', '--root'
+            ], capture_output=True, text=True, timeout=300)
+
+            if result.returncode == 0:
                 tasks_executed.append('root_directory_cleanup')
-                
-                if cleanup_result['total_processed'] > 0:
-                    self.logger.info(f"Root cleanup processed {cleanup_result['total_processed']} items")
+                self.logger.info("Root directory cleanup completed successfully")
+                # Parse output to get cleanup statistics if needed
+                if "Space to reclaim:" in result.stdout:
+                    self.logger.info("Cleanup statistics available in CLI output")
             else:
-                tasks_executed.append('root_directory_validation')
-                
-        except ImportError:
-            self.logger.warning("Root cleanup module not available - skipping")
-            errors.append("Root cleanup module not available")
+                self.logger.warning(f"Root cleanup failed: {result.stderr}")
+                errors.append(f"Root cleanup failed: {result.stderr}")
+
+        except subprocess.TimeoutExpired:
+            self.logger.error("Root cleanup timed out")
+            errors.append("Root cleanup timed out")
         except Exception as e:
             self.logger.error(f"Root cleanup error: {e}")
             errors.append(f"Root cleanup failed: {str(e)}")
+        
+        # Python cache cleanup using CLI clean command
+        try:
+            # Run clean --cache command
+            result = subprocess.run([
+                sys.executable, '-m', 'codesentinel.cli', 'clean', '--cache'
+            ], capture_output=True, text=True, timeout=300)
+
+            if result.returncode == 0:
+                tasks_executed.append('python_cache_cleanup')
+                self.logger.info("Python cache cleanup completed successfully")
+            else:
+                self.logger.warning(f"Cache cleanup failed: {result.stderr}")
+                errors.append(f"Cache cleanup failed: {result.stderr}")
+
+        except subprocess.TimeoutExpired:
+            self.logger.error("Cache cleanup timed out")
+            errors.append("Cache cleanup timed out")
+        except Exception as e:
+            self.logger.error(f"Cache cleanup error: {e}")
+            errors.append(f"Cache cleanup failed: {str(e)}")
+        
+        # Temp files and logs cleanup using CLI clean command
+        try:
+            # Run clean --temp --logs command
+            result = subprocess.run([
+                sys.executable, '-m', 'codesentinel.cli', 'clean', '--temp', '--logs'
+            ], capture_output=True, text=True, timeout=300)
+
+            if result.returncode == 0:
+                tasks_executed.append('temp_logs_cleanup')
+                self.logger.info("Temp files and logs cleanup completed successfully")
+            else:
+                self.logger.warning(f"Temp/logs cleanup failed: {result.stderr}")
+                errors.append(f"Temp/logs cleanup failed: {result.stderr}")
+
+        except subprocess.TimeoutExpired:
+            self.logger.error("Temp/logs cleanup timed out")
+            errors.append("Temp/logs cleanup timed out")
+        except Exception as e:
+            self.logger.error(f"Temp/logs cleanup error: {e}")
+            errors.append(f"Temp/logs cleanup failed: {str(e)}")
         
         # Document formatting and style checking
         try:
@@ -427,8 +469,50 @@ class MaintenanceScheduler:
             self.logger.error(f"Duplication detection error: {e}")
             errors.append(f"Duplication detection failed: {str(e)}")
         
+        # Dependency check using CLI update command
+        try:
+            # Run update --dependencies --check-only command
+            result = subprocess.run([
+                sys.executable, '-m', 'codesentinel.cli', 'update', 'dependencies', '--check-only'
+            ], capture_output=True, text=True, timeout=300)
+
+            if result.returncode == 0:
+                tasks_executed.append('dependency_check')
+                self.logger.info("Dependency check completed successfully")
+            else:
+                self.logger.warning(f"Dependency check failed: {result.stderr}")
+                errors.append(f"Dependency check failed: {result.stderr}")
+
+        except subprocess.TimeoutExpired:
+            self.logger.error("Dependency check timed out")
+            errors.append("Dependency check timed out")
+        except Exception as e:
+            self.logger.error(f"Dependency check error: {e}")
+            errors.append(f"Dependency check failed: {str(e)}")
+        
+        # Emoji policy enforcement using CLI clean command
+        try:
+            # Run clean --emojis command
+            result = subprocess.run([
+                sys.executable, '-m', 'codesentinel.cli', 'clean', '--emojis'
+            ], capture_output=True, text=True, timeout=300)
+
+            if result.returncode == 0:
+                tasks_executed.append('emoji_policy_enforcement')
+                self.logger.info("Emoji policy enforcement completed successfully")
+            else:
+                self.logger.warning(f"Emoji policy enforcement failed: {result.stderr}")
+                errors.append(f"Emoji policy enforcement failed: {result.stderr}")
+
+        except subprocess.TimeoutExpired:
+            self.logger.error("Emoji policy enforcement timed out")
+            errors.append("Emoji policy enforcement timed out")
+        except Exception as e:
+            self.logger.error(f"Emoji policy enforcement error: {e}")
+            errors.append(f"Emoji policy enforcement failed: {str(e)}")
+        
         # Standard daily tasks
-        tasks_executed.extend(['security_check', 'dependency_update', 'log_cleanup'])
+        tasks_executed.extend(['security_check', 'log_cleanup'])
         
         return {
             'task_type': 'daily',
@@ -439,21 +523,165 @@ class MaintenanceScheduler:
 
     def _run_weekly_tasks(self) -> Dict[str, Any]:
         """Run weekly maintenance tasks."""
-        # Placeholder for actual weekly tasks
+        tasks_executed = []
+        errors = []
+        
+        # Change to repo root for CLI commands
+        repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        original_cwd = os.getcwd()
+        os.chdir(repo_root)
+        
+        try:
+            # Changelog update using CLI update command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'update', 'changelog'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('changelog_update')
+                    self.logger.info("Changelog update completed successfully")
+                else:
+                    self.logger.warning(f"Changelog update failed: {result.stderr}")
+                    errors.append(f"Changelog update failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Changelog update timed out")
+                errors.append("Changelog update timed out")
+            except Exception as e:
+                self.logger.error(f"Changelog update error: {e}")
+                errors.append(f"Changelog update failed: {str(e)}")
+            
+            # Build and test artifacts cleanup using CLI clean command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'clean', '--build', '--test'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('build_test_cleanup')
+                    self.logger.info("Build and test artifacts cleanup completed successfully")
+                else:
+                    self.logger.warning(f"Build/test cleanup failed: {result.stderr}")
+                    errors.append(f"Build/test cleanup failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Build/test cleanup timed out")
+                errors.append("Build/test cleanup timed out")
+            except Exception as e:
+                self.logger.error(f"Build/test cleanup error: {e}")
+                errors.append(f"Build/test cleanup failed: {str(e)}")
+            
+            # Document update check using CLI update command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'update', 'docs'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('documentation_check')
+                    self.logger.info("Documentation check completed successfully")
+                else:
+                    self.logger.warning(f"Documentation check failed: {result.stderr}")
+                    errors.append(f"Documentation check failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Documentation check timed out")
+                errors.append("Documentation check timed out")
+            except Exception as e:
+                self.logger.error(f"Documentation check error: {e}")
+                errors.append(f"Documentation check failed: {str(e)}")
+        
+        finally:
+            # Restore original working directory
+            os.chdir(original_cwd)
+        
         return {
             'task_type': 'weekly',
-            'tasks_executed': ['deep_analysis', 'performance_check', 'backup_verify'],
-            'errors': [],
+            'tasks_executed': tasks_executed,
+            'errors': errors,
             'warnings': []
         }
 
     def _run_monthly_tasks(self) -> Dict[str, Any]:
         """Run monthly maintenance tasks."""
-        # Placeholder for actual monthly tasks
+        tasks_executed = []
+        errors = []
+        
+        # Change to repo root for CLI commands
+        repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        original_cwd = os.getcwd()
+        os.chdir(repo_root)
+        
+        try:
+            # Comprehensive cleanup using CLI clean command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'clean', '--all'
+                ], capture_output=True, text=True, timeout=600)  # Longer timeout for comprehensive cleanup
+
+                if result.returncode == 0:
+                    tasks_executed.append('comprehensive_cleanup')
+                    self.logger.info("Comprehensive cleanup completed successfully")
+                else:
+                    self.logger.warning(f"Comprehensive cleanup failed: {result.stderr}")
+                    errors.append(f"Comprehensive cleanup failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Comprehensive cleanup timed out")
+                errors.append("Comprehensive cleanup timed out")
+            except Exception as e:
+                self.logger.error(f"Comprehensive cleanup error: {e}")
+                errors.append(f"Comprehensive cleanup failed: {str(e)}")
+            
+            # Version bump check (dry run) using CLI update command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'update', 'version', 'patch', '--dry-run'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('version_bump_check')
+                    self.logger.info("Version bump check completed successfully")
+                else:
+                    self.logger.warning(f"Version bump check failed: {result.stderr}")
+                    errors.append(f"Version bump check failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Version bump check timed out")
+                errors.append("Version bump check timed out")
+            except Exception as e:
+                self.logger.error(f"Version bump check error: {e}")
+                errors.append(f"Version bump check failed: {str(e)}")
+            
+            # README update using CLI update command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'update', 'readme'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('readme_update')
+                    self.logger.info("README update completed successfully")
+                else:
+                    self.logger.warning(f"README update failed: {result.stderr}")
+                    errors.append(f"README update failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("README update timed out")
+                errors.append("README update timed out")
+            except Exception as e:
+                self.logger.error(f"README update error: {e}")
+                errors.append(f"README update failed: {str(e)}")
+        
+        finally:
+            # Restore original working directory
+            os.chdir(original_cwd)
+        
         return {
             'task_type': 'monthly',
-            'tasks_executed': ['comprehensive_audit', 'license_check', 'trend_analysis'],
-            'errors': [],
+            'tasks_executed': tasks_executed,
+            'errors': errors,
             'warnings': []
         }
 
