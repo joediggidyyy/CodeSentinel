@@ -1,0 +1,14 @@
+{
+  "description": "Schema for CodeSentinel documentation satellite instructions",
+  "target_file": "docs/AGENT_INSTRUCTIONS.md",
+  "section_order": [
+    "Quick Authority Reference",
+    "Domain Overview",
+    "Documentation Workflow",
+    "Classification Guidelines",
+    "Common Documentation Patterns",
+    "Archival Procedures",
+    "Troubleshooting Guide"
+  ],
+  "merge_sections": {}
+}

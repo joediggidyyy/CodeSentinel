@@ -44,6 +44,14 @@ CodeSentinel is a security-first automated maintenance and monitoring system wit
 - Keep codebase focused and maintainable
 - **Code Reuse Over Duplication**: Always prefer importing shared code over copying
 
+### PLATFORM INDEPENDENCE (CRITICAL)
+- **ASCII-Only Console Output**: NEVER use Unicode symbols (✓✗→←•) in `print()` or `logger.*()` statements
+- **Why**: Windows console encoding (cp1252) cannot display Unicode, causing `UnicodeEncodeError` crashes
+- **Approved Symbols**: Use `[OK]` `[FAIL]` `[WARN]` `->` `*` instead of Unicode equivalents
+- **Exception**: Markdown files (`.md`) and file content can safely use UTF-8/Unicode
+- **Policy Document**: See `docs/architecture/CROSS_PLATFORM_OUTPUT_POLICY.md` for complete guidelines
+- **Testing Required**: All console output must be tested on Windows, Linux, and macOS
+
 ### QUARANTINE_LEGACY_ARCHIVE POLICY
 - **Mandatory Reference Directory**: `quarantine_legacy_archive/` is essential for agent remediation and code archaeology
 - **Purpose**: Preserve archived code, configurations, and artifacts for reference, analysis, and potential recovery

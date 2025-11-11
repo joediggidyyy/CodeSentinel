@@ -1,487 +1,975 @@
-# Testing & Validation Agent Instructions
-
-**Classification**: T4b - Infrastructure & Procedural Agent Documentation  
-**Scope**: Test creation, validation procedures, quality assurance workflows in tests/ directory  
-**Target Users**: Agents implementing tests and validation procedures  
-**Last Updated**: November 7, 2025  
-**Version**: 1.0
-
----
-
-## Quick Authority Reference
-
-**Who can create, modify, delete in this domain?**
-
-| Operation | Authority | Requires Approval |
-|-----------|-----------|-------------------|
-| Create new test file | Agent | No |
-| Create new test cases | Agent | No |
-| Modify test code | Agent | No |
-| Delete test (unused) | Agent | No |
-| Delete test (working) | Agent | Yes (verification) |
-| Add test fixture | Agent | No |
-| Add test helper | Agent | No |
-| Change test framework | Agent | Yes (major decision) |
-| Modify pytest.ini | Agent | Yes (major impact) |
-| Add test dependency | Agent | Yes (always) |
-
-**Reference**: See `docs/architecture/DOCUMENT_CLASSIFICATION.md` - Tier 4 Agent Documentation authority matrix
-
----
-
-## Domain Overview
-
-The `tests/` directory contains all test code for CodeSentinel including:
-
-- **Unit Tests** (`test_*.py`) - Individual module testing
-- **Integration Tests** - Multi-module workflows
-- **Test Configuration** (`pytest.ini`) - Test framework settings
-- **Test Fixtures** - Shared test data and utilities
-- **Performance Tests** - Optional performance benchmarks
-
-**Key Principles for This Domain**:
-
-- 100% code coverage target for new code
-- Tests should be fast and isolated
-- No external dependencies without mocking
-- Clear test names describing what they test
-- Comprehensive error case coverage
-- Non-destructive testing (no permanent changes)
-
----
-
-## Common Procedures
-
-### Procedure 1: Create Unit Test for New Code
-
-**When**: Every new module or function in codesentinel/
-
-**Steps**:
-
-1. **Verify Coverage Plan**: Ensure the code being tested is new/untested 
-
-2. **Identify Test Cases**:
-   - Success case (normal operation)
-   - Error case (invalid input)
-   - Edge case (boundary conditions)
-   - State case (multiple calls/persistence)
-   - Integration case (with other modules if applicable)
-
-3. **Create Test File** (if needed):
-   - File: `tests/test_[module_name].py`
-   - Import unittest or use pytest
-   - Follow existing test patterns
-   - Include docstrings explaining test intent
-
-4. **Implement Unit Tests**:
-   - One test per scenario
-   - Descriptive test names: `test_[function]_[condition]_[expected_result]`
-   - Use assertions to verify behavior
-   - Mock external dependencies
-   - No hardcoded paths or configuration
-
-5. **Test Setup/Teardown**:
-   - Use fixtures for shared test data
-   - Clean up resources after tests
-   - Isolate tests (no interdependencies)
-   - Use temporary directories for file operations
-
-6. **Run Tests**:
-   - Run with pytest: `pytest tests/test_[module].py`
-   - Verify all tests pass
-   - Check coverage: `pytest --cov=codesentinel tests/`
-   - Target: 100% coverage for new code
-
-7. **Validation**:
-   - All tests pass 
-   - Coverage is 100% for new code 
-   - No external dependencies without mocking 
-   - Test runs in < 1 second (unless integration) 
-
-8. **Commit**:
-   - Message: `test: add unit tests for [module/function]`
-   - Include test file and any fixtures
-   - Commit with code being tested
-
----
-
-### Procedure 2: Test an Existing Feature (Regression Test)
-
-**When**: Bug discovered or existing behavior needs verification
-
-**Steps**:
-
-1. **Understand Behavior**:
-   - What should the code do?
-   - What is it currently doing wrong?
-   - Create minimal reproduction case
-
-2. **Check Existing Tests**:
-   - Look for existing test coverage
-   - Identify what tests are missing
-   - Plan gap coverage
-
-3. **Write Failing Test First**:
-   - Create test that demonstrates the bug/gap
-   - Test should fail with current code
-   - Use descriptive test name
-   - Document expected vs. actual behavior in test
-
-4. **Implement Fix**:
-   - Make minimal change to fix issue
-   - Verify test now passes
-   - Run full test suite to verify no regressions
-   - Add comments if fix is complex
-
-5. **Add Edge Case Tests**:
-   - What other conditions could break this?
-   - Add tests for related scenarios
-   - Test error conditions
-   - Test boundary values
-
-6. **Validation**:
-   - New test passes 
-   - All existing tests still pass 
-   - Coverage increased or maintained 
-   - No performance regression 
-
-7. **Commit**:
-   - Message: `test: add regression test for [issue]`
-   - Include both test and fix in same commit or separate
-
----
-
-### Procedure 3: Integration Test for Multi-Module Workflow
-
-**When**: Feature involves multiple modules or components
-
-**Steps**:
-
-1. **Define Workflow**:
-   - What is the end-to-end scenario?
-   - Which modules are involved?
-   - What are the success criteria?
-
-2. **Plan Test Structure**:
-   - Create test in existing `tests/test_integration.py` or new file
-   - Use fixtures for setup
-   - Test complete workflow
-   - Verify final state
-
-3. **Create Test**:
-   - Setup all required dependencies
-   - Call workflow with test data
-   - Assert expected results
-   - Clean up resources
-
-4. **Mock External Services** (if any):
-   - Don't call real APIs
-   - Mock network calls
-   - Mock file system (if possible)
-   - Keep test isolated and fast
-
-5. **Test Error Paths**:
-   - What if module A fails?
-   - What if module B times out?
-   - Recovery mechanisms tested?
-   - Error propagation correct?
-
-6. **Performance Check**:
-   - Is test running in reasonable time? (< 10 seconds unless long-running)
-   - Any obvious performance issues?
-   - Memory usage acceptable?
-
-7. **Validation**:
-   - Integration test passes 
-   - All unit tests still pass 
-   - Coverage not decreased 
-   - Test is maintainable and clear 
-
-8. **Commit**:
-   - Message: `test: add integration test for [feature]`
-   - Include all related fixes/changes
-
----
-
-### Procedure 4: Add Test Fixture for Shared Data
-
-**When**: Multiple tests need same setup data or objects
-
-**Steps**:
-
-1. **Identify Shared Needs**:
-   - What setup is repeated across tests?
-   - What test data is common?
-   - What resources need cleanup?
-
-2. **Create Fixture File** (if needed):
-   - File: `tests/conftest.py` (pytest standard)
-   - Define reusable fixtures
-   - Include docstrings
-   - Document fixture parameters
-
-3. **Implement Fixture**:
-   - Use pytest.fixture or unittest setUp
-   - Create objects/data needed by tests
-   - Include cleanup in teardown
-   - Make fixture configurable if needed
-
-4. **Use in Tests**:
-   - Add fixture as parameter to test functions
-   - Use fixture data in test
-   - Verify fixture isolation (independent tests)
-   - No state shared between test runs
-
-5. **Documentation**:
-   - Document what fixture provides
-   - Document any side effects
-   - Note when/why to use this fixture
-   - Link to tests using it
-
-6. **Validation**:
-   - Tests using fixture pass 
-   - Fixture properly cleans up 
-   - Fixture is reusable across tests 
-   - No test interdependencies created 
-
-7. **Commit**:
-   - Message: `test: add [fixture name] fixture`
-   - Include fixture definition and tests using it
-
----
-
-## Quick Test Classification Tree
-
-**What are you testing?**
-
-- New function/method? → Use "Unit Test" procedure
-- New module? → Create test file with unit tests for all functions
-- Existing feature (bug or regression)? → Use "Regression Test" procedure
-- Multi-module workflow? → Use "Integration Test" procedure
-- Shared test data? → Use "Test Fixture" procedure
-- CLI command? → Create test in test_cli.py using mocking
-
-**How complex is the test?**
-
-- Single function call? → Unit test
-- Multiple module interactions? → Integration test
-- Long-running scenario? → Consider if it can be unit tested, separate integration tests
-- External service call? → Mock it, don't call real service
-
-**What test type to use?**
-
-- Most tests: pytest with fixtures
-- CLI tests: Mock subprocess calls, test with fixtures
-- Configuration tests: Test with temp files, clean up after
-- Database/file tests: Use temp directories and mocks
-
----
-
-## Validation Checklist (Before Commit)
-
-**Test Quality**:
-
-- [ ] Test name clearly describes what is being tested
-- [ ] Test has single responsibility/assertion group
-- [ ] No hardcoded paths or configuration
-- [ ] No external API calls (mocked instead)
-- [ ] Setup and teardown properly handle resources
-
-**Coverage**:
-
-- [ ] Success case tested
-- [ ] Error case tested
-- [ ] Edge case tested
-- [ ] New code has 100% coverage
-- [ ] Overall coverage not decreased
-
-**Performance**:
-
-- [ ] Unit test completes < 1 second
-- [ ] Integration test completes < 10 seconds
-- [ ] No obvious performance issues
-- [ ] No unnecessary loops or waits
-
-**Isolation**:
-
-- [ ] Test passes independently
-- [ ] Test passes in any order
-- [ ] Test doesn't depend on other tests
-- [ ] No shared state between tests
-- [ ] Cleanup properly removes side effects
-
-**Compliance**:
-
-- [ ] No permanent file modifications
-- [ ] No external network calls
-- [ ] No hardcoded credentials
-- [ ] Proper temp file/directory usage
-- [ ] Non-destructive testing maintained
-
-**Documentation**:
-
-- [ ] Test has clear docstring
-- [ ] Test name is descriptive
-- [ ] Complex test has comments
-- [ ] Fixture documentation clear
-- [ ] Linked to code being tested
-
-**Framework**:
-
-- [ ] Uses pytest (current standard)
-- [ ] Follows existing test patterns
-- [ ] Compatible with pytest.ini
-- [ ] Works with continuous integration
-- [ ] Doesn't require manual setup
-
----
-
-## Common Questions
-
-### Q: How do I test code that reads files?
-
-**A**: Use temporary directories:
-
-```python
-import tempfile
-from pathlib import Path
-
-def test_read_config():
-    with tempfile.TemporaryDirectory() as tmpdir:
-        config_file = Path(tmpdir) / 'test.json'
-        config_file.write_text('{"test": true}')
-        # Test your code with config_file
-        result = read_config(config_file)
-        assert result['test'] == True
-```
-
-### Q: How do I test code that calls external APIs?
-
-**A**: Mock the API calls:
-
-```python
-from unittest.mock import patch
-
-@patch('module.external_api.get_data')
-def test_process_api_data(mock_api):
-    mock_api.return_value = {"status": "ok"}
-    result = process_data()
-    mock_api.assert_called_once()
-```
-
-### Q: How do I test CLI commands?
-
-**A**: Use click testing or mock subprocess:
-
-```python
-from click.testing import CliRunner
-from codesentinel.cli import main_command
-
-def test_cli_command():
-    runner = CliRunner()
-    result = runner.invoke(main_command, ['--help'])
-    assert result.exit_code == 0
-```
-
-### Q: What should I do if a test is slow?
-
-**A**:
-
-1. Check if it's calling external services (mock instead)
-2. Check for unnecessary loops or waits
-3. Consider if it should be an integration test (separate from unit tests)
-4. Profile the test to find the bottleneck
-5. Optimize if possible; if not, mark as `@pytest.mark.slow`
-
-### Q: How do I skip a test that I'm not ready for?
-
-**A**: Use pytest markers:
-
-```python
-@pytest.mark.skip(reason="Not implemented yet")
-def test_future_feature():
-    pass
-
-@pytest.mark.xfail  # Expected to fail
-def test_known_bug():
-    pass
-```
-
-### Q: Can I test private methods (_method)?
-
-**A**: Generally no - test public API. If you must:
-
-1. Question if the method should be private
-2. Consider if it should be extracted to separate module
-3. If truly necessary, test through public interface
-4. Document why testing private method is needed
-
----
-
-## Running Tests
-
-**Run all tests**:
-
-```bash
-pytest
-```
-
-**Run specific test file**:
-
-```bash
-pytest tests/test_cli.py
-```
-
-**Run with coverage**:
-
-```bash
-pytest --cov=codesentinel tests/
-```
-
-**Run only fast tests** (skip slow):
-
-```bash
-pytest -m "not slow"
-```
-
-**Run with verbose output**:
-
-```bash
-pytest -v
-```
-
-**Run and show print statements**:
-
-```bash
-pytest -s
-```
-
----
-
-## References & Links
-
-**Core Documentation**:
-
-- Global Policy: `docs/architecture/POLICY.md`
-- Classification Framework: `docs/architecture/DOCUMENT_CLASSIFICATION.md`
-- General Strategy: `docs/architecture/AGENT_INSTRUCTION_STRATEGY.md`
-
-**Test Framework**:
-
-- pytest documentation: <https://docs.pytest.org/>
-- pytest fixtures: <https://docs.pytest.org/en/stable/fixture.html>
-- pytest markers: <https://docs.pytest.org/en/stable/how-to-specify-tests.html>
-
-**CodeSentinel Tests**:
-
-- Test directory: `tests/`
-- Test configuration: `pytest.ini`
-- Existing tests: Study patterns in `tests/test_*.py`
-
----
-
-**Classification**: T4b - Infrastructure & Procedural Agent Documentation  
-**Authority**: Guidelines for agents creating and maintaining tests  
-**Update Frequency**: When testing procedures or policies change  
-**Last Updated**: November 7, 2025  
-**Next Review**: December 7, 2025 (quarterly satellite audit)
+->#-> ->T->e->s->t->i->n->g-> ->&-> ->V->a->l->i->d->a->t->i->o->n-> ->A->g->e->n->t-> ->I->n->s->t->r->u->c->t->i->o->n->s->
+->
+->
+->
+->*->*->C->l->a->s->s->i->f->i->c->a->t->i->o->n->*->*->:-> ->T->4->b-> ->--> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e-> ->&-> ->P->r->o->c->e->d->u->r->a->l-> ->A->g->e->n->t-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> -> ->
+->
+->*->*->S->c->o->p->e->*->*->:-> ->T->e->s->t-> ->c->r->e->a->t->i->o->n->,-> ->v->a->l->i->d->a->t->i->o->n-> ->p->r->o->c->e->d->u->r->e->s->,-> ->q->u->a->l->i->t->y-> ->a->s->s->u->r->a->n->c->e-> ->w->o->r->k->f->l->o->w->s-> ->i->n-> ->t->e->s->t->s->/-> ->d->i->r->e->c->t->o->r->y-> -> ->
+->
+->*->*->T->a->r->g->e->t-> ->U->s->e->r->s->*->*->:-> ->A->g->e->n->t->s-> ->i->m->p->l->e->m->e->n->t->i->n->g-> ->t->e->s->t->s-> ->a->n->d-> ->v->a->l->i->d->a->t->i->o->n-> ->p->r->o->c->e->d->u->r->e->s-> -> ->
+->
+->*->*->L->a->s->t-> ->U->p->d->a->t->e->d->*->*->:-> ->N->o->v->e->m->b->e->r-> ->7->,-> ->2->0->2->5-> -> ->
+->
+->*->*->V->e->r->s->i->o->n->*->*->:-> ->1->.->0->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->Q->u->i->c->k-> ->A->u->t->h->o->r->i->t->y-> ->R->e->f->e->r->e->n->c->e->
+->
+->
+->
+->*->*->W->h->o-> ->c->a->n-> ->c->r->e->a->t->e->,-> ->m->o->d->i->f->y->,-> ->d->e->l->e->t->e-> ->i->n-> ->t->h->i->s-> ->d->o->m->a->i->n->?->*->*->
+->
+->
+->
+->|-> ->O->p->e->r->a->t->i->o->n-> ->|-> ->A->u->t->h->o->r->i->t->y-> ->|-> ->R->e->q->u->i->r->e->s-> ->A->p->p->r->o->v->a->l-> ->|->
+->
+->|->-->-->-->-->-->-->-->-->-->-->-->|->-->-->-->-->-->-->-->-->-->-->-->|->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->|->
+->
+->|-> ->C->r->e->a->t->e-> ->n->e->w-> ->t->e->s->t-> ->f->i->l->e-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->C->r->e->a->t->e-> ->n->e->w-> ->t->e->s->t-> ->c->a->s->e->s-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->M->o->d->i->f->y-> ->t->e->s->t-> ->c->o->d->e-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->D->e->l->e->t->e-> ->t->e->s->t-> ->(->u->n->u->s->e->d->)-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->D->e->l->e->t->e-> ->t->e->s->t-> ->(->w->o->r->k->i->n->g->)-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->v->e->r->i->f->i->c->a->t->i->o->n->)-> ->|->
+->
+->|-> ->A->d->d-> ->t->e->s->t-> ->f->i->x->t->u->r->e-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->A->d->d-> ->t->e->s->t-> ->h->e->l->p->e->r-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->C->h->a->n->g->e-> ->t->e->s->t-> ->f->r->a->m->e->w->o->r->k-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->m->a->j->o->r-> ->d->e->c->i->s->i->o->n->)-> ->|->
+->
+->|-> ->M->o->d->i->f->y-> ->p->y->t->e->s->t->.->i->n->i-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->m->a->j->o->r-> ->i->m->p->a->c->t->)-> ->|->
+->
+->|-> ->A->d->d-> ->t->e->s->t-> ->d->e->p->e->n->d->e->n->c->y-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->a->l->w->a->y->s->)-> ->|->
+->
+->
+->
+->*->*->R->e->f->e->r->e->n->c->e->*->*->:-> ->S->e->e-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->D->O->C->U->M->E->N->T->_->C->L->A->S->S->I->F->I->C->A->T->I->O->N->.->m->d->`-> ->--> ->T->i->e->r-> ->4-> ->A->g->e->n->t-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> ->a->u->t->h->o->r->i->t->y-> ->m->a->t->r->i->x->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->D->o->m->a->i->n-> ->O->v->e->r->v->i->e->w->
+->
+->
+->
+->T->h->e-> ->`->t->e->s->t->s->/->`-> ->d->i->r->e->c->t->o->r->y-> ->c->o->n->t->a->i->n->s-> ->a->l->l-> ->t->e->s->t-> ->c->o->d->e-> ->f->o->r-> ->C->o->d->e->S->e->n->t->i->n->e->l-> ->i->n->c->l->u->d->i->n->g->:->
+->
+->
+->
+->--> ->*->*->U->n->i->t-> ->T->e->s->t->s->*->*-> ->(->`->t->e->s->t->_->*->.->p->y->`->)-> ->--> ->I->n->d->i->v->i->d->u->a->l-> ->m->o->d->u->l->e-> ->t->e->s->t->i->n->g->
+->
+->--> ->*->*->I->n->t->e->g->r->a->t->i->o->n-> ->T->e->s->t->s->*->*-> ->--> ->M->u->l->t->i->-->m->o->d->u->l->e-> ->w->o->r->k->f->l->o->w->s->
+->
+->--> ->*->*->T->e->s->t-> ->C->o->n->f->i->g->u->r->a->t->i->o->n->*->*-> ->(->`->p->y->t->e->s->t->.->i->n->i->`->)-> ->--> ->T->e->s->t-> ->f->r->a->m->e->w->o->r->k-> ->s->e->t->t->i->n->g->s->
+->
+->--> ->*->*->T->e->s->t-> ->F->i->x->t->u->r->e->s->*->*-> ->--> ->S->h->a->r->e->d-> ->t->e->s->t-> ->d->a->t->a-> ->a->n->d-> ->u->t->i->l->i->t->i->e->s->
+->
+->--> ->*->*->P->e->r->f->o->r->m->a->n->c->e-> ->T->e->s->t->s->*->*-> ->--> ->O->p->t->i->o->n->a->l-> ->p->e->r->f->o->r->m->a->n->c->e-> ->b->e->n->c->h->m->a->r->k->s->
+->
+->
+->
+->*->*->K->e->y-> ->P->r->i->n->c->i->p->l->e->s-> ->f->o->r-> ->T->h->i->s-> ->D->o->m->a->i->n->*->*->:->
+->
+->
+->
+->--> ->1->0->0->%-> ->c->o->d->e-> ->c->o->v->e->r->a->g->e-> ->t->a->r->g->e->t-> ->f->o->r-> ->n->e->w-> ->c->o->d->e->
+->
+->--> ->T->e->s->t->s-> ->s->h->o->u->l->d-> ->b->e-> ->f->a->s->t-> ->a->n->d-> ->i->s->o->l->a->t->e->d->
+->
+->--> ->N->o-> ->e->x->t->e->r->n->a->l-> ->d->e->p->e->n->d->e->n->c->i->e->s-> ->w->i->t->h->o->u->t-> ->m->o->c->k->i->n->g->
+->
+->--> ->C->l->e->a->r-> ->t->e->s->t-> ->n->a->m->e->s-> ->d->e->s->c->r->i->b->i->n->g-> ->w->h->a->t-> ->t->h->e->y-> ->t->e->s->t->
+->
+->--> ->C->o->m->p->r->e->h->e->n->s->i->v->e-> ->e->r->r->o->r-> ->c->a->s->e-> ->c->o->v->e->r->a->g->e->
+->
+->--> ->N->o->n->-->d->e->s->t->r->u->c->t->i->v->e-> ->t->e->s->t->i->n->g-> ->(->n->o-> ->p->e->r->m->a->n->e->n->t-> ->c->h->a->n->g->e->s->)->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->C->o->m->m->o->n-> ->P->r->o->c->e->d->u->r->e->s->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->1->:-> ->C->r->e->a->t->e-> ->U->n->i->t-> ->T->e->s->t-> ->f->o->r-> ->N->e->w-> ->C->o->d->e->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->E->v->e->r->y-> ->n->e->w-> ->m->o->d->u->l->e-> ->o->r-> ->f->u->n->c->t->i->o->n-> ->i->n-> ->c->o->d->e->s->e->n->t->i->n->e->l->/->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->V->e->r->i->f->y-> ->C->o->v->e->r->a->g->e-> ->P->l->a->n->*->*->:-> ->E->n->s->u->r->e-> ->t->h->e-> ->c->o->d->e-> ->b->e->i->n->g-> ->t->e->s->t->e->d-> ->i->s-> ->n->e->w->/->u->n->t->e->s->t->e->d-> ->
+->
+->
+->
+->2->.-> ->*->*->I->d->e->n->t->i->f->y-> ->T->e->s->t-> ->C->a->s->e->s->*->*->:->
+->
+-> -> -> ->--> ->S->u->c->c->e->s->s-> ->c->a->s->e-> ->(->n->o->r->m->a->l-> ->o->p->e->r->a->t->i->o->n->)->
+->
+-> -> -> ->--> ->E->r->r->o->r-> ->c->a->s->e-> ->(->i->n->v->a->l->i->d-> ->i->n->p->u->t->)->
+->
+-> -> -> ->--> ->E->d->g->e-> ->c->a->s->e-> ->(->b->o->u->n->d->a->r->y-> ->c->o->n->d->i->t->i->o->n->s->)->
+->
+-> -> -> ->--> ->S->t->a->t->e-> ->c->a->s->e-> ->(->m->u->l->t->i->p->l->e-> ->c->a->l->l->s->/->p->e->r->s->i->s->t->e->n->c->e->)->
+->
+-> -> -> ->--> ->I->n->t->e->g->r->a->t->i->o->n-> ->c->a->s->e-> ->(->w->i->t->h-> ->o->t->h->e->r-> ->m->o->d->u->l->e->s-> ->i->f-> ->a->p->p->l->i->c->a->b->l->e->)->
+->
+->
+->
+->3->.-> ->*->*->C->r->e->a->t->e-> ->T->e->s->t-> ->F->i->l->e->*->*-> ->(->i->f-> ->n->e->e->d->e->d->)->:->
+->
+-> -> -> ->--> ->F->i->l->e->:-> ->`->t->e->s->t->s->/->t->e->s->t->_->[->m->o->d->u->l->e->_->n->a->m->e->]->.->p->y->`->
+->
+-> -> -> ->--> ->I->m->p->o->r->t-> ->u->n->i->t->t->e->s->t-> ->o->r-> ->u->s->e-> ->p->y->t->e->s->t->
+->
+-> -> -> ->--> ->F->o->l->l->o->w-> ->e->x->i->s->t->i->n->g-> ->t->e->s->t-> ->p->a->t->t->e->r->n->s->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->d->o->c->s->t->r->i->n->g->s-> ->e->x->p->l->a->i->n->i->n->g-> ->t->e->s->t-> ->i->n->t->e->n->t->
+->
+->
+->
+->4->.-> ->*->*->I->m->p->l->e->m->e->n->t-> ->U->n->i->t-> ->T->e->s->t->s->*->*->:->
+->
+-> -> -> ->--> ->O->n->e-> ->t->e->s->t-> ->p->e->r-> ->s->c->e->n->a->r->i->o->
+->
+-> -> -> ->--> ->D->e->s->c->r->i->p->t->i->v->e-> ->t->e->s->t-> ->n->a->m->e->s->:-> ->`->t->e->s->t->_->[->f->u->n->c->t->i->o->n->]->_->[->c->o->n->d->i->t->i->o->n->]->_->[->e->x->p->e->c->t->e->d->_->r->e->s->u->l->t->]->`->
+->
+-> -> -> ->--> ->U->s->e-> ->a->s->s->e->r->t->i->o->n->s-> ->t->o-> ->v->e->r->i->f->y-> ->b->e->h->a->v->i->o->r->
+->
+-> -> -> ->--> ->M->o->c->k-> ->e->x->t->e->r->n->a->l-> ->d->e->p->e->n->d->e->n->c->i->e->s->
+->
+-> -> -> ->--> ->N->o-> ->h->a->r->d->c->o->d->e->d-> ->p->a->t->h->s-> ->o->r-> ->c->o->n->f->i->g->u->r->a->t->i->o->n->
+->
+->
+->
+->5->.-> ->*->*->T->e->s->t-> ->S->e->t->u->p->/->T->e->a->r->d->o->w->n->*->*->:->
+->
+-> -> -> ->--> ->U->s->e-> ->f->i->x->t->u->r->e->s-> ->f->o->r-> ->s->h->a->r->e->d-> ->t->e->s->t-> ->d->a->t->a->
+->
+-> -> -> ->--> ->C->l->e->a->n-> ->u->p-> ->r->e->s->o->u->r->c->e->s-> ->a->f->t->e->r-> ->t->e->s->t->s->
+->
+-> -> -> ->--> ->I->s->o->l->a->t->e-> ->t->e->s->t->s-> ->(->n->o-> ->i->n->t->e->r->d->e->p->e->n->d->e->n->c->i->e->s->)->
+->
+-> -> -> ->--> ->U->s->e-> ->t->e->m->p->o->r->a->r->y-> ->d->i->r->e->c->t->o->r->i->e->s-> ->f->o->r-> ->f->i->l->e-> ->o->p->e->r->a->t->i->o->n->s->
+->
+->
+->
+->6->.-> ->*->*->R->u->n-> ->T->e->s->t->s->*->*->:->
+->
+-> -> -> ->--> ->R->u->n-> ->w->i->t->h-> ->p->y->t->e->s->t->:-> ->`->p->y->t->e->s->t-> ->t->e->s->t->s->/->t->e->s->t->_->[->m->o->d->u->l->e->]->.->p->y->`->
+->
+-> -> -> ->--> ->V->e->r->i->f->y-> ->a->l->l-> ->t->e->s->t->s-> ->p->a->s->s->
+->
+-> -> -> ->--> ->C->h->e->c->k-> ->c->o->v->e->r->a->g->e->:-> ->`->p->y->t->e->s->t-> ->-->-->c->o->v->=->c->o->d->e->s->e->n->t->i->n->e->l-> ->t->e->s->t->s->/->`->
+->
+-> -> -> ->--> ->T->a->r->g->e->t->:-> ->1->0->0->%-> ->c->o->v->e->r->a->g->e-> ->f->o->r-> ->n->e->w-> ->c->o->d->e->
+->
+->
+->
+->7->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->A->l->l-> ->t->e->s->t->s-> ->p->a->s->s-> ->
+->
+-> -> -> ->--> ->C->o->v->e->r->a->g->e-> ->i->s-> ->1->0->0->%-> ->f->o->r-> ->n->e->w-> ->c->o->d->e-> ->
+->
+-> -> -> ->--> ->N->o-> ->e->x->t->e->r->n->a->l-> ->d->e->p->e->n->d->e->n->c->i->e->s-> ->w->i->t->h->o->u->t-> ->m->o->c->k->i->n->g-> ->
+->
+-> -> -> ->--> ->T->e->s->t-> ->r->u->n->s-> ->i->n-> -><-> ->1-> ->s->e->c->o->n->d-> ->(->u->n->l->e->s->s-> ->i->n->t->e->g->r->a->t->i->o->n->)-> ->
+->
+->
+->
+->8->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->t->e->s->t->:-> ->a->d->d-> ->u->n->i->t-> ->t->e->s->t->s-> ->f->o->r-> ->[->m->o->d->u->l->e->/->f->u->n->c->t->i->o->n->]->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->t->e->s->t-> ->f->i->l->e-> ->a->n->d-> ->a->n->y-> ->f->i->x->t->u->r->e->s->
+->
+-> -> -> ->--> ->C->o->m->m->i->t-> ->w->i->t->h-> ->c->o->d->e-> ->b->e->i->n->g-> ->t->e->s->t->e->d->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->2->:-> ->T->e->s->t-> ->a->n-> ->E->x->i->s->t->i->n->g-> ->F->e->a->t->u->r->e-> ->(->R->e->g->r->e->s->s->i->o->n-> ->T->e->s->t->)->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->B->u->g-> ->d->i->s->c->o->v->e->r->e->d-> ->o->r-> ->e->x->i->s->t->i->n->g-> ->b->e->h->a->v->i->o->r-> ->n->e->e->d->s-> ->v->e->r->i->f->i->c->a->t->i->o->n->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->U->n->d->e->r->s->t->a->n->d-> ->B->e->h->a->v->i->o->r->*->*->:->
+->
+-> -> -> ->--> ->W->h->a->t-> ->s->h->o->u->l->d-> ->t->h->e-> ->c->o->d->e-> ->d->o->?->
+->
+-> -> -> ->--> ->W->h->a->t-> ->i->s-> ->i->t-> ->c->u->r->r->e->n->t->l->y-> ->d->o->i->n->g-> ->w->r->o->n->g->?->
+->
+-> -> -> ->--> ->C->r->e->a->t->e-> ->m->i->n->i->m->a->l-> ->r->e->p->r->o->d->u->c->t->i->o->n-> ->c->a->s->e->
+->
+->
+->
+->2->.-> ->*->*->C->h->e->c->k-> ->E->x->i->s->t->i->n->g-> ->T->e->s->t->s->*->*->:->
+->
+-> -> -> ->--> ->L->o->o->k-> ->f->o->r-> ->e->x->i->s->t->i->n->g-> ->t->e->s->t-> ->c->o->v->e->r->a->g->e->
+->
+-> -> -> ->--> ->I->d->e->n->t->i->f->y-> ->w->h->a->t-> ->t->e->s->t->s-> ->a->r->e-> ->m->i->s->s->i->n->g->
+->
+-> -> -> ->--> ->P->l->a->n-> ->g->a->p-> ->c->o->v->e->r->a->g->e->
+->
+->
+->
+->3->.-> ->*->*->W->r->i->t->e-> ->F->a->i->l->i->n->g-> ->T->e->s->t-> ->F->i->r->s->t->*->*->:->
+->
+-> -> -> ->--> ->C->r->e->a->t->e-> ->t->e->s->t-> ->t->h->a->t-> ->d->e->m->o->n->s->t->r->a->t->e->s-> ->t->h->e-> ->b->u->g->/->g->a->p->
+->
+-> -> -> ->--> ->T->e->s->t-> ->s->h->o->u->l->d-> ->f->a->i->l-> ->w->i->t->h-> ->c->u->r->r->e->n->t-> ->c->o->d->e->
+->
+-> -> -> ->--> ->U->s->e-> ->d->e->s->c->r->i->p->t->i->v->e-> ->t->e->s->t-> ->n->a->m->e->
+->
+-> -> -> ->--> ->D->o->c->u->m->e->n->t-> ->e->x->p->e->c->t->e->d-> ->v->s->.-> ->a->c->t->u->a->l-> ->b->e->h->a->v->i->o->r-> ->i->n-> ->t->e->s->t->
+->
+->
+->
+->4->.-> ->*->*->I->m->p->l->e->m->e->n->t-> ->F->i->x->*->*->:->
+->
+-> -> -> ->--> ->M->a->k->e-> ->m->i->n->i->m->a->l-> ->c->h->a->n->g->e-> ->t->o-> ->f->i->x-> ->i->s->s->u->e->
+->
+-> -> -> ->--> ->V->e->r->i->f->y-> ->t->e->s->t-> ->n->o->w-> ->p->a->s->s->e->s->
+->
+-> -> -> ->--> ->R->u->n-> ->f->u->l->l-> ->t->e->s->t-> ->s->u->i->t->e-> ->t->o-> ->v->e->r->i->f->y-> ->n->o-> ->r->e->g->r->e->s->s->i->o->n->s->
+->
+-> -> -> ->--> ->A->d->d-> ->c->o->m->m->e->n->t->s-> ->i->f-> ->f->i->x-> ->i->s-> ->c->o->m->p->l->e->x->
+->
+->
+->
+->5->.-> ->*->*->A->d->d-> ->E->d->g->e-> ->C->a->s->e-> ->T->e->s->t->s->*->*->:->
+->
+-> -> -> ->--> ->W->h->a->t-> ->o->t->h->e->r-> ->c->o->n->d->i->t->i->o->n->s-> ->c->o->u->l->d-> ->b->r->e->a->k-> ->t->h->i->s->?->
+->
+-> -> -> ->--> ->A->d->d-> ->t->e->s->t->s-> ->f->o->r-> ->r->e->l->a->t->e->d-> ->s->c->e->n->a->r->i->o->s->
+->
+-> -> -> ->--> ->T->e->s->t-> ->e->r->r->o->r-> ->c->o->n->d->i->t->i->o->n->s->
+->
+-> -> -> ->--> ->T->e->s->t-> ->b->o->u->n->d->a->r->y-> ->v->a->l->u->e->s->
+->
+->
+->
+->6->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->N->e->w-> ->t->e->s->t-> ->p->a->s->s->e->s-> ->
+->
+-> -> -> ->--> ->A->l->l-> ->e->x->i->s->t->i->n->g-> ->t->e->s->t->s-> ->s->t->i->l->l-> ->p->a->s->s-> ->
+->
+-> -> -> ->--> ->C->o->v->e->r->a->g->e-> ->i->n->c->r->e->a->s->e->d-> ->o->r-> ->m->a->i->n->t->a->i->n->e->d-> ->
+->
+-> -> -> ->--> ->N->o-> ->p->e->r->f->o->r->m->a->n->c->e-> ->r->e->g->r->e->s->s->i->o->n-> ->
+->
+->
+->
+->7->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->t->e->s->t->:-> ->a->d->d-> ->r->e->g->r->e->s->s->i->o->n-> ->t->e->s->t-> ->f->o->r-> ->[->i->s->s->u->e->]->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->b->o->t->h-> ->t->e->s->t-> ->a->n->d-> ->f->i->x-> ->i->n-> ->s->a->m->e-> ->c->o->m->m->i->t-> ->o->r-> ->s->e->p->a->r->a->t->e->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->3->:-> ->I->n->t->e->g->r->a->t->i->o->n-> ->T->e->s->t-> ->f->o->r-> ->M->u->l->t->i->-->M->o->d->u->l->e-> ->W->o->r->k->f->l->o->w->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->F->e->a->t->u->r->e-> ->i->n->v->o->l->v->e->s-> ->m->u->l->t->i->p->l->e-> ->m->o->d->u->l->e->s-> ->o->r-> ->c->o->m->p->o->n->e->n->t->s->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->D->e->f->i->n->e-> ->W->o->r->k->f->l->o->w->*->*->:->
+->
+-> -> -> ->--> ->W->h->a->t-> ->i->s-> ->t->h->e-> ->e->n->d->-->t->o->-->e->n->d-> ->s->c->e->n->a->r->i->o->?->
+->
+-> -> -> ->--> ->W->h->i->c->h-> ->m->o->d->u->l->e->s-> ->a->r->e-> ->i->n->v->o->l->v->e->d->?->
+->
+-> -> -> ->--> ->W->h->a->t-> ->a->r->e-> ->t->h->e-> ->s->u->c->c->e->s->s-> ->c->r->i->t->e->r->i->a->?->
+->
+->
+->
+->2->.-> ->*->*->P->l->a->n-> ->T->e->s->t-> ->S->t->r->u->c->t->u->r->e->*->*->:->
+->
+-> -> -> ->--> ->C->r->e->a->t->e-> ->t->e->s->t-> ->i->n-> ->e->x->i->s->t->i->n->g-> ->`->t->e->s->t->s->/->t->e->s->t->_->i->n->t->e->g->r->a->t->i->o->n->.->p->y->`-> ->o->r-> ->n->e->w-> ->f->i->l->e->
+->
+-> -> -> ->--> ->U->s->e-> ->f->i->x->t->u->r->e->s-> ->f->o->r-> ->s->e->t->u->p->
+->
+-> -> -> ->--> ->T->e->s->t-> ->c->o->m->p->l->e->t->e-> ->w->o->r->k->f->l->o->w->
+->
+-> -> -> ->--> ->V->e->r->i->f->y-> ->f->i->n->a->l-> ->s->t->a->t->e->
+->
+->
+->
+->3->.-> ->*->*->C->r->e->a->t->e-> ->T->e->s->t->*->*->:->
+->
+-> -> -> ->--> ->S->e->t->u->p-> ->a->l->l-> ->r->e->q->u->i->r->e->d-> ->d->e->p->e->n->d->e->n->c->i->e->s->
+->
+-> -> -> ->--> ->C->a->l->l-> ->w->o->r->k->f->l->o->w-> ->w->i->t->h-> ->t->e->s->t-> ->d->a->t->a->
+->
+-> -> -> ->--> ->A->s->s->e->r->t-> ->e->x->p->e->c->t->e->d-> ->r->e->s->u->l->t->s->
+->
+-> -> -> ->--> ->C->l->e->a->n-> ->u->p-> ->r->e->s->o->u->r->c->e->s->
+->
+->
+->
+->4->.-> ->*->*->M->o->c->k-> ->E->x->t->e->r->n->a->l-> ->S->e->r->v->i->c->e->s->*->*-> ->(->i->f-> ->a->n->y->)->:->
+->
+-> -> -> ->--> ->D->o->n->'->t-> ->c->a->l->l-> ->r->e->a->l-> ->A->P->I->s->
+->
+-> -> -> ->--> ->M->o->c->k-> ->n->e->t->w->o->r->k-> ->c->a->l->l->s->
+->
+-> -> -> ->--> ->M->o->c->k-> ->f->i->l->e-> ->s->y->s->t->e->m-> ->(->i->f-> ->p->o->s->s->i->b->l->e->)->
+->
+-> -> -> ->--> ->K->e->e->p-> ->t->e->s->t-> ->i->s->o->l->a->t->e->d-> ->a->n->d-> ->f->a->s->t->
+->
+->
+->
+->5->.-> ->*->*->T->e->s->t-> ->E->r->r->o->r-> ->P->a->t->h->s->*->*->:->
+->
+-> -> -> ->--> ->W->h->a->t-> ->i->f-> ->m->o->d->u->l->e-> ->A-> ->f->a->i->l->s->?->
+->
+-> -> -> ->--> ->W->h->a->t-> ->i->f-> ->m->o->d->u->l->e-> ->B-> ->t->i->m->e->s-> ->o->u->t->?->
+->
+-> -> -> ->--> ->R->e->c->o->v->e->r->y-> ->m->e->c->h->a->n->i->s->m->s-> ->t->e->s->t->e->d->?->
+->
+-> -> -> ->--> ->E->r->r->o->r-> ->p->r->o->p->a->g->a->t->i->o->n-> ->c->o->r->r->e->c->t->?->
+->
+->
+->
+->6->.-> ->*->*->P->e->r->f->o->r->m->a->n->c->e-> ->C->h->e->c->k->*->*->:->
+->
+-> -> -> ->--> ->I->s-> ->t->e->s->t-> ->r->u->n->n->i->n->g-> ->i->n-> ->r->e->a->s->o->n->a->b->l->e-> ->t->i->m->e->?-> ->(-><-> ->1->0-> ->s->e->c->o->n->d->s-> ->u->n->l->e->s->s-> ->l->o->n->g->-->r->u->n->n->i->n->g->)->
+->
+-> -> -> ->--> ->A->n->y-> ->o->b->v->i->o->u->s-> ->p->e->r->f->o->r->m->a->n->c->e-> ->i->s->s->u->e->s->?->
+->
+-> -> -> ->--> ->M->e->m->o->r->y-> ->u->s->a->g->e-> ->a->c->c->e->p->t->a->b->l->e->?->
+->
+->
+->
+->7->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->I->n->t->e->g->r->a->t->i->o->n-> ->t->e->s->t-> ->p->a->s->s->e->s-> ->
+->
+-> -> -> ->--> ->A->l->l-> ->u->n->i->t-> ->t->e->s->t->s-> ->s->t->i->l->l-> ->p->a->s->s-> ->
+->
+-> -> -> ->--> ->C->o->v->e->r->a->g->e-> ->n->o->t-> ->d->e->c->r->e->a->s->e->d-> ->
+->
+-> -> -> ->--> ->T->e->s->t-> ->i->s-> ->m->a->i->n->t->a->i->n->a->b->l->e-> ->a->n->d-> ->c->l->e->a->r-> ->
+->
+->
+->
+->8->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->t->e->s->t->:-> ->a->d->d-> ->i->n->t->e->g->r->a->t->i->o->n-> ->t->e->s->t-> ->f->o->r-> ->[->f->e->a->t->u->r->e->]->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->a->l->l-> ->r->e->l->a->t->e->d-> ->f->i->x->e->s->/->c->h->a->n->g->e->s->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->4->:-> ->A->d->d-> ->T->e->s->t-> ->F->i->x->t->u->r->e-> ->f->o->r-> ->S->h->a->r->e->d-> ->D->a->t->a->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->M->u->l->t->i->p->l->e-> ->t->e->s->t->s-> ->n->e->e->d-> ->s->a->m->e-> ->s->e->t->u->p-> ->d->a->t->a-> ->o->r-> ->o->b->j->e->c->t->s->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->I->d->e->n->t->i->f->y-> ->S->h->a->r->e->d-> ->N->e->e->d->s->*->*->:->
+->
+-> -> -> ->--> ->W->h->a->t-> ->s->e->t->u->p-> ->i->s-> ->r->e->p->e->a->t->e->d-> ->a->c->r->o->s->s-> ->t->e->s->t->s->?->
+->
+-> -> -> ->--> ->W->h->a->t-> ->t->e->s->t-> ->d->a->t->a-> ->i->s-> ->c->o->m->m->o->n->?->
+->
+-> -> -> ->--> ->W->h->a->t-> ->r->e->s->o->u->r->c->e->s-> ->n->e->e->d-> ->c->l->e->a->n->u->p->?->
+->
+->
+->
+->2->.-> ->*->*->C->r->e->a->t->e-> ->F->i->x->t->u->r->e-> ->F->i->l->e->*->*-> ->(->i->f-> ->n->e->e->d->e->d->)->:->
+->
+-> -> -> ->--> ->F->i->l->e->:-> ->`->t->e->s->t->s->/->c->o->n->f->t->e->s->t->.->p->y->`-> ->(->p->y->t->e->s->t-> ->s->t->a->n->d->a->r->d->)->
+->
+-> -> -> ->--> ->D->e->f->i->n->e-> ->r->e->u->s->a->b->l->e-> ->f->i->x->t->u->r->e->s->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->d->o->c->s->t->r->i->n->g->s->
+->
+-> -> -> ->--> ->D->o->c->u->m->e->n->t-> ->f->i->x->t->u->r->e-> ->p->a->r->a->m->e->t->e->r->s->
+->
+->
+->
+->3->.-> ->*->*->I->m->p->l->e->m->e->n->t-> ->F->i->x->t->u->r->e->*->*->:->
+->
+-> -> -> ->--> ->U->s->e-> ->p->y->t->e->s->t->.->f->i->x->t->u->r->e-> ->o->r-> ->u->n->i->t->t->e->s->t-> ->s->e->t->U->p->
+->
+-> -> -> ->--> ->C->r->e->a->t->e-> ->o->b->j->e->c->t->s->/->d->a->t->a-> ->n->e->e->d->e->d-> ->b->y-> ->t->e->s->t->s->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->c->l->e->a->n->u->p-> ->i->n-> ->t->e->a->r->d->o->w->n->
+->
+-> -> -> ->--> ->M->a->k->e-> ->f->i->x->t->u->r->e-> ->c->o->n->f->i->g->u->r->a->b->l->e-> ->i->f-> ->n->e->e->d->e->d->
+->
+->
+->
+->4->.-> ->*->*->U->s->e-> ->i->n-> ->T->e->s->t->s->*->*->:->
+->
+-> -> -> ->--> ->A->d->d-> ->f->i->x->t->u->r->e-> ->a->s-> ->p->a->r->a->m->e->t->e->r-> ->t->o-> ->t->e->s->t-> ->f->u->n->c->t->i->o->n->s->
+->
+-> -> -> ->--> ->U->s->e-> ->f->i->x->t->u->r->e-> ->d->a->t->a-> ->i->n-> ->t->e->s->t->
+->
+-> -> -> ->--> ->V->e->r->i->f->y-> ->f->i->x->t->u->r->e-> ->i->s->o->l->a->t->i->o->n-> ->(->i->n->d->e->p->e->n->d->e->n->t-> ->t->e->s->t->s->)->
+->
+-> -> -> ->--> ->N->o-> ->s->t->a->t->e-> ->s->h->a->r->e->d-> ->b->e->t->w->e->e->n-> ->t->e->s->t-> ->r->u->n->s->
+->
+->
+->
+->5->.-> ->*->*->D->o->c->u->m->e->n->t->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->D->o->c->u->m->e->n->t-> ->w->h->a->t-> ->f->i->x->t->u->r->e-> ->p->r->o->v->i->d->e->s->
+->
+-> -> -> ->--> ->D->o->c->u->m->e->n->t-> ->a->n->y-> ->s->i->d->e-> ->e->f->f->e->c->t->s->
+->
+-> -> -> ->--> ->N->o->t->e-> ->w->h->e->n->/->w->h->y-> ->t->o-> ->u->s->e-> ->t->h->i->s-> ->f->i->x->t->u->r->e->
+->
+-> -> -> ->--> ->L->i->n->k-> ->t->o-> ->t->e->s->t->s-> ->u->s->i->n->g-> ->i->t->
+->
+->
+->
+->6->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->T->e->s->t->s-> ->u->s->i->n->g-> ->f->i->x->t->u->r->e-> ->p->a->s->s-> ->
+->
+-> -> -> ->--> ->F->i->x->t->u->r->e-> ->p->r->o->p->e->r->l->y-> ->c->l->e->a->n->s-> ->u->p-> ->
+->
+-> -> -> ->--> ->F->i->x->t->u->r->e-> ->i->s-> ->r->e->u->s->a->b->l->e-> ->a->c->r->o->s->s-> ->t->e->s->t->s-> ->
+->
+-> -> -> ->--> ->N->o-> ->t->e->s->t-> ->i->n->t->e->r->d->e->p->e->n->d->e->n->c->i->e->s-> ->c->r->e->a->t->e->d-> ->
+->
+->
+->
+->7->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->t->e->s->t->:-> ->a->d->d-> ->[->f->i->x->t->u->r->e-> ->n->a->m->e->]-> ->f->i->x->t->u->r->e->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->f->i->x->t->u->r->e-> ->d->e->f->i->n->i->t->i->o->n-> ->a->n->d-> ->t->e->s->t->s-> ->u->s->i->n->g-> ->i->t->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->Q->u->i->c->k-> ->T->e->s->t-> ->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->T->r->e->e->
+->
+->
+->
+->*->*->W->h->a->t-> ->a->r->e-> ->y->o->u-> ->t->e->s->t->i->n->g->?->*->*->
+->
+->
+->
+->--> ->N->e->w-> ->f->u->n->c->t->i->o->n->/->m->e->t->h->o->d->?-> ->->-> ->U->s->e-> ->"->U->n->i->t-> ->T->e->s->t->"-> ->p->r->o->c->e->d->u->r->e->
+->
+->--> ->N->e->w-> ->m->o->d->u->l->e->?-> ->->-> ->C->r->e->a->t->e-> ->t->e->s->t-> ->f->i->l->e-> ->w->i->t->h-> ->u->n->i->t-> ->t->e->s->t->s-> ->f->o->r-> ->a->l->l-> ->f->u->n->c->t->i->o->n->s->
+->
+->--> ->E->x->i->s->t->i->n->g-> ->f->e->a->t->u->r->e-> ->(->b->u->g-> ->o->r-> ->r->e->g->r->e->s->s->i->o->n->)->?-> ->->-> ->U->s->e-> ->"->R->e->g->r->e->s->s->i->o->n-> ->T->e->s->t->"-> ->p->r->o->c->e->d->u->r->e->
+->
+->--> ->M->u->l->t->i->-->m->o->d->u->l->e-> ->w->o->r->k->f->l->o->w->?-> ->->-> ->U->s->e-> ->"->I->n->t->e->g->r->a->t->i->o->n-> ->T->e->s->t->"-> ->p->r->o->c->e->d->u->r->e->
+->
+->--> ->S->h->a->r->e->d-> ->t->e->s->t-> ->d->a->t->a->?-> ->->-> ->U->s->e-> ->"->T->e->s->t-> ->F->i->x->t->u->r->e->"-> ->p->r->o->c->e->d->u->r->e->
+->
+->--> ->C->L->I-> ->c->o->m->m->a->n->d->?-> ->->-> ->C->r->e->a->t->e-> ->t->e->s->t-> ->i->n-> ->t->e->s->t->_->c->l->i->.->p->y-> ->u->s->i->n->g-> ->m->o->c->k->i->n->g->
+->
+->
+->
+->*->*->H->o->w-> ->c->o->m->p->l->e->x-> ->i->s-> ->t->h->e-> ->t->e->s->t->?->*->*->
+->
+->
+->
+->--> ->S->i->n->g->l->e-> ->f->u->n->c->t->i->o->n-> ->c->a->l->l->?-> ->->-> ->U->n->i->t-> ->t->e->s->t->
+->
+->--> ->M->u->l->t->i->p->l->e-> ->m->o->d->u->l->e-> ->i->n->t->e->r->a->c->t->i->o->n->s->?-> ->->-> ->I->n->t->e->g->r->a->t->i->o->n-> ->t->e->s->t->
+->
+->--> ->L->o->n->g->-->r->u->n->n->i->n->g-> ->s->c->e->n->a->r->i->o->?-> ->->-> ->C->o->n->s->i->d->e->r-> ->i->f-> ->i->t-> ->c->a->n-> ->b->e-> ->u->n->i->t-> ->t->e->s->t->e->d->,-> ->s->e->p->a->r->a->t->e-> ->i->n->t->e->g->r->a->t->i->o->n-> ->t->e->s->t->s->
+->
+->--> ->E->x->t->e->r->n->a->l-> ->s->e->r->v->i->c->e-> ->c->a->l->l->?-> ->->-> ->M->o->c->k-> ->i->t->,-> ->d->o->n->'->t-> ->c->a->l->l-> ->r->e->a->l-> ->s->e->r->v->i->c->e->
+->
+->
+->
+->*->*->W->h->a->t-> ->t->e->s->t-> ->t->y->p->e-> ->t->o-> ->u->s->e->?->*->*->
+->
+->
+->
+->--> ->M->o->s->t-> ->t->e->s->t->s->:-> ->p->y->t->e->s->t-> ->w->i->t->h-> ->f->i->x->t->u->r->e->s->
+->
+->--> ->C->L->I-> ->t->e->s->t->s->:-> ->M->o->c->k-> ->s->u->b->p->r->o->c->e->s->s-> ->c->a->l->l->s->,-> ->t->e->s->t-> ->w->i->t->h-> ->f->i->x->t->u->r->e->s->
+->
+->--> ->C->o->n->f->i->g->u->r->a->t->i->o->n-> ->t->e->s->t->s->:-> ->T->e->s->t-> ->w->i->t->h-> ->t->e->m->p-> ->f->i->l->e->s->,-> ->c->l->e->a->n-> ->u->p-> ->a->f->t->e->r->
+->
+->--> ->D->a->t->a->b->a->s->e->/->f->i->l->e-> ->t->e->s->t->s->:-> ->U->s->e-> ->t->e->m->p-> ->d->i->r->e->c->t->o->r->i->e->s-> ->a->n->d-> ->m->o->c->k->s->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->V->a->l->i->d->a->t->i->o->n-> ->C->h->e->c->k->l->i->s->t-> ->(->B->e->f->o->r->e-> ->C->o->m->m->i->t->)->
+->
+->
+->
+->*->*->T->e->s->t-> ->Q->u->a->l->i->t->y->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->T->e->s->t-> ->n->a->m->e-> ->c->l->e->a->r->l->y-> ->d->e->s->c->r->i->b->e->s-> ->w->h->a->t-> ->i->s-> ->b->e->i->n->g-> ->t->e->s->t->e->d->
+->
+->--> ->[-> ->]-> ->T->e->s->t-> ->h->a->s-> ->s->i->n->g->l->e-> ->r->e->s->p->o->n->s->i->b->i->l->i->t->y->/->a->s->s->e->r->t->i->o->n-> ->g->r->o->u->p->
+->
+->--> ->[-> ->]-> ->N->o-> ->h->a->r->d->c->o->d->e->d-> ->p->a->t->h->s-> ->o->r-> ->c->o->n->f->i->g->u->r->a->t->i->o->n->
+->
+->--> ->[-> ->]-> ->N->o-> ->e->x->t->e->r->n->a->l-> ->A->P->I-> ->c->a->l->l->s-> ->(->m->o->c->k->e->d-> ->i->n->s->t->e->a->d->)->
+->
+->--> ->[-> ->]-> ->S->e->t->u->p-> ->a->n->d-> ->t->e->a->r->d->o->w->n-> ->p->r->o->p->e->r->l->y-> ->h->a->n->d->l->e-> ->r->e->s->o->u->r->c->e->s->
+->
+->
+->
+->*->*->C->o->v->e->r->a->g->e->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->S->u->c->c->e->s->s-> ->c->a->s->e-> ->t->e->s->t->e->d->
+->
+->--> ->[-> ->]-> ->E->r->r->o->r-> ->c->a->s->e-> ->t->e->s->t->e->d->
+->
+->--> ->[-> ->]-> ->E->d->g->e-> ->c->a->s->e-> ->t->e->s->t->e->d->
+->
+->--> ->[-> ->]-> ->N->e->w-> ->c->o->d->e-> ->h->a->s-> ->1->0->0->%-> ->c->o->v->e->r->a->g->e->
+->
+->--> ->[-> ->]-> ->O->v->e->r->a->l->l-> ->c->o->v->e->r->a->g->e-> ->n->o->t-> ->d->e->c->r->e->a->s->e->d->
+->
+->
+->
+->*->*->P->e->r->f->o->r->m->a->n->c->e->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->U->n->i->t-> ->t->e->s->t-> ->c->o->m->p->l->e->t->e->s-> -><-> ->1-> ->s->e->c->o->n->d->
+->
+->--> ->[-> ->]-> ->I->n->t->e->g->r->a->t->i->o->n-> ->t->e->s->t-> ->c->o->m->p->l->e->t->e->s-> -><-> ->1->0-> ->s->e->c->o->n->d->s->
+->
+->--> ->[-> ->]-> ->N->o-> ->o->b->v->i->o->u->s-> ->p->e->r->f->o->r->m->a->n->c->e-> ->i->s->s->u->e->s->
+->
+->--> ->[-> ->]-> ->N->o-> ->u->n->n->e->c->e->s->s->a->r->y-> ->l->o->o->p->s-> ->o->r-> ->w->a->i->t->s->
+->
+->
+->
+->*->*->I->s->o->l->a->t->i->o->n->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->T->e->s->t-> ->p->a->s->s->e->s-> ->i->n->d->e->p->e->n->d->e->n->t->l->y->
+->
+->--> ->[-> ->]-> ->T->e->s->t-> ->p->a->s->s->e->s-> ->i->n-> ->a->n->y-> ->o->r->d->e->r->
+->
+->--> ->[-> ->]-> ->T->e->s->t-> ->d->o->e->s->n->'->t-> ->d->e->p->e->n->d-> ->o->n-> ->o->t->h->e->r-> ->t->e->s->t->s->
+->
+->--> ->[-> ->]-> ->N->o-> ->s->h->a->r->e->d-> ->s->t->a->t->e-> ->b->e->t->w->e->e->n-> ->t->e->s->t->s->
+->
+->--> ->[-> ->]-> ->C->l->e->a->n->u->p-> ->p->r->o->p->e->r->l->y-> ->r->e->m->o->v->e->s-> ->s->i->d->e-> ->e->f->f->e->c->t->s->
+->
+->
+->
+->*->*->C->o->m->p->l->i->a->n->c->e->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->N->o-> ->p->e->r->m->a->n->e->n->t-> ->f->i->l->e-> ->m->o->d->i->f->i->c->a->t->i->o->n->s->
+->
+->--> ->[-> ->]-> ->N->o-> ->e->x->t->e->r->n->a->l-> ->n->e->t->w->o->r->k-> ->c->a->l->l->s->
+->
+->--> ->[-> ->]-> ->N->o-> ->h->a->r->d->c->o->d->e->d-> ->c->r->e->d->e->n->t->i->a->l->s->
+->
+->--> ->[-> ->]-> ->P->r->o->p->e->r-> ->t->e->m->p-> ->f->i->l->e->/->d->i->r->e->c->t->o->r->y-> ->u->s->a->g->e->
+->
+->--> ->[-> ->]-> ->N->o->n->-->d->e->s->t->r->u->c->t->i->v->e-> ->t->e->s->t->i->n->g-> ->m->a->i->n->t->a->i->n->e->d->
+->
+->
+->
+->*->*->D->o->c->u->m->e->n->t->a->t->i->o->n->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->T->e->s->t-> ->h->a->s-> ->c->l->e->a->r-> ->d->o->c->s->t->r->i->n->g->
+->
+->--> ->[-> ->]-> ->T->e->s->t-> ->n->a->m->e-> ->i->s-> ->d->e->s->c->r->i->p->t->i->v->e->
+->
+->--> ->[-> ->]-> ->C->o->m->p->l->e->x-> ->t->e->s->t-> ->h->a->s-> ->c->o->m->m->e->n->t->s->
+->
+->--> ->[-> ->]-> ->F->i->x->t->u->r->e-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->c->l->e->a->r->
+->
+->--> ->[-> ->]-> ->L->i->n->k->e->d-> ->t->o-> ->c->o->d->e-> ->b->e->i->n->g-> ->t->e->s->t->e->d->
+->
+->
+->
+->*->*->F->r->a->m->e->w->o->r->k->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->U->s->e->s-> ->p->y->t->e->s->t-> ->(->c->u->r->r->e->n->t-> ->s->t->a->n->d->a->r->d->)->
+->
+->--> ->[-> ->]-> ->F->o->l->l->o->w->s-> ->e->x->i->s->t->i->n->g-> ->t->e->s->t-> ->p->a->t->t->e->r->n->s->
+->
+->--> ->[-> ->]-> ->C->o->m->p->a->t->i->b->l->e-> ->w->i->t->h-> ->p->y->t->e->s->t->.->i->n->i->
+->
+->--> ->[-> ->]-> ->W->o->r->k->s-> ->w->i->t->h-> ->c->o->n->t->i->n->u->o->u->s-> ->i->n->t->e->g->r->a->t->i->o->n->
+->
+->--> ->[-> ->]-> ->D->o->e->s->n->'->t-> ->r->e->q->u->i->r->e-> ->m->a->n->u->a->l-> ->s->e->t->u->p->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->C->o->m->m->o->n-> ->Q->u->e->s->t->i->o->n->s->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->H->o->w-> ->d->o-> ->I-> ->t->e->s->t-> ->c->o->d->e-> ->t->h->a->t-> ->r->e->a->d->s-> ->f->i->l->e->s->?->
+->
+->
+->
+->*->*->A->*->*->:-> ->U->s->e-> ->t->e->m->p->o->r->a->r->y-> ->d->i->r->e->c->t->o->r->i->e->s->:->
+->
+->
+->
+->`->`->`->p->y->t->h->o->n->
+->
+->i->m->p->o->r->t-> ->t->e->m->p->f->i->l->e->
+->
+->f->r->o->m-> ->p->a->t->h->l->i->b-> ->i->m->p->o->r->t-> ->P->a->t->h->
+->
+->
+->
+->d->e->f-> ->t->e->s->t->_->r->e->a->d->_->c->o->n->f->i->g->(->)->:->
+->
+-> -> -> -> ->w->i->t->h-> ->t->e->m->p->f->i->l->e->.->T->e->m->p->o->r->a->r->y->D->i->r->e->c->t->o->r->y->(->)-> ->a->s-> ->t->m->p->d->i->r->:->
+->
+-> -> -> -> -> -> -> -> ->c->o->n->f->i->g->_->f->i->l->e-> ->=-> ->P->a->t->h->(->t->m->p->d->i->r->)-> ->/-> ->'->t->e->s->t->.->j->s->o->n->'->
+->
+-> -> -> -> -> -> -> -> ->c->o->n->f->i->g->_->f->i->l->e->.->w->r->i->t->e->_->t->e->x->t->(->'->{->"->t->e->s->t->"->:-> ->t->r->u->e->}->'->)->
+->
+-> -> -> -> -> -> -> -> ->#-> ->T->e->s->t-> ->y->o->u->r-> ->c->o->d->e-> ->w->i->t->h-> ->c->o->n->f->i->g->_->f->i->l->e->
+->
+-> -> -> -> -> -> -> -> ->r->e->s->u->l->t-> ->=-> ->r->e->a->d->_->c->o->n->f->i->g->(->c->o->n->f->i->g->_->f->i->l->e->)->
+->
+-> -> -> -> -> -> -> -> ->a->s->s->e->r->t-> ->r->e->s->u->l->t->[->'->t->e->s->t->'->]-> ->=->=-> ->T->r->u->e->
+->
+->`->`->`->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->H->o->w-> ->d->o-> ->I-> ->t->e->s->t-> ->c->o->d->e-> ->t->h->a->t-> ->c->a->l->l->s-> ->e->x->t->e->r->n->a->l-> ->A->P->I->s->?->
+->
+->
+->
+->*->*->A->*->*->:-> ->M->o->c->k-> ->t->h->e-> ->A->P->I-> ->c->a->l->l->s->:->
+->
+->
+->
+->`->`->`->p->y->t->h->o->n->
+->
+->f->r->o->m-> ->u->n->i->t->t->e->s->t->.->m->o->c->k-> ->i->m->p->o->r->t-> ->p->a->t->c->h->
+->
+->
+->
+->@->p->a->t->c->h->(->'->m->o->d->u->l->e->.->e->x->t->e->r->n->a->l->_->a->p->i->.->g->e->t->_->d->a->t->a->'->)->
+->
+->d->e->f-> ->t->e->s->t->_->p->r->o->c->e->s->s->_->a->p->i->_->d->a->t->a->(->m->o->c->k->_->a->p->i->)->:->
+->
+-> -> -> -> ->m->o->c->k->_->a->p->i->.->r->e->t->u->r->n->_->v->a->l->u->e-> ->=-> ->{->"->s->t->a->t->u->s->"->:-> ->"->o->k->"->}->
+->
+-> -> -> -> ->r->e->s->u->l->t-> ->=-> ->p->r->o->c->e->s->s->_->d->a->t->a->(->)->
+->
+-> -> -> -> ->m->o->c->k->_->a->p->i->.->a->s->s->e->r->t->_->c->a->l->l->e->d->_->o->n->c->e->(->)->
+->
+->`->`->`->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->H->o->w-> ->d->o-> ->I-> ->t->e->s->t-> ->C->L->I-> ->c->o->m->m->a->n->d->s->?->
+->
+->
+->
+->*->*->A->*->*->:-> ->U->s->e-> ->c->l->i->c->k-> ->t->e->s->t->i->n->g-> ->o->r-> ->m->o->c->k-> ->s->u->b->p->r->o->c->e->s->s->:->
+->
+->
+->
+->`->`->`->p->y->t->h->o->n->
+->
+->f->r->o->m-> ->c->l->i->c->k->.->t->e->s->t->i->n->g-> ->i->m->p->o->r->t-> ->C->l->i->R->u->n->n->e->r->
+->
+->f->r->o->m-> ->c->o->d->e->s->e->n->t->i->n->e->l->.->c->l->i-> ->i->m->p->o->r->t-> ->m->a->i->n->_->c->o->m->m->a->n->d->
+->
+->
+->
+->d->e->f-> ->t->e->s->t->_->c->l->i->_->c->o->m->m->a->n->d->(->)->:->
+->
+-> -> -> -> ->r->u->n->n->e->r-> ->=-> ->C->l->i->R->u->n->n->e->r->(->)->
+->
+-> -> -> -> ->r->e->s->u->l->t-> ->=-> ->r->u->n->n->e->r->.->i->n->v->o->k->e->(->m->a->i->n->_->c->o->m->m->a->n->d->,-> ->[->'->-->-->h->e->l->p->'->]->)->
+->
+-> -> -> -> ->a->s->s->e->r->t-> ->r->e->s->u->l->t->.->e->x->i->t->_->c->o->d->e-> ->=->=-> ->0->
+->
+->`->`->`->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->W->h->a->t-> ->s->h->o->u->l->d-> ->I-> ->d->o-> ->i->f-> ->a-> ->t->e->s->t-> ->i->s-> ->s->l->o->w->?->
+->
+->
+->
+->*->*->A->*->*->:->
+->
+->
+->
+->1->.-> ->C->h->e->c->k-> ->i->f-> ->i->t->'->s-> ->c->a->l->l->i->n->g-> ->e->x->t->e->r->n->a->l-> ->s->e->r->v->i->c->e->s-> ->(->m->o->c->k-> ->i->n->s->t->e->a->d->)->
+->
+->2->.-> ->C->h->e->c->k-> ->f->o->r-> ->u->n->n->e->c->e->s->s->a->r->y-> ->l->o->o->p->s-> ->o->r-> ->w->a->i->t->s->
+->
+->3->.-> ->C->o->n->s->i->d->e->r-> ->i->f-> ->i->t-> ->s->h->o->u->l->d-> ->b->e-> ->a->n-> ->i->n->t->e->g->r->a->t->i->o->n-> ->t->e->s->t-> ->(->s->e->p->a->r->a->t->e-> ->f->r->o->m-> ->u->n->i->t-> ->t->e->s->t->s->)->
+->
+->4->.-> ->P->r->o->f->i->l->e-> ->t->h->e-> ->t->e->s->t-> ->t->o-> ->f->i->n->d-> ->t->h->e-> ->b->o->t->t->l->e->n->e->c->k->
+->
+->5->.-> ->O->p->t->i->m->i->z->e-> ->i->f-> ->p->o->s->s->i->b->l->e->;-> ->i->f-> ->n->o->t->,-> ->m->a->r->k-> ->a->s-> ->`->@->p->y->t->e->s->t->.->m->a->r->k->.->s->l->o->w->`->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->H->o->w-> ->d->o-> ->I-> ->s->k->i->p-> ->a-> ->t->e->s->t-> ->t->h->a->t-> ->I->'->m-> ->n->o->t-> ->r->e->a->d->y-> ->f->o->r->?->
+->
+->
+->
+->*->*->A->*->*->:-> ->U->s->e-> ->p->y->t->e->s->t-> ->m->a->r->k->e->r->s->:->
+->
+->
+->
+->`->`->`->p->y->t->h->o->n->
+->
+->@->p->y->t->e->s->t->.->m->a->r->k->.->s->k->i->p->(->r->e->a->s->o->n->=->"->N->o->t-> ->i->m->p->l->e->m->e->n->t->e->d-> ->y->e->t->"->)->
+->
+->d->e->f-> ->t->e->s->t->_->f->u->t->u->r->e->_->f->e->a->t->u->r->e->(->)->:->
+->
+-> -> -> -> ->p->a->s->s->
+->
+->
+->
+->@->p->y->t->e->s->t->.->m->a->r->k->.->x->f->a->i->l-> -> ->#-> ->E->x->p->e->c->t->e->d-> ->t->o-> ->f->a->i->l->
+->
+->d->e->f-> ->t->e->s->t->_->k->n->o->w->n->_->b->u->g->(->)->:->
+->
+-> -> -> -> ->p->a->s->s->
+->
+->`->`->`->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->C->a->n-> ->I-> ->t->e->s->t-> ->p->r->i->v->a->t->e-> ->m->e->t->h->o->d->s-> ->(->_->m->e->t->h->o->d->)->?->
+->
+->
+->
+->*->*->A->*->*->:-> ->G->e->n->e->r->a->l->l->y-> ->n->o-> ->--> ->t->e->s->t-> ->p->u->b->l->i->c-> ->A->P->I->.-> ->I->f-> ->y->o->u-> ->m->u->s->t->:->
+->
+->
+->
+->1->.-> ->Q->u->e->s->t->i->o->n-> ->i->f-> ->t->h->e-> ->m->e->t->h->o->d-> ->s->h->o->u->l->d-> ->b->e-> ->p->r->i->v->a->t->e->
+->
+->2->.-> ->C->o->n->s->i->d->e->r-> ->i->f-> ->i->t-> ->s->h->o->u->l->d-> ->b->e-> ->e->x->t->r->a->c->t->e->d-> ->t->o-> ->s->e->p->a->r->a->t->e-> ->m->o->d->u->l->e->
+->
+->3->.-> ->I->f-> ->t->r->u->l->y-> ->n->e->c->e->s->s->a->r->y->,-> ->t->e->s->t-> ->t->h->r->o->u->g->h-> ->p->u->b->l->i->c-> ->i->n->t->e->r->f->a->c->e->
+->
+->4->.-> ->D->o->c->u->m->e->n->t-> ->w->h->y-> ->t->e->s->t->i->n->g-> ->p->r->i->v->a->t->e-> ->m->e->t->h->o->d-> ->i->s-> ->n->e->e->d->e->d->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->R->u->n->n->i->n->g-> ->T->e->s->t->s->
+->
+->
+->
+->*->*->R->u->n-> ->a->l->l-> ->t->e->s->t->s->*->*->:->
+->
+->
+->
+->`->`->`->b->a->s->h->
+->
+->p->y->t->e->s->t->
+->
+->`->`->`->
+->
+->
+->
+->*->*->R->u->n-> ->s->p->e->c->i->f->i->c-> ->t->e->s->t-> ->f->i->l->e->*->*->:->
+->
+->
+->
+->`->`->`->b->a->s->h->
+->
+->p->y->t->e->s->t-> ->t->e->s->t->s->/->t->e->s->t->_->c->l->i->.->p->y->
+->
+->`->`->`->
+->
+->
+->
+->*->*->R->u->n-> ->w->i->t->h-> ->c->o->v->e->r->a->g->e->*->*->:->
+->
+->
+->
+->`->`->`->b->a->s->h->
+->
+->p->y->t->e->s->t-> ->-->-->c->o->v->=->c->o->d->e->s->e->n->t->i->n->e->l-> ->t->e->s->t->s->/->
+->
+->`->`->`->
+->
+->
+->
+->*->*->R->u->n-> ->o->n->l->y-> ->f->a->s->t-> ->t->e->s->t->s->*->*-> ->(->s->k->i->p-> ->s->l->o->w->)->:->
+->
+->
+->
+->`->`->`->b->a->s->h->
+->
+->p->y->t->e->s->t-> ->-->m-> ->"->n->o->t-> ->s->l->o->w->"->
+->
+->`->`->`->
+->
+->
+->
+->*->*->R->u->n-> ->w->i->t->h-> ->v->e->r->b->o->s->e-> ->o->u->t->p->u->t->*->*->:->
+->
+->
+->
+->`->`->`->b->a->s->h->
+->
+->p->y->t->e->s->t-> ->-->v->
+->
+->`->`->`->
+->
+->
+->
+->*->*->R->u->n-> ->a->n->d-> ->s->h->o->w-> ->p->r->i->n->t-> ->s->t->a->t->e->m->e->n->t->s->*->*->:->
+->
+->
+->
+->`->`->`->b->a->s->h->
+->
+->p->y->t->e->s->t-> ->-->s->
+->
+->`->`->`->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->R->e->f->e->r->e->n->c->e->s-> ->&-> ->L->i->n->k->s->
+->
+->
+->
+->*->*->C->o->r->e-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->*->*->:->
+->
+->
+->
+->--> ->G->l->o->b->a->l-> ->P->o->l->i->c->y->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->P->O->L->I->C->Y->.->m->d->`->
+->
+->--> ->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->F->r->a->m->e->w->o->r->k->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->D->O->C->U->M->E->N->T->_->C->L->A->S->S->I->F->I->C->A->T->I->O->N->.->m->d->`->
+->
+->--> ->G->e->n->e->r->a->l-> ->S->t->r->a->t->e->g->y->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->A->G->E->N->T->_->I->N->S->T->R->U->C->T->I->O->N->_->S->T->R->A->T->E->G->Y->.->m->d->`->
+->
+->
+->
+->*->*->T->e->s->t-> ->F->r->a->m->e->w->o->r->k->*->*->:->
+->
+->
+->
+->--> ->p->y->t->e->s->t-> ->d->o->c->u->m->e->n->t->a->t->i->o->n->:-> -><->h->t->t->p->s->:->/->/->d->o->c->s->.->p->y->t->e->s->t->.->o->r->g->/->>->
+->
+->--> ->p->y->t->e->s->t-> ->f->i->x->t->u->r->e->s->:-> -><->h->t->t->p->s->:->/->/->d->o->c->s->.->p->y->t->e->s->t->.->o->r->g->/->e->n->/->s->t->a->b->l->e->/->f->i->x->t->u->r->e->.->h->t->m->l->>->
+->
+->--> ->p->y->t->e->s->t-> ->m->a->r->k->e->r->s->:-> -><->h->t->t->p->s->:->/->/->d->o->c->s->.->p->y->t->e->s->t->.->o->r->g->/->e->n->/->s->t->a->b->l->e->/->h->o->w->-->t->o->-->s->p->e->c->i->f->y->-->t->e->s->t->s->.->h->t->m->l->>->
+->
+->
+->
+->*->*->C->o->d->e->S->e->n->t->i->n->e->l-> ->T->e->s->t->s->*->*->:->
+->
+->
+->
+->--> ->T->e->s->t-> ->d->i->r->e->c->t->o->r->y->:-> ->`->t->e->s->t->s->/->`->
+->
+->--> ->T->e->s->t-> ->c->o->n->f->i->g->u->r->a->t->i->o->n->:-> ->`->p->y->t->e->s->t->.->i->n->i->`->
+->
+->--> ->E->x->i->s->t->i->n->g-> ->t->e->s->t->s->:-> ->S->t->u->d->y-> ->p->a->t->t->e->r->n->s-> ->i->n-> ->`->t->e->s->t->s->/->t->e->s->t->_->*->.->p->y->`->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->*->*->C->l->a->s->s->i->f->i->c->a->t->i->o->n->*->*->:-> ->T->4->b-> ->--> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e-> ->&-> ->P->r->o->c->e->d->u->r->a->l-> ->A->g->e->n->t-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> -> ->
+->
+->*->*->A->u->t->h->o->r->i->t->y->*->*->:-> ->G->u->i->d->e->l->i->n->e->s-> ->f->o->r-> ->a->g->e->n->t->s-> ->c->r->e->a->t->i->n->g-> ->a->n->d-> ->m->a->i->n->t->a->i->n->i->n->g-> ->t->e->s->t->s-> -> ->
+->
+->*->*->U->p->d->a->t->e-> ->F->r->e->q->u->e->n->c->y->*->*->:-> ->W->h->e->n-> ->t->e->s->t->i->n->g-> ->p->r->o->c->e->d->u->r->e->s-> ->o->r-> ->p->o->l->i->c->i->e->s-> ->c->h->a->n->g->e-> -> ->
+->
+->*->*->L->a->s->t-> ->U->p->d->a->t->e->d->*->*->:-> ->N->o->v->e->m->b->e->r-> ->7->,-> ->2->0->2->5-> -> ->
+->
+->*->*->N->e->x->t-> ->R->e->v->i->e->w->*->*->:-> ->D->e->c->e->m->b->e->r-> ->7->,-> ->2->0->2->5-> ->(->q->u->a->r->t->e->r->l->y-> ->s->a->t->e->l->l->i->t->e-> ->a->u->d->i->t->)->
+->
+->

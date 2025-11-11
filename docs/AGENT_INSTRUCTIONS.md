@@ -1,506 +1,1013 @@
-# Documentation Operations Agent Instructions
-
-**Classification**: T4b - Infrastructure & Procedural Agent Documentation  
-**Scope**: Documentation creation, modification, archival, and classification in docs/ directory  
-**Target Users**: Agents creating and managing CodeSentinel documentation  
-**Last Updated**: November 7, 2025  
-**Version**: 1.0
-
----
-
-## Quick Authority Reference
-
-**Who can create, modify, delete documentation?**
-
-| Operation | Authority | Requires Approval |
-|-----------|-----------|-------------------|
-| Create Tier 2 doc | Agent | No |
-| Create Tier 1 doc | Agent | Yes (user verification) |
-| Modify Tier 2 doc | Agent | No (minor), Yes (major) |
-| Modify Tier 1 doc | Agent | Yes (major only) |
-| Delete Tier 2 doc | Agent | Yes (user approval) |
-| Delete Tier 1 doc | Agent | Yes (explicit user instruction) |
-| Archive document | Agent | Yes (verification) |
-| Update README | Agent | No (minor), Yes (major) |
-| Create guide/tutorial | Agent | No |
-| Update CHANGELOG | Agent | No |
-
-**Reference**: See `docs/architecture/DOCUMENT_CLASSIFICATION.md` - Authority matrices by tier
-
----
-
-## Domain Overview
-
-The `docs/` directory contains CodeSentinel documentation including:
-
-- **Architecture Docs** (`docs/architecture/`) - Policy, classification, strategy
-- **Feature Docs** (`docs/features/`) - Feature descriptions and specifications
-- **Reports** (`docs/reports/`) - Audit reports and compliance documents
-- **Guides** (`docs/guides/`) - User guides and tutorials
-- **API Documentation** - Generated and manual API docs
-- **README Files** - High-level project information
-
-**Key Principles for This Domain**:
-
-- Clear and professional writing
-- Non-destructive archival before deletion
-- Proper tier classification for all documents
-- Metadata tracking for all archived docs
-- UTF-8 encoding, no corrupted characters
-- Version tracking for critical documents
-
----
-
-## Common Procedures
-
-### Procedure 1: Create New Informative Document (Tier 2)
-
-**When**: User needs guidance, tutorial, or informational content
-
-**Steps**:
-
-1. **Verify Scope**: Clarify what the document will cover 
-
-2. **Choose Location**:
-   - Guides: `docs/guides/[topic]/`
-   - Features: `docs/features/[feature_name].md`
-   - API: `docs/api/[module_name].md`
-   - Procedures: `docs/procedures/[procedure_name].md`
-   - Other: Root `docs/` with clear naming
-
-3. **Plan Structure**:
-   - Title and purpose (first section)
-   - Quick reference (if applicable)
-   - Main content (body sections)
-   - Examples or use cases
-   - Related documentation links
-   - References section
-
-4. **Write Document**:
-   - Clear and professional language
-   - Code examples with syntax highlighting
-   - Consistent heading hierarchy
-   - Proper markdown formatting
-   - Links to related documentation
-   - No hardcoded paths or credentials
-
-5. **Apply Professional Standards**:
-   - UTF-8 encoding (no BOM)
-   - Consistent emoji usage (only when clarifying)
-   - Professional branding (subtle, not overwhelming)
-   - Consistent formatting with existing docs
-   - No commented-out sections
-
-6. **Add Metadata** (if Tier 1):
-   - Metadata already applied for archival
-   - Not needed for new Tier 2 docs
-
-7. **Validation**:
-   - Document is clear and complete 
-   - Links to related docs work 
-   - Code examples are correct 
-   - No formatting issues 
-   - Professional standards met 
-
-8. **Commit**:
-   - Message: `docs: add [document name] guide/documentation`
-   - Include the new document
-   - Include any related updates (index, README)
-
----
-
-### Procedure 2: Create Infrastructure/Policy Document (Tier 1)
-
-**When**: New policy, procedure, or critical infrastructure document needed
-
-**Steps**:
-
-1. **Verify Authority**: Get user approval before creating Tier 1 docs 
-
-2. **Choose Location**:
-   - Policies: `docs/architecture/POLICY.md` or new policy file
-   - Infrastructure: `docs/architecture/[system].md`
-   - Reports: `docs/reports/[report_name]_[DATE].md`
-   - Critical: Usually in `docs/architecture/`
-
-3. **Plan Document**:
-   - Clear title and purpose
-   - Version number
-   - Effective date
-   - Classification (should be T1)
-   - Authority statement
-   - Table of contents for long docs
-
-4. **Write Document**:
-   - Comprehensive and authoritative
-   - Clear decision frameworks
-   - Authority matrices if applicable
-   - Implementation procedures
-   - Compliance requirements
-   - Examples and case studies
-
-5. **Create Metadata**:
-   - File: `docs/architecture/metadata.json` (if not existing)
-   - Include document metadata:
-     - Title, version, date
-     - Classification tier
-     - Authority and approval
-     - Related documents
-     - Retention policy
-
-6. **Archive Setup**:
-   - New Tier 1 docs should have archival plan
-   - Version tracking folder structure planned
-   - Metadata file created
-   - Backup location configured
-
-7. **Validation**:
-   - Document is complete and authoritative 
-   - Classification tier is correct (T1) 
-   - Metadata is accurate 
-   - Links to related docs verified 
-   - Authority statement clear 
-
-8. **Commit**:
-   - Message: `docs(T1): add [document name] - [purpose]`
-   - Include document and metadata
-   - Include any related updates
-   - Note version 1.0 in message
-
----
-
-### Procedure 3: Update Existing Documentation
-
-**When**: Docs need correction, clarification, or minor updates
-
-**Steps**:
-
-1. **Determine Update Type**:
-   - Correction (fix typo/error)? → Minor update
-   - Clarification (better explanation)? → Minor/medium update
-   - New section (new information)? → Medium update
-   - Structural change (reorganize)? → Major update
-   - Policy change (affects behavior)? → Major update (Tier 1 needs approval)
-
-2. **For Minor Updates**:
-   - Fix the content directly
-   - Keep document classification same
-   - Update "Last Updated" date
-   - Test any code examples
-   - Commit with descriptive message
-
-3. **For Medium Updates**:
-   - Plan changes carefully
-   - Update structure if needed
-   - Add new sections with clear heading hierarchy
-   - Verify all links still work
-   - Update table of contents if present
-   - Update "Last Updated" date
-   - Commit with detailed message
-
-4. **For Major Updates** (Tier 1 docs):
-   - Get user verification for major changes 
-   - Consider if this warrants new version
-   - Create v2 directory in archive if new version
-   - Update version number
-   - Document what changed in "Version History"
-   - Add old version to archive
-   - Update "Last Updated" date
-
-5. **Validation**:
-   - All links verified 
-   - Code examples tested 
-   - No formatting broken 
-   - Professional standards maintained 
-   - If Tier 1: Change documented in history 
-
-6. **Commit**:
-   - Message: `docs: [update description]`
-   - Include clear description of changes
-   - For Tier 1: Include version change notes
-
----
-
-### Procedure 4: Archive and Delete Old Documentation
-
-**When**: Document no longer needed or replaced by newer version
-
-**Steps**:
-
-1. **Verify Deletion Authority**: Check if user approval needed 
-   - Tier 1 docs: YES (explicit instruction required)
-   - Tier 2 docs: YES (user approval)
-   - Tier 3 docs: NO (agent discretion)
-
-2. **Check Dependencies**:
-   - What other docs link to this?
-   - What code depends on this?
-   - Are there references to this doc?
-   - Update references before deleting
-
-3. **Prepare for Archival**:
-   - Create archive location: `archive/active/[tier]/[doc_type]/[doc_name]/v1/`
-   - Copy document to archive
-   - Create metadata.json with archival info
-   - Include timestamp and reason for archival
-
-4. **Create Archive Metadata**:
-
-   ```json
-   {
-     "classification_tier": 2,
-     "original_path": "docs/old_guide.md",
-     "archived_date": "2025-11-07T14:30:00Z",
-     "archived_reason": "Replaced by new guide",
-     "related_documents": ["docs/guides/new_guide.md"],
-     "retention_policy": "indefinite",
-     "last_accessed": "2025-11-05"
-   }
-   ```
-
-5. **Delete Original**:
-   - Remove from main docs/ directory
-   - Update any indices or navigation
-   - Update README if document was listed
-   - Update any cross-references
-
-6. **Update Documentation**:
-   - Note where old document was moved to
-   - Add pointer to replacement if applicable
-   - Update related documents lists
-   - Add note to CHANGELOG.md if relevant
-
-7. **Validation**:
-   - Archive copy complete 
-   - Metadata accurate 
-   - Original removed from main location 
-   - All references updated 
-   - Replacement document (if any) available 
-
-8. **Commit**:
-   - Message: `docs: archive [document name]`
-   - Include deletion and archive creation
-   - Note reason for archival
-
----
-
-## Quick Document Classification Decision Tree
-
-**Is this a policy, compliance, or infrastructure document?**
-
-- If YES → Tier 1 (Critical Infrastructure)
-- If NO → Continue
-
-**Is this a user guide, tutorial, or informational content?**
-
-- If YES → Tier 2 (Informative Documentation)
-- If NO → Continue
-
-**Is this a temporary report or audit output?**
-
-- If YES → Tier 3 (Temporary & Job Reports)
-- If NO → Continue
-
-**Is this guidance for agent operations?**
-
-- If YES → Tier 4 (Agent Documentation)
-- If NO → This shouldn't be in docs/
-
-**Tier 1 Characteristics** (if unsure):
-
-- Permanent storage needed? YES
-- Multiple versions tracked? YES
-- User approval required for changes? YES
-- Never deleted without explicit instruction? YES
-
-**Tier 2 Characteristics**:
-
-- Permanent storage needed? YES
-- Multiple versions tracked? NO (usually)
-- User approval required for major changes? YES
-- Agent can create freely? YES
-
----
-
-## Quick Reference: Before Creating Any Document
-
-**Checklist**:
-
-- [ ] **Tier Determined**: Know if Tier 1, 2, 3, or 4
-- [ ] **Location Planned**: Know where document will live
-- [ ] **Approval Needed**: Confirmed authority (Tier 1 docs need approval)
-- [ ] **Structure Clear**: Have outline/plan before writing
-- [ ] **Professional Standards**: Will follow formatting and emoji guidelines
-- [ ] **UTF-8 Encoding**: Save as UTF-8 (no BOM)
-- [ ] **Links Verified**: All documentation links will work
-- [ ] **Code Examples**: Any examples will be tested/correct
-- [ ] **Metadata Ready**: For Tier 1, metadata will be created
-- [ ] **Archive Plan**: For Tier 1, understand archival strategy
-
----
-
-## Validation Checklist (Before Commit)
-
-**Content Quality**:
-
-- [ ] Document has clear title and purpose
-- [ ] Heading hierarchy is logical (H1 → H2 → H3, etc.)
-- [ ] Sections are well-organized
-- [ ] Code examples are correct and tested
-- [ ] Links to other docs work
-- [ ] No hardcoded paths or credentials
-- [ ] Professional language throughout
-
-**Formatting**:
-
-- [ ] UTF-8 encoding (verified)
-- [ ] Consistent bullet formatting
-- [ ] Code blocks have language specified
-- [ ] No trailing spaces or extra blank lines
-- [ ] Markdown is clean and valid
-- [ ] Tables (if any) are properly formatted
-
-**Standards Compliance**:
-
-- [ ] Professional branding applied (if Tier 1/2)
-- [ ] Emoji usage follows policy (only when clarifying)
-- [ ] Consistent with existing documentation style
-- [ ] Character encoding clean (no corrupted text)
-- [ ] No excessive decoration
-
-**Classification & Metadata**:
-
-- [ ] Tier classification is correct
-- [ ] Metadata.json created (if Tier 1)
-- [ ] Version number assigned (if Tier 1)
-- [ ] Date field added (if Tier 1)
-- [ ] Authority statement clear (if Tier 1)
-
-**References & Links**:
-
-- [ ] Links to related documentation included
-- [ ] References section complete (if applicable)
-- [ ] Cross-references accurate
-- [ ] No broken internal links
-
-**Compliance**:
-
-- [ ] Document preserves existing features
-- [ ] Non-destructive approach maintained
-- [ ] Archive procedures followed (if deleting)
-- [ ] Metadata properly tracked
-- [ ] Audit trail noted
-
----
-
-## Common Documentation Questions
-
-### Q: What's the difference between a guide and a procedure?
-
-**A**:
-
-- **Guide**: Educational content explaining concepts, with examples. Tier 2.
-- **Procedure**: Step-by-step instructions for how to do something. Can be Tier 1 (infrastructure) or Tier 2 (user procedure).
-
-### Q: Should I update the main README or create a separate guide?
-
-**A**:
-
-- Update README for major, commonly-needed information
-- Create separate guide for detailed, specialized content
-- Link from README to guides for discoverability
-
-### Q: How do I handle documentation that depends on code?
-
-**A**:
-
-- Code examples must match current code
-- Document code as it is, not as it should be
-- If code changes, update documentation
-- Consider creating automated tests for code examples
-
-### Q: Can I delete documentation that's "outdated"?
-
-**A**: No. Follow archival procedure:
-
-1. Archive to inactive location with metadata
-2. Keep all historical versions
-3. Only delete with explicit user approval
-4. Document why it was archived
-
-### Q: How do I handle version history in documentation?
-
-**A**: Add section to document:
-
-```markdown
-## Version History
-
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.1 | Nov 15 | Agent | Added new section |
-| 1.0 | Nov 7 | Agent | Initial version |
-```
-
----
-
-## File Organization Reference
-
-```
-docs/
- architecture/          # Tier 1: Policies, classification, strategy
-    POLICY.md
-    DOCUMENT_CLASSIFICATION.md
-    AGENT_INSTRUCTION_STRATEGY.md
-
- guides/               # Tier 2: User guides and tutorials
-    getting_started.md
-    installation.md
-    [topic]/
-
- api/                  # Tier 2: API documentation
-    cli.md
-    core.md
-    utils.md
-
- features/             # Tier 2: Feature descriptions
-    [feature_name].md
-
- procedures/           # Tier 1: Infrastructure procedures
-    deployment.md
-    maintenance.md
-
- reports/              # Tier 1: Audit and compliance reports
-    [audit_name]_[DATE].md
-
- README.md            # High-level overview (Tier 2)
-```
-
----
-
-## References & Links
-
-**Core Documentation**:
-
-- Global Policy: `docs/architecture/POLICY.md`
-- Classification Framework: `docs/architecture/DOCUMENT_CLASSIFICATION.md`
-- General Strategy: `docs/architecture/AGENT_INSTRUCTION_STRATEGY.md`
-
-**Documentation Standards**:
-
-- Professional Standards: In `docs/architecture/POLICY.md`
-- Emoji Policy: In `docs/architecture/POLICY.md`
-- Archive Strategy: In `docs/architecture/DOCUMENT_CLASSIFICATION.md`
-
-**Related Documents**:
-
-- Satellite Archive Instructions: `archive/AGENT_INSTRUCTIONS.md`
-- Testing Instructions: `tests/AGENT_INSTRUCTIONS.md`
-- Core Package Instructions: `codesentinel/AGENT_INSTRUCTIONS.md`
-
----
-
-**Classification**: T4b - Infrastructure & Procedural Agent Documentation  
-**Authority**: Guidelines for agents creating and managing documentation  
-**Update Frequency**: When documentation procedures or policies change  
-**Last Updated**: November 7, 2025  
-**Next Review**: December 7, 2025 (quarterly satellite audit)
+->#-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> ->O->p->e->r->a->t->i->o->n->s-> ->A->g->e->n->t-> ->I->n->s->t->r->u->c->t->i->o->n->s->
+->
+->
+->
+->*->*->C->l->a->s->s->i->f->i->c->a->t->i->o->n->*->*->:-> ->T->4->b-> ->--> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e-> ->&-> ->P->r->o->c->e->d->u->r->a->l-> ->A->g->e->n->t-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> -> ->
+->
+->*->*->S->c->o->p->e->*->*->:-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> ->c->r->e->a->t->i->o->n->,-> ->m->o->d->i->f->i->c->a->t->i->o->n->,-> ->a->r->c->h->i->v->a->l->,-> ->a->n->d-> ->c->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->i->n-> ->d->o->c->s->/-> ->d->i->r->e->c->t->o->r->y-> -> ->
+->
+->*->*->T->a->r->g->e->t-> ->U->s->e->r->s->*->*->:-> ->A->g->e->n->t->s-> ->c->r->e->a->t->i->n->g-> ->a->n->d-> ->m->a->n->a->g->i->n->g-> ->C->o->d->e->S->e->n->t->i->n->e->l-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> -> ->
+->
+->*->*->L->a->s->t-> ->U->p->d->a->t->e->d->*->*->:-> ->N->o->v->e->m->b->e->r-> ->7->,-> ->2->0->2->5-> -> ->
+->
+->*->*->V->e->r->s->i->o->n->*->*->:-> ->1->.->0->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->Q->u->i->c->k-> ->A->u->t->h->o->r->i->t->y-> ->R->e->f->e->r->e->n->c->e->
+->
+->
+->
+->*->*->W->h->o-> ->c->a->n-> ->c->r->e->a->t->e->,-> ->m->o->d->i->f->y->,-> ->d->e->l->e->t->e-> ->d->o->c->u->m->e->n->t->a->t->i->o->n->?->*->*->
+->
+->
+->
+->|-> ->O->p->e->r->a->t->i->o->n-> ->|-> ->A->u->t->h->o->r->i->t->y-> ->|-> ->R->e->q->u->i->r->e->s-> ->A->p->p->r->o->v->a->l-> ->|->
+->
+->|->-->-->-->-->-->-->-->-->-->-->-->|->-->-->-->-->-->-->-->-->-->-->-->|->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->-->|->
+->
+->|-> ->C->r->e->a->t->e-> ->T->i->e->r-> ->2-> ->d->o->c-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->C->r->e->a->t->e-> ->T->i->e->r-> ->1-> ->d->o->c-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->u->s->e->r-> ->v->e->r->i->f->i->c->a->t->i->o->n->)-> ->|->
+->
+->|-> ->M->o->d->i->f->y-> ->T->i->e->r-> ->2-> ->d->o->c-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->(->m->i->n->o->r->)->,-> ->Y->e->s-> ->(->m->a->j->o->r->)-> ->|->
+->
+->|-> ->M->o->d->i->f->y-> ->T->i->e->r-> ->1-> ->d->o->c-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->m->a->j->o->r-> ->o->n->l->y->)-> ->|->
+->
+->|-> ->D->e->l->e->t->e-> ->T->i->e->r-> ->2-> ->d->o->c-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->u->s->e->r-> ->a->p->p->r->o->v->a->l->)-> ->|->
+->
+->|-> ->D->e->l->e->t->e-> ->T->i->e->r-> ->1-> ->d->o->c-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->e->x->p->l->i->c->i->t-> ->u->s->e->r-> ->i->n->s->t->r->u->c->t->i->o->n->)-> ->|->
+->
+->|-> ->A->r->c->h->i->v->e-> ->d->o->c->u->m->e->n->t-> ->|-> ->A->g->e->n->t-> ->|-> ->Y->e->s-> ->(->v->e->r->i->f->i->c->a->t->i->o->n->)-> ->|->
+->
+->|-> ->U->p->d->a->t->e-> ->R->E->A->D->M->E-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->(->m->i->n->o->r->)->,-> ->Y->e->s-> ->(->m->a->j->o->r->)-> ->|->
+->
+->|-> ->C->r->e->a->t->e-> ->g->u->i->d->e->/->t->u->t->o->r->i->a->l-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->|-> ->U->p->d->a->t->e-> ->C->H->A->N->G->E->L->O->G-> ->|-> ->A->g->e->n->t-> ->|-> ->N->o-> ->|->
+->
+->
+->
+->*->*->R->e->f->e->r->e->n->c->e->*->*->:-> ->S->e->e-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->D->O->C->U->M->E->N->T->_->C->L->A->S->S->I->F->I->C->A->T->I->O->N->.->m->d->`-> ->--> ->A->u->t->h->o->r->i->t->y-> ->m->a->t->r->i->c->e->s-> ->b->y-> ->t->i->e->r->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->D->o->m->a->i->n-> ->O->v->e->r->v->i->e->w->
+->
+->
+->
+->T->h->e-> ->`->d->o->c->s->/->`-> ->d->i->r->e->c->t->o->r->y-> ->c->o->n->t->a->i->n->s-> ->C->o->d->e->S->e->n->t->i->n->e->l-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->i->n->c->l->u->d->i->n->g->:->
+->
+->
+->
+->--> ->*->*->A->r->c->h->i->t->e->c->t->u->r->e-> ->D->o->c->s->*->*-> ->(->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->`->)-> ->--> ->P->o->l->i->c->y->,-> ->c->l->a->s->s->i->f->i->c->a->t->i->o->n->,-> ->s->t->r->a->t->e->g->y->
+->
+->--> ->*->*->F->e->a->t->u->r->e-> ->D->o->c->s->*->*-> ->(->`->d->o->c->s->/->f->e->a->t->u->r->e->s->/->`->)-> ->--> ->F->e->a->t->u->r->e-> ->d->e->s->c->r->i->p->t->i->o->n->s-> ->a->n->d-> ->s->p->e->c->i->f->i->c->a->t->i->o->n->s->
+->
+->--> ->*->*->R->e->p->o->r->t->s->*->*-> ->(->`->d->o->c->s->/->r->e->p->o->r->t->s->/->`->)-> ->--> ->A->u->d->i->t-> ->r->e->p->o->r->t->s-> ->a->n->d-> ->c->o->m->p->l->i->a->n->c->e-> ->d->o->c->u->m->e->n->t->s->
+->
+->--> ->*->*->G->u->i->d->e->s->*->*-> ->(->`->d->o->c->s->/->g->u->i->d->e->s->/->`->)-> ->--> ->U->s->e->r-> ->g->u->i->d->e->s-> ->a->n->d-> ->t->u->t->o->r->i->a->l->s->
+->
+->--> ->*->*->A->P->I-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->*->*-> ->--> ->G->e->n->e->r->a->t->e->d-> ->a->n->d-> ->m->a->n->u->a->l-> ->A->P->I-> ->d->o->c->s->
+->
+->--> ->*->*->R->E->A->D->M->E-> ->F->i->l->e->s->*->*-> ->--> ->H->i->g->h->-->l->e->v->e->l-> ->p->r->o->j->e->c->t-> ->i->n->f->o->r->m->a->t->i->o->n->
+->
+->
+->
+->*->*->K->e->y-> ->P->r->i->n->c->i->p->l->e->s-> ->f->o->r-> ->T->h->i->s-> ->D->o->m->a->i->n->*->*->:->
+->
+->
+->
+->--> ->C->l->e->a->r-> ->a->n->d-> ->p->r->o->f->e->s->s->i->o->n->a->l-> ->w->r->i->t->i->n->g->
+->
+->--> ->N->o->n->-->d->e->s->t->r->u->c->t->i->v->e-> ->a->r->c->h->i->v->a->l-> ->b->e->f->o->r->e-> ->d->e->l->e->t->i->o->n->
+->
+->--> ->P->r->o->p->e->r-> ->t->i->e->r-> ->c->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->f->o->r-> ->a->l->l-> ->d->o->c->u->m->e->n->t->s->
+->
+->--> ->M->e->t->a->d->a->t->a-> ->t->r->a->c->k->i->n->g-> ->f->o->r-> ->a->l->l-> ->a->r->c->h->i->v->e->d-> ->d->o->c->s->
+->
+->--> ->U->T->F->-->8-> ->e->n->c->o->d->i->n->g->,-> ->n->o-> ->c->o->r->r->u->p->t->e->d-> ->c->h->a->r->a->c->t->e->r->s->
+->
+->--> ->V->e->r->s->i->o->n-> ->t->r->a->c->k->i->n->g-> ->f->o->r-> ->c->r->i->t->i->c->a->l-> ->d->o->c->u->m->e->n->t->s->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->C->o->m->m->o->n-> ->P->r->o->c->e->d->u->r->e->s->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->1->:-> ->C->r->e->a->t->e-> ->N->e->w-> ->I->n->f->o->r->m->a->t->i->v->e-> ->D->o->c->u->m->e->n->t-> ->(->T->i->e->r-> ->2->)->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->U->s->e->r-> ->n->e->e->d->s-> ->g->u->i->d->a->n->c->e->,-> ->t->u->t->o->r->i->a->l->,-> ->o->r-> ->i->n->f->o->r->m->a->t->i->o->n->a->l-> ->c->o->n->t->e->n->t->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->V->e->r->i->f->y-> ->S->c->o->p->e->*->*->:-> ->C->l->a->r->i->f->y-> ->w->h->a->t-> ->t->h->e-> ->d->o->c->u->m->e->n->t-> ->w->i->l->l-> ->c->o->v->e->r-> ->
+->
+->
+->
+->2->.-> ->*->*->C->h->o->o->s->e-> ->L->o->c->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->G->u->i->d->e->s->:-> ->`->d->o->c->s->/->g->u->i->d->e->s->/->[->t->o->p->i->c->]->/->`->
+->
+-> -> -> ->--> ->F->e->a->t->u->r->e->s->:-> ->`->d->o->c->s->/->f->e->a->t->u->r->e->s->/->[->f->e->a->t->u->r->e->_->n->a->m->e->]->.->m->d->`->
+->
+-> -> -> ->--> ->A->P->I->:-> ->`->d->o->c->s->/->a->p->i->/->[->m->o->d->u->l->e->_->n->a->m->e->]->.->m->d->`->
+->
+-> -> -> ->--> ->P->r->o->c->e->d->u->r->e->s->:-> ->`->d->o->c->s->/->p->r->o->c->e->d->u->r->e->s->/->[->p->r->o->c->e->d->u->r->e->_->n->a->m->e->]->.->m->d->`->
+->
+-> -> -> ->--> ->O->t->h->e->r->:-> ->R->o->o->t-> ->`->d->o->c->s->/->`-> ->w->i->t->h-> ->c->l->e->a->r-> ->n->a->m->i->n->g->
+->
+->
+->
+->3->.-> ->*->*->P->l->a->n-> ->S->t->r->u->c->t->u->r->e->*->*->:->
+->
+-> -> -> ->--> ->T->i->t->l->e-> ->a->n->d-> ->p->u->r->p->o->s->e-> ->(->f->i->r->s->t-> ->s->e->c->t->i->o->n->)->
+->
+-> -> -> ->--> ->Q->u->i->c->k-> ->r->e->f->e->r->e->n->c->e-> ->(->i->f-> ->a->p->p->l->i->c->a->b->l->e->)->
+->
+-> -> -> ->--> ->M->a->i->n-> ->c->o->n->t->e->n->t-> ->(->b->o->d->y-> ->s->e->c->t->i->o->n->s->)->
+->
+-> -> -> ->--> ->E->x->a->m->p->l->e->s-> ->o->r-> ->u->s->e-> ->c->a->s->e->s->
+->
+-> -> -> ->--> ->R->e->l->a->t->e->d-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->l->i->n->k->s->
+->
+-> -> -> ->--> ->R->e->f->e->r->e->n->c->e->s-> ->s->e->c->t->i->o->n->
+->
+->
+->
+->4->.-> ->*->*->W->r->i->t->e-> ->D->o->c->u->m->e->n->t->*->*->:->
+->
+-> -> -> ->--> ->C->l->e->a->r-> ->a->n->d-> ->p->r->o->f->e->s->s->i->o->n->a->l-> ->l->a->n->g->u->a->g->e->
+->
+-> -> -> ->--> ->C->o->d->e-> ->e->x->a->m->p->l->e->s-> ->w->i->t->h-> ->s->y->n->t->a->x-> ->h->i->g->h->l->i->g->h->t->i->n->g->
+->
+-> -> -> ->--> ->C->o->n->s->i->s->t->e->n->t-> ->h->e->a->d->i->n->g-> ->h->i->e->r->a->r->c->h->y->
+->
+-> -> -> ->--> ->P->r->o->p->e->r-> ->m->a->r->k->d->o->w->n-> ->f->o->r->m->a->t->t->i->n->g->
+->
+-> -> -> ->--> ->L->i->n->k->s-> ->t->o-> ->r->e->l->a->t->e->d-> ->d->o->c->u->m->e->n->t->a->t->i->o->n->
+->
+-> -> -> ->--> ->N->o-> ->h->a->r->d->c->o->d->e->d-> ->p->a->t->h->s-> ->o->r-> ->c->r->e->d->e->n->t->i->a->l->s->
+->
+->
+->
+->5->.-> ->*->*->A->p->p->l->y-> ->P->r->o->f->e->s->s->i->o->n->a->l-> ->S->t->a->n->d->a->r->d->s->*->*->:->
+->
+-> -> -> ->--> ->U->T->F->-->8-> ->e->n->c->o->d->i->n->g-> ->(->n->o-> ->B->O->M->)->
+->
+-> -> -> ->--> ->C->o->n->s->i->s->t->e->n->t-> ->e->m->o->j->i-> ->u->s->a->g->e-> ->(->o->n->l->y-> ->w->h->e->n-> ->c->l->a->r->i->f->y->i->n->g->)->
+->
+-> -> -> ->--> ->P->r->o->f->e->s->s->i->o->n->a->l-> ->b->r->a->n->d->i->n->g-> ->(->s->u->b->t->l->e->,-> ->n->o->t-> ->o->v->e->r->w->h->e->l->m->i->n->g->)->
+->
+-> -> -> ->--> ->C->o->n->s->i->s->t->e->n->t-> ->f->o->r->m->a->t->t->i->n->g-> ->w->i->t->h-> ->e->x->i->s->t->i->n->g-> ->d->o->c->s->
+->
+-> -> -> ->--> ->N->o-> ->c->o->m->m->e->n->t->e->d->-->o->u->t-> ->s->e->c->t->i->o->n->s->
+->
+->
+->
+->6->.-> ->*->*->A->d->d-> ->M->e->t->a->d->a->t->a->*->*-> ->(->i->f-> ->T->i->e->r-> ->1->)->:->
+->
+-> -> -> ->--> ->M->e->t->a->d->a->t->a-> ->a->l->r->e->a->d->y-> ->a->p->p->l->i->e->d-> ->f->o->r-> ->a->r->c->h->i->v->a->l->
+->
+-> -> -> ->--> ->N->o->t-> ->n->e->e->d->e->d-> ->f->o->r-> ->n->e->w-> ->T->i->e->r-> ->2-> ->d->o->c->s->
+->
+->
+->
+->7->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->D->o->c->u->m->e->n->t-> ->i->s-> ->c->l->e->a->r-> ->a->n->d-> ->c->o->m->p->l->e->t->e-> ->
+->
+-> -> -> ->--> ->L->i->n->k->s-> ->t->o-> ->r->e->l->a->t->e->d-> ->d->o->c->s-> ->w->o->r->k-> ->
+->
+-> -> -> ->--> ->C->o->d->e-> ->e->x->a->m->p->l->e->s-> ->a->r->e-> ->c->o->r->r->e->c->t-> ->
+->
+-> -> -> ->--> ->N->o-> ->f->o->r->m->a->t->t->i->n->g-> ->i->s->s->u->e->s-> ->
+->
+-> -> -> ->--> ->P->r->o->f->e->s->s->i->o->n->a->l-> ->s->t->a->n->d->a->r->d->s-> ->m->e->t-> ->
+->
+->
+->
+->8->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->d->o->c->s->:-> ->a->d->d-> ->[->d->o->c->u->m->e->n->t-> ->n->a->m->e->]-> ->g->u->i->d->e->/->d->o->c->u->m->e->n->t->a->t->i->o->n->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->t->h->e-> ->n->e->w-> ->d->o->c->u->m->e->n->t->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->a->n->y-> ->r->e->l->a->t->e->d-> ->u->p->d->a->t->e->s-> ->(->i->n->d->e->x->,-> ->R->E->A->D->M->E->)->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->2->:-> ->C->r->e->a->t->e-> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e->/->P->o->l->i->c->y-> ->D->o->c->u->m->e->n->t-> ->(->T->i->e->r-> ->1->)->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->N->e->w-> ->p->o->l->i->c->y->,-> ->p->r->o->c->e->d->u->r->e->,-> ->o->r-> ->c->r->i->t->i->c->a->l-> ->i->n->f->r->a->s->t->r->u->c->t->u->r->e-> ->d->o->c->u->m->e->n->t-> ->n->e->e->d->e->d->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->V->e->r->i->f->y-> ->A->u->t->h->o->r->i->t->y->*->*->:-> ->G->e->t-> ->u->s->e->r-> ->a->p->p->r->o->v->a->l-> ->b->e->f->o->r->e-> ->c->r->e->a->t->i->n->g-> ->T->i->e->r-> ->1-> ->d->o->c->s-> ->
+->
+->
+->
+->2->.-> ->*->*->C->h->o->o->s->e-> ->L->o->c->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->P->o->l->i->c->i->e->s->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->P->O->L->I->C->Y->.->m->d->`-> ->o->r-> ->n->e->w-> ->p->o->l->i->c->y-> ->f->i->l->e->
+->
+-> -> -> ->--> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->[->s->y->s->t->e->m->]->.->m->d->`->
+->
+-> -> -> ->--> ->R->e->p->o->r->t->s->:-> ->`->d->o->c->s->/->r->e->p->o->r->t->s->/->[->r->e->p->o->r->t->_->n->a->m->e->]->_->[->D->A->T->E->]->.->m->d->`->
+->
+-> -> -> ->--> ->C->r->i->t->i->c->a->l->:-> ->U->s->u->a->l->l->y-> ->i->n-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->`->
+->
+->
+->
+->3->.-> ->*->*->P->l->a->n-> ->D->o->c->u->m->e->n->t->*->*->:->
+->
+-> -> -> ->--> ->C->l->e->a->r-> ->t->i->t->l->e-> ->a->n->d-> ->p->u->r->p->o->s->e->
+->
+-> -> -> ->--> ->V->e->r->s->i->o->n-> ->n->u->m->b->e->r->
+->
+-> -> -> ->--> ->E->f->f->e->c->t->i->v->e-> ->d->a->t->e->
+->
+-> -> -> ->--> ->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->(->s->h->o->u->l->d-> ->b->e-> ->T->1->)->
+->
+-> -> -> ->--> ->A->u->t->h->o->r->i->t->y-> ->s->t->a->t->e->m->e->n->t->
+->
+-> -> -> ->--> ->T->a->b->l->e-> ->o->f-> ->c->o->n->t->e->n->t->s-> ->f->o->r-> ->l->o->n->g-> ->d->o->c->s->
+->
+->
+->
+->4->.-> ->*->*->W->r->i->t->e-> ->D->o->c->u->m->e->n->t->*->*->:->
+->
+-> -> -> ->--> ->C->o->m->p->r->e->h->e->n->s->i->v->e-> ->a->n->d-> ->a->u->t->h->o->r->i->t->a->t->i->v->e->
+->
+-> -> -> ->--> ->C->l->e->a->r-> ->d->e->c->i->s->i->o->n-> ->f->r->a->m->e->w->o->r->k->s->
+->
+-> -> -> ->--> ->A->u->t->h->o->r->i->t->y-> ->m->a->t->r->i->c->e->s-> ->i->f-> ->a->p->p->l->i->c->a->b->l->e->
+->
+-> -> -> ->--> ->I->m->p->l->e->m->e->n->t->a->t->i->o->n-> ->p->r->o->c->e->d->u->r->e->s->
+->
+-> -> -> ->--> ->C->o->m->p->l->i->a->n->c->e-> ->r->e->q->u->i->r->e->m->e->n->t->s->
+->
+-> -> -> ->--> ->E->x->a->m->p->l->e->s-> ->a->n->d-> ->c->a->s->e-> ->s->t->u->d->i->e->s->
+->
+->
+->
+->5->.-> ->*->*->C->r->e->a->t->e-> ->M->e->t->a->d->a->t->a->*->*->:->
+->
+-> -> -> ->--> ->F->i->l->e->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->m->e->t->a->d->a->t->a->.->j->s->o->n->`-> ->(->i->f-> ->n->o->t-> ->e->x->i->s->t->i->n->g->)->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->d->o->c->u->m->e->n->t-> ->m->e->t->a->d->a->t->a->:->
+->
+-> -> -> -> -> ->--> ->T->i->t->l->e->,-> ->v->e->r->s->i->o->n->,-> ->d->a->t->e->
+->
+-> -> -> -> -> ->--> ->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->t->i->e->r->
+->
+-> -> -> -> -> ->--> ->A->u->t->h->o->r->i->t->y-> ->a->n->d-> ->a->p->p->r->o->v->a->l->
+->
+-> -> -> -> -> ->--> ->R->e->l->a->t->e->d-> ->d->o->c->u->m->e->n->t->s->
+->
+-> -> -> -> -> ->--> ->R->e->t->e->n->t->i->o->n-> ->p->o->l->i->c->y->
+->
+->
+->
+->6->.-> ->*->*->A->r->c->h->i->v->e-> ->S->e->t->u->p->*->*->:->
+->
+-> -> -> ->--> ->N->e->w-> ->T->i->e->r-> ->1-> ->d->o->c->s-> ->s->h->o->u->l->d-> ->h->a->v->e-> ->a->r->c->h->i->v->a->l-> ->p->l->a->n->
+->
+-> -> -> ->--> ->V->e->r->s->i->o->n-> ->t->r->a->c->k->i->n->g-> ->f->o->l->d->e->r-> ->s->t->r->u->c->t->u->r->e-> ->p->l->a->n->n->e->d->
+->
+-> -> -> ->--> ->M->e->t->a->d->a->t->a-> ->f->i->l->e-> ->c->r->e->a->t->e->d->
+->
+-> -> -> ->--> ->B->a->c->k->u->p-> ->l->o->c->a->t->i->o->n-> ->c->o->n->f->i->g->u->r->e->d->
+->
+->
+->
+->7->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->D->o->c->u->m->e->n->t-> ->i->s-> ->c->o->m->p->l->e->t->e-> ->a->n->d-> ->a->u->t->h->o->r->i->t->a->t->i->v->e-> ->
+->
+-> -> -> ->--> ->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->t->i->e->r-> ->i->s-> ->c->o->r->r->e->c->t-> ->(->T->1->)-> ->
+->
+-> -> -> ->--> ->M->e->t->a->d->a->t->a-> ->i->s-> ->a->c->c->u->r->a->t->e-> ->
+->
+-> -> -> ->--> ->L->i->n->k->s-> ->t->o-> ->r->e->l->a->t->e->d-> ->d->o->c->s-> ->v->e->r->i->f->i->e->d-> ->
+->
+-> -> -> ->--> ->A->u->t->h->o->r->i->t->y-> ->s->t->a->t->e->m->e->n->t-> ->c->l->e->a->r-> ->
+->
+->
+->
+->8->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->d->o->c->s->(->T->1->)->:-> ->a->d->d-> ->[->d->o->c->u->m->e->n->t-> ->n->a->m->e->]-> ->--> ->[->p->u->r->p->o->s->e->]->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->d->o->c->u->m->e->n->t-> ->a->n->d-> ->m->e->t->a->d->a->t->a->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->a->n->y-> ->r->e->l->a->t->e->d-> ->u->p->d->a->t->e->s->
+->
+-> -> -> ->--> ->N->o->t->e-> ->v->e->r->s->i->o->n-> ->1->.->0-> ->i->n-> ->m->e->s->s->a->g->e->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->3->:-> ->U->p->d->a->t->e-> ->E->x->i->s->t->i->n->g-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->D->o->c->s-> ->n->e->e->d-> ->c->o->r->r->e->c->t->i->o->n->,-> ->c->l->a->r->i->f->i->c->a->t->i->o->n->,-> ->o->r-> ->m->i->n->o->r-> ->u->p->d->a->t->e->s->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->D->e->t->e->r->m->i->n->e-> ->U->p->d->a->t->e-> ->T->y->p->e->*->*->:->
+->
+-> -> -> ->--> ->C->o->r->r->e->c->t->i->o->n-> ->(->f->i->x-> ->t->y->p->o->/->e->r->r->o->r->)->?-> ->->-> ->M->i->n->o->r-> ->u->p->d->a->t->e->
+->
+-> -> -> ->--> ->C->l->a->r->i->f->i->c->a->t->i->o->n-> ->(->b->e->t->t->e->r-> ->e->x->p->l->a->n->a->t->i->o->n->)->?-> ->->-> ->M->i->n->o->r->/->m->e->d->i->u->m-> ->u->p->d->a->t->e->
+->
+-> -> -> ->--> ->N->e->w-> ->s->e->c->t->i->o->n-> ->(->n->e->w-> ->i->n->f->o->r->m->a->t->i->o->n->)->?-> ->->-> ->M->e->d->i->u->m-> ->u->p->d->a->t->e->
+->
+-> -> -> ->--> ->S->t->r->u->c->t->u->r->a->l-> ->c->h->a->n->g->e-> ->(->r->e->o->r->g->a->n->i->z->e->)->?-> ->->-> ->M->a->j->o->r-> ->u->p->d->a->t->e->
+->
+-> -> -> ->--> ->P->o->l->i->c->y-> ->c->h->a->n->g->e-> ->(->a->f->f->e->c->t->s-> ->b->e->h->a->v->i->o->r->)->?-> ->->-> ->M->a->j->o->r-> ->u->p->d->a->t->e-> ->(->T->i->e->r-> ->1-> ->n->e->e->d->s-> ->a->p->p->r->o->v->a->l->)->
+->
+->
+->
+->2->.-> ->*->*->F->o->r-> ->M->i->n->o->r-> ->U->p->d->a->t->e->s->*->*->:->
+->
+-> -> -> ->--> ->F->i->x-> ->t->h->e-> ->c->o->n->t->e->n->t-> ->d->i->r->e->c->t->l->y->
+->
+-> -> -> ->--> ->K->e->e->p-> ->d->o->c->u->m->e->n->t-> ->c->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->s->a->m->e->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->"->L->a->s->t-> ->U->p->d->a->t->e->d->"-> ->d->a->t->e->
+->
+-> -> -> ->--> ->T->e->s->t-> ->a->n->y-> ->c->o->d->e-> ->e->x->a->m->p->l->e->s->
+->
+-> -> -> ->--> ->C->o->m->m->i->t-> ->w->i->t->h-> ->d->e->s->c->r->i->p->t->i->v->e-> ->m->e->s->s->a->g->e->
+->
+->
+->
+->3->.-> ->*->*->F->o->r-> ->M->e->d->i->u->m-> ->U->p->d->a->t->e->s->*->*->:->
+->
+-> -> -> ->--> ->P->l->a->n-> ->c->h->a->n->g->e->s-> ->c->a->r->e->f->u->l->l->y->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->s->t->r->u->c->t->u->r->e-> ->i->f-> ->n->e->e->d->e->d->
+->
+-> -> -> ->--> ->A->d->d-> ->n->e->w-> ->s->e->c->t->i->o->n->s-> ->w->i->t->h-> ->c->l->e->a->r-> ->h->e->a->d->i->n->g-> ->h->i->e->r->a->r->c->h->y->
+->
+-> -> -> ->--> ->V->e->r->i->f->y-> ->a->l->l-> ->l->i->n->k->s-> ->s->t->i->l->l-> ->w->o->r->k->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->t->a->b->l->e-> ->o->f-> ->c->o->n->t->e->n->t->s-> ->i->f-> ->p->r->e->s->e->n->t->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->"->L->a->s->t-> ->U->p->d->a->t->e->d->"-> ->d->a->t->e->
+->
+-> -> -> ->--> ->C->o->m->m->i->t-> ->w->i->t->h-> ->d->e->t->a->i->l->e->d-> ->m->e->s->s->a->g->e->
+->
+->
+->
+->4->.-> ->*->*->F->o->r-> ->M->a->j->o->r-> ->U->p->d->a->t->e->s->*->*-> ->(->T->i->e->r-> ->1-> ->d->o->c->s->)->:->
+->
+-> -> -> ->--> ->G->e->t-> ->u->s->e->r-> ->v->e->r->i->f->i->c->a->t->i->o->n-> ->f->o->r-> ->m->a->j->o->r-> ->c->h->a->n->g->e->s-> ->
+->
+-> -> -> ->--> ->C->o->n->s->i->d->e->r-> ->i->f-> ->t->h->i->s-> ->w->a->r->r->a->n->t->s-> ->n->e->w-> ->v->e->r->s->i->o->n->
+->
+-> -> -> ->--> ->C->r->e->a->t->e-> ->v->2-> ->d->i->r->e->c->t->o->r->y-> ->i->n-> ->a->r->c->h->i->v->e-> ->i->f-> ->n->e->w-> ->v->e->r->s->i->o->n->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->v->e->r->s->i->o->n-> ->n->u->m->b->e->r->
+->
+-> -> -> ->--> ->D->o->c->u->m->e->n->t-> ->w->h->a->t-> ->c->h->a->n->g->e->d-> ->i->n-> ->"->V->e->r->s->i->o->n-> ->H->i->s->t->o->r->y->"->
+->
+-> -> -> ->--> ->A->d->d-> ->o->l->d-> ->v->e->r->s->i->o->n-> ->t->o-> ->a->r->c->h->i->v->e->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->"->L->a->s->t-> ->U->p->d->a->t->e->d->"-> ->d->a->t->e->
+->
+->
+->
+->5->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->A->l->l-> ->l->i->n->k->s-> ->v->e->r->i->f->i->e->d-> ->
+->
+-> -> -> ->--> ->C->o->d->e-> ->e->x->a->m->p->l->e->s-> ->t->e->s->t->e->d-> ->
+->
+-> -> -> ->--> ->N->o-> ->f->o->r->m->a->t->t->i->n->g-> ->b->r->o->k->e->n-> ->
+->
+-> -> -> ->--> ->P->r->o->f->e->s->s->i->o->n->a->l-> ->s->t->a->n->d->a->r->d->s-> ->m->a->i->n->t->a->i->n->e->d-> ->
+->
+-> -> -> ->--> ->I->f-> ->T->i->e->r-> ->1->:-> ->C->h->a->n->g->e-> ->d->o->c->u->m->e->n->t->e->d-> ->i->n-> ->h->i->s->t->o->r->y-> ->
+->
+->
+->
+->6->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->d->o->c->s->:-> ->[->u->p->d->a->t->e-> ->d->e->s->c->r->i->p->t->i->o->n->]->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->c->l->e->a->r-> ->d->e->s->c->r->i->p->t->i->o->n-> ->o->f-> ->c->h->a->n->g->e->s->
+->
+-> -> -> ->--> ->F->o->r-> ->T->i->e->r-> ->1->:-> ->I->n->c->l->u->d->e-> ->v->e->r->s->i->o->n-> ->c->h->a->n->g->e-> ->n->o->t->e->s->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#->#-> ->P->r->o->c->e->d->u->r->e-> ->4->:-> ->A->r->c->h->i->v->e-> ->a->n->d-> ->D->e->l->e->t->e-> ->O->l->d-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->
+->
+->
+->
+->*->*->W->h->e->n->*->*->:-> ->D->o->c->u->m->e->n->t-> ->n->o-> ->l->o->n->g->e->r-> ->n->e->e->d->e->d-> ->o->r-> ->r->e->p->l->a->c->e->d-> ->b->y-> ->n->e->w->e->r-> ->v->e->r->s->i->o->n->
+->
+->
+->
+->*->*->S->t->e->p->s->*->*->:->
+->
+->
+->
+->1->.-> ->*->*->V->e->r->i->f->y-> ->D->e->l->e->t->i->o->n-> ->A->u->t->h->o->r->i->t->y->*->*->:-> ->C->h->e->c->k-> ->i->f-> ->u->s->e->r-> ->a->p->p->r->o->v->a->l-> ->n->e->e->d->e->d-> ->
+->
+-> -> -> ->--> ->T->i->e->r-> ->1-> ->d->o->c->s->:-> ->Y->E->S-> ->(->e->x->p->l->i->c->i->t-> ->i->n->s->t->r->u->c->t->i->o->n-> ->r->e->q->u->i->r->e->d->)->
+->
+-> -> -> ->--> ->T->i->e->r-> ->2-> ->d->o->c->s->:-> ->Y->E->S-> ->(->u->s->e->r-> ->a->p->p->r->o->v->a->l->)->
+->
+-> -> -> ->--> ->T->i->e->r-> ->3-> ->d->o->c->s->:-> ->N->O-> ->(->a->g->e->n->t-> ->d->i->s->c->r->e->t->i->o->n->)->
+->
+->
+->
+->2->.-> ->*->*->C->h->e->c->k-> ->D->e->p->e->n->d->e->n->c->i->e->s->*->*->:->
+->
+-> -> -> ->--> ->W->h->a->t-> ->o->t->h->e->r-> ->d->o->c->s-> ->l->i->n->k-> ->t->o-> ->t->h->i->s->?->
+->
+-> -> -> ->--> ->W->h->a->t-> ->c->o->d->e-> ->d->e->p->e->n->d->s-> ->o->n-> ->t->h->i->s->?->
+->
+-> -> -> ->--> ->A->r->e-> ->t->h->e->r->e-> ->r->e->f->e->r->e->n->c->e->s-> ->t->o-> ->t->h->i->s-> ->d->o->c->?->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->r->e->f->e->r->e->n->c->e->s-> ->b->e->f->o->r->e-> ->d->e->l->e->t->i->n->g->
+->
+->
+->
+->3->.-> ->*->*->P->r->e->p->a->r->e-> ->f->o->r-> ->A->r->c->h->i->v->a->l->*->*->:->
+->
+-> -> -> ->--> ->C->r->e->a->t->e-> ->a->r->c->h->i->v->e-> ->l->o->c->a->t->i->o->n->:-> ->`->a->r->c->h->i->v->e->/->a->c->t->i->v->e->/->[->t->i->e->r->]->/->[->d->o->c->_->t->y->p->e->]->/->[->d->o->c->_->n->a->m->e->]->/->v->1->/->`->
+->
+-> -> -> ->--> ->C->o->p->y-> ->d->o->c->u->m->e->n->t-> ->t->o-> ->a->r->c->h->i->v->e->
+->
+-> -> -> ->--> ->C->r->e->a->t->e-> ->m->e->t->a->d->a->t->a->.->j->s->o->n-> ->w->i->t->h-> ->a->r->c->h->i->v->a->l-> ->i->n->f->o->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->t->i->m->e->s->t->a->m->p-> ->a->n->d-> ->r->e->a->s->o->n-> ->f->o->r-> ->a->r->c->h->i->v->a->l->
+->
+->
+->
+->4->.-> ->*->*->C->r->e->a->t->e-> ->A->r->c->h->i->v->e-> ->M->e->t->a->d->a->t->a->*->*->:->
+->
+->
+->
+-> -> -> ->`->`->`->j->s->o->n->
+->
+-> -> -> ->{->
+->
+-> -> -> -> -> ->"->c->l->a->s->s->i->f->i->c->a->t->i->o->n->_->t->i->e->r->"->:-> ->2->,->
+->
+-> -> -> -> -> ->"->o->r->i->g->i->n->a->l->_->p->a->t->h->"->:-> ->"->d->o->c->s->/->o->l->d->_->g->u->i->d->e->.->m->d->"->,->
+->
+-> -> -> -> -> ->"->a->r->c->h->i->v->e->d->_->d->a->t->e->"->:-> ->"->2->0->2->5->-->1->1->-->0->7->T->1->4->:->3->0->:->0->0->Z->"->,->
+->
+-> -> -> -> -> ->"->a->r->c->h->i->v->e->d->_->r->e->a->s->o->n->"->:-> ->"->R->e->p->l->a->c->e->d-> ->b->y-> ->n->e->w-> ->g->u->i->d->e->"->,->
+->
+-> -> -> -> -> ->"->r->e->l->a->t->e->d->_->d->o->c->u->m->e->n->t->s->"->:-> ->[->"->d->o->c->s->/->g->u->i->d->e->s->/->n->e->w->_->g->u->i->d->e->.->m->d->"->]->,->
+->
+-> -> -> -> -> ->"->r->e->t->e->n->t->i->o->n->_->p->o->l->i->c->y->"->:-> ->"->i->n->d->e->f->i->n->i->t->e->"->,->
+->
+-> -> -> -> -> ->"->l->a->s->t->_->a->c->c->e->s->s->e->d->"->:-> ->"->2->0->2->5->-->1->1->-->0->5->"->
+->
+-> -> -> ->}->
+->
+-> -> -> ->`->`->`->
+->
+->
+->
+->5->.-> ->*->*->D->e->l->e->t->e-> ->O->r->i->g->i->n->a->l->*->*->:->
+->
+-> -> -> ->--> ->R->e->m->o->v->e-> ->f->r->o->m-> ->m->a->i->n-> ->d->o->c->s->/-> ->d->i->r->e->c->t->o->r->y->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->a->n->y-> ->i->n->d->i->c->e->s-> ->o->r-> ->n->a->v->i->g->a->t->i->o->n->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->R->E->A->D->M->E-> ->i->f-> ->d->o->c->u->m->e->n->t-> ->w->a->s-> ->l->i->s->t->e->d->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->a->n->y-> ->c->r->o->s->s->-->r->e->f->e->r->e->n->c->e->s->
+->
+->
+->
+->6->.-> ->*->*->U->p->d->a->t->e-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->N->o->t->e-> ->w->h->e->r->e-> ->o->l->d-> ->d->o->c->u->m->e->n->t-> ->w->a->s-> ->m->o->v->e->d-> ->t->o->
+->
+-> -> -> ->--> ->A->d->d-> ->p->o->i->n->t->e->r-> ->t->o-> ->r->e->p->l->a->c->e->m->e->n->t-> ->i->f-> ->a->p->p->l->i->c->a->b->l->e->
+->
+-> -> -> ->--> ->U->p->d->a->t->e-> ->r->e->l->a->t->e->d-> ->d->o->c->u->m->e->n->t->s-> ->l->i->s->t->s->
+->
+-> -> -> ->--> ->A->d->d-> ->n->o->t->e-> ->t->o-> ->C->H->A->N->G->E->L->O->G->.->m->d-> ->i->f-> ->r->e->l->e->v->a->n->t->
+->
+->
+->
+->7->.-> ->*->*->V->a->l->i->d->a->t->i->o->n->*->*->:->
+->
+-> -> -> ->--> ->A->r->c->h->i->v->e-> ->c->o->p->y-> ->c->o->m->p->l->e->t->e-> ->
+->
+-> -> -> ->--> ->M->e->t->a->d->a->t->a-> ->a->c->c->u->r->a->t->e-> ->
+->
+-> -> -> ->--> ->O->r->i->g->i->n->a->l-> ->r->e->m->o->v->e->d-> ->f->r->o->m-> ->m->a->i->n-> ->l->o->c->a->t->i->o->n-> ->
+->
+-> -> -> ->--> ->A->l->l-> ->r->e->f->e->r->e->n->c->e->s-> ->u->p->d->a->t->e->d-> ->
+->
+-> -> -> ->--> ->R->e->p->l->a->c->e->m->e->n->t-> ->d->o->c->u->m->e->n->t-> ->(->i->f-> ->a->n->y->)-> ->a->v->a->i->l->a->b->l->e-> ->
+->
+->
+->
+->8->.-> ->*->*->C->o->m->m->i->t->*->*->:->
+->
+-> -> -> ->--> ->M->e->s->s->a->g->e->:-> ->`->d->o->c->s->:-> ->a->r->c->h->i->v->e-> ->[->d->o->c->u->m->e->n->t-> ->n->a->m->e->]->`->
+->
+-> -> -> ->--> ->I->n->c->l->u->d->e-> ->d->e->l->e->t->i->o->n-> ->a->n->d-> ->a->r->c->h->i->v->e-> ->c->r->e->a->t->i->o->n->
+->
+-> -> -> ->--> ->N->o->t->e-> ->r->e->a->s->o->n-> ->f->o->r-> ->a->r->c->h->i->v->a->l->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->Q->u->i->c->k-> ->D->o->c->u->m->e->n->t-> ->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->D->e->c->i->s->i->o->n-> ->T->r->e->e->
+->
+->
+->
+->*->*->I->s-> ->t->h->i->s-> ->a-> ->p->o->l->i->c->y->,-> ->c->o->m->p->l->i->a->n->c->e->,-> ->o->r-> ->i->n->f->r->a->s->t->r->u->c->t->u->r->e-> ->d->o->c->u->m->e->n->t->?->*->*->
+->
+->
+->
+->--> ->I->f-> ->Y->E->S-> ->->-> ->T->i->e->r-> ->1-> ->(->C->r->i->t->i->c->a->l-> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e->)->
+->
+->--> ->I->f-> ->N->O-> ->->-> ->C->o->n->t->i->n->u->e->
+->
+->
+->
+->*->*->I->s-> ->t->h->i->s-> ->a-> ->u->s->e->r-> ->g->u->i->d->e->,-> ->t->u->t->o->r->i->a->l->,-> ->o->r-> ->i->n->f->o->r->m->a->t->i->o->n->a->l-> ->c->o->n->t->e->n->t->?->*->*->
+->
+->
+->
+->--> ->I->f-> ->Y->E->S-> ->->-> ->T->i->e->r-> ->2-> ->(->I->n->f->o->r->m->a->t->i->v->e-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->)->
+->
+->--> ->I->f-> ->N->O-> ->->-> ->C->o->n->t->i->n->u->e->
+->
+->
+->
+->*->*->I->s-> ->t->h->i->s-> ->a-> ->t->e->m->p->o->r->a->r->y-> ->r->e->p->o->r->t-> ->o->r-> ->a->u->d->i->t-> ->o->u->t->p->u->t->?->*->*->
+->
+->
+->
+->--> ->I->f-> ->Y->E->S-> ->->-> ->T->i->e->r-> ->3-> ->(->T->e->m->p->o->r->a->r->y-> ->&-> ->J->o->b-> ->R->e->p->o->r->t->s->)->
+->
+->--> ->I->f-> ->N->O-> ->->-> ->C->o->n->t->i->n->u->e->
+->
+->
+->
+->*->*->I->s-> ->t->h->i->s-> ->g->u->i->d->a->n->c->e-> ->f->o->r-> ->a->g->e->n->t-> ->o->p->e->r->a->t->i->o->n->s->?->*->*->
+->
+->
+->
+->--> ->I->f-> ->Y->E->S-> ->->-> ->T->i->e->r-> ->4-> ->(->A->g->e->n->t-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->)->
+->
+->--> ->I->f-> ->N->O-> ->->-> ->T->h->i->s-> ->s->h->o->u->l->d->n->'->t-> ->b->e-> ->i->n-> ->d->o->c->s->/->
+->
+->
+->
+->*->*->T->i->e->r-> ->1-> ->C->h->a->r->a->c->t->e->r->i->s->t->i->c->s->*->*-> ->(->i->f-> ->u->n->s->u->r->e->)->:->
+->
+->
+->
+->--> ->P->e->r->m->a->n->e->n->t-> ->s->t->o->r->a->g->e-> ->n->e->e->d->e->d->?-> ->Y->E->S->
+->
+->--> ->M->u->l->t->i->p->l->e-> ->v->e->r->s->i->o->n->s-> ->t->r->a->c->k->e->d->?-> ->Y->E->S->
+->
+->--> ->U->s->e->r-> ->a->p->p->r->o->v->a->l-> ->r->e->q->u->i->r->e->d-> ->f->o->r-> ->c->h->a->n->g->e->s->?-> ->Y->E->S->
+->
+->--> ->N->e->v->e->r-> ->d->e->l->e->t->e->d-> ->w->i->t->h->o->u->t-> ->e->x->p->l->i->c->i->t-> ->i->n->s->t->r->u->c->t->i->o->n->?-> ->Y->E->S->
+->
+->
+->
+->*->*->T->i->e->r-> ->2-> ->C->h->a->r->a->c->t->e->r->i->s->t->i->c->s->*->*->:->
+->
+->
+->
+->--> ->P->e->r->m->a->n->e->n->t-> ->s->t->o->r->a->g->e-> ->n->e->e->d->e->d->?-> ->Y->E->S->
+->
+->--> ->M->u->l->t->i->p->l->e-> ->v->e->r->s->i->o->n->s-> ->t->r->a->c->k->e->d->?-> ->N->O-> ->(->u->s->u->a->l->l->y->)->
+->
+->--> ->U->s->e->r-> ->a->p->p->r->o->v->a->l-> ->r->e->q->u->i->r->e->d-> ->f->o->r-> ->m->a->j->o->r-> ->c->h->a->n->g->e->s->?-> ->Y->E->S->
+->
+->--> ->A->g->e->n->t-> ->c->a->n-> ->c->r->e->a->t->e-> ->f->r->e->e->l->y->?-> ->Y->E->S->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->Q->u->i->c->k-> ->R->e->f->e->r->e->n->c->e->:-> ->B->e->f->o->r->e-> ->C->r->e->a->t->i->n->g-> ->A->n->y-> ->D->o->c->u->m->e->n->t->
+->
+->
+->
+->*->*->C->h->e->c->k->l->i->s->t->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->*->*->T->i->e->r-> ->D->e->t->e->r->m->i->n->e->d->*->*->:-> ->K->n->o->w-> ->i->f-> ->T->i->e->r-> ->1->,-> ->2->,-> ->3->,-> ->o->r-> ->4->
+->
+->--> ->[-> ->]-> ->*->*->L->o->c->a->t->i->o->n-> ->P->l->a->n->n->e->d->*->*->:-> ->K->n->o->w-> ->w->h->e->r->e-> ->d->o->c->u->m->e->n->t-> ->w->i->l->l-> ->l->i->v->e->
+->
+->--> ->[-> ->]-> ->*->*->A->p->p->r->o->v->a->l-> ->N->e->e->d->e->d->*->*->:-> ->C->o->n->f->i->r->m->e->d-> ->a->u->t->h->o->r->i->t->y-> ->(->T->i->e->r-> ->1-> ->d->o->c->s-> ->n->e->e->d-> ->a->p->p->r->o->v->a->l->)->
+->
+->--> ->[-> ->]-> ->*->*->S->t->r->u->c->t->u->r->e-> ->C->l->e->a->r->*->*->:-> ->H->a->v->e-> ->o->u->t->l->i->n->e->/->p->l->a->n-> ->b->e->f->o->r->e-> ->w->r->i->t->i->n->g->
+->
+->--> ->[-> ->]-> ->*->*->P->r->o->f->e->s->s->i->o->n->a->l-> ->S->t->a->n->d->a->r->d->s->*->*->:-> ->W->i->l->l-> ->f->o->l->l->o->w-> ->f->o->r->m->a->t->t->i->n->g-> ->a->n->d-> ->e->m->o->j->i-> ->g->u->i->d->e->l->i->n->e->s->
+->
+->--> ->[-> ->]-> ->*->*->U->T->F->-->8-> ->E->n->c->o->d->i->n->g->*->*->:-> ->S->a->v->e-> ->a->s-> ->U->T->F->-->8-> ->(->n->o-> ->B->O->M->)->
+->
+->--> ->[-> ->]-> ->*->*->L->i->n->k->s-> ->V->e->r->i->f->i->e->d->*->*->:-> ->A->l->l-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->l->i->n->k->s-> ->w->i->l->l-> ->w->o->r->k->
+->
+->--> ->[-> ->]-> ->*->*->C->o->d->e-> ->E->x->a->m->p->l->e->s->*->*->:-> ->A->n->y-> ->e->x->a->m->p->l->e->s-> ->w->i->l->l-> ->b->e-> ->t->e->s->t->e->d->/->c->o->r->r->e->c->t->
+->
+->--> ->[-> ->]-> ->*->*->M->e->t->a->d->a->t->a-> ->R->e->a->d->y->*->*->:-> ->F->o->r-> ->T->i->e->r-> ->1->,-> ->m->e->t->a->d->a->t->a-> ->w->i->l->l-> ->b->e-> ->c->r->e->a->t->e->d->
+->
+->--> ->[-> ->]-> ->*->*->A->r->c->h->i->v->e-> ->P->l->a->n->*->*->:-> ->F->o->r-> ->T->i->e->r-> ->1->,-> ->u->n->d->e->r->s->t->a->n->d-> ->a->r->c->h->i->v->a->l-> ->s->t->r->a->t->e->g->y->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->V->a->l->i->d->a->t->i->o->n-> ->C->h->e->c->k->l->i->s->t-> ->(->B->e->f->o->r->e-> ->C->o->m->m->i->t->)->
+->
+->
+->
+->*->*->C->o->n->t->e->n->t-> ->Q->u->a->l->i->t->y->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->D->o->c->u->m->e->n->t-> ->h->a->s-> ->c->l->e->a->r-> ->t->i->t->l->e-> ->a->n->d-> ->p->u->r->p->o->s->e->
+->
+->--> ->[-> ->]-> ->H->e->a->d->i->n->g-> ->h->i->e->r->a->r->c->h->y-> ->i->s-> ->l->o->g->i->c->a->l-> ->(->H->1-> ->->-> ->H->2-> ->->-> ->H->3->,-> ->e->t->c->.->)->
+->
+->--> ->[-> ->]-> ->S->e->c->t->i->o->n->s-> ->a->r->e-> ->w->e->l->l->-->o->r->g->a->n->i->z->e->d->
+->
+->--> ->[-> ->]-> ->C->o->d->e-> ->e->x->a->m->p->l->e->s-> ->a->r->e-> ->c->o->r->r->e->c->t-> ->a->n->d-> ->t->e->s->t->e->d->
+->
+->--> ->[-> ->]-> ->L->i->n->k->s-> ->t->o-> ->o->t->h->e->r-> ->d->o->c->s-> ->w->o->r->k->
+->
+->--> ->[-> ->]-> ->N->o-> ->h->a->r->d->c->o->d->e->d-> ->p->a->t->h->s-> ->o->r-> ->c->r->e->d->e->n->t->i->a->l->s->
+->
+->--> ->[-> ->]-> ->P->r->o->f->e->s->s->i->o->n->a->l-> ->l->a->n->g->u->a->g->e-> ->t->h->r->o->u->g->h->o->u->t->
+->
+->
+->
+->*->*->F->o->r->m->a->t->t->i->n->g->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->U->T->F->-->8-> ->e->n->c->o->d->i->n->g-> ->(->v->e->r->i->f->i->e->d->)->
+->
+->--> ->[-> ->]-> ->C->o->n->s->i->s->t->e->n->t-> ->b->u->l->l->e->t-> ->f->o->r->m->a->t->t->i->n->g->
+->
+->--> ->[-> ->]-> ->C->o->d->e-> ->b->l->o->c->k->s-> ->h->a->v->e-> ->l->a->n->g->u->a->g->e-> ->s->p->e->c->i->f->i->e->d->
+->
+->--> ->[-> ->]-> ->N->o-> ->t->r->a->i->l->i->n->g-> ->s->p->a->c->e->s-> ->o->r-> ->e->x->t->r->a-> ->b->l->a->n->k-> ->l->i->n->e->s->
+->
+->--> ->[-> ->]-> ->M->a->r->k->d->o->w->n-> ->i->s-> ->c->l->e->a->n-> ->a->n->d-> ->v->a->l->i->d->
+->
+->--> ->[-> ->]-> ->T->a->b->l->e->s-> ->(->i->f-> ->a->n->y->)-> ->a->r->e-> ->p->r->o->p->e->r->l->y-> ->f->o->r->m->a->t->t->e->d->
+->
+->
+->
+->*->*->S->t->a->n->d->a->r->d->s-> ->C->o->m->p->l->i->a->n->c->e->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->P->r->o->f->e->s->s->i->o->n->a->l-> ->b->r->a->n->d->i->n->g-> ->a->p->p->l->i->e->d-> ->(->i->f-> ->T->i->e->r-> ->1->/->2->)->
+->
+->--> ->[-> ->]-> ->E->m->o->j->i-> ->u->s->a->g->e-> ->f->o->l->l->o->w->s-> ->p->o->l->i->c->y-> ->(->o->n->l->y-> ->w->h->e->n-> ->c->l->a->r->i->f->y->i->n->g->)->
+->
+->--> ->[-> ->]-> ->C->o->n->s->i->s->t->e->n->t-> ->w->i->t->h-> ->e->x->i->s->t->i->n->g-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->s->t->y->l->e->
+->
+->--> ->[-> ->]-> ->C->h->a->r->a->c->t->e->r-> ->e->n->c->o->d->i->n->g-> ->c->l->e->a->n-> ->(->n->o-> ->c->o->r->r->u->p->t->e->d-> ->t->e->x->t->)->
+->
+->--> ->[-> ->]-> ->N->o-> ->e->x->c->e->s->s->i->v->e-> ->d->e->c->o->r->a->t->i->o->n->
+->
+->
+->
+->*->*->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->&-> ->M->e->t->a->d->a->t->a->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->T->i->e->r-> ->c->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->i->s-> ->c->o->r->r->e->c->t->
+->
+->--> ->[-> ->]-> ->M->e->t->a->d->a->t->a->.->j->s->o->n-> ->c->r->e->a->t->e->d-> ->(->i->f-> ->T->i->e->r-> ->1->)->
+->
+->--> ->[-> ->]-> ->V->e->r->s->i->o->n-> ->n->u->m->b->e->r-> ->a->s->s->i->g->n->e->d-> ->(->i->f-> ->T->i->e->r-> ->1->)->
+->
+->--> ->[-> ->]-> ->D->a->t->e-> ->f->i->e->l->d-> ->a->d->d->e->d-> ->(->i->f-> ->T->i->e->r-> ->1->)->
+->
+->--> ->[-> ->]-> ->A->u->t->h->o->r->i->t->y-> ->s->t->a->t->e->m->e->n->t-> ->c->l->e->a->r-> ->(->i->f-> ->T->i->e->r-> ->1->)->
+->
+->
+->
+->*->*->R->e->f->e->r->e->n->c->e->s-> ->&-> ->L->i->n->k->s->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->L->i->n->k->s-> ->t->o-> ->r->e->l->a->t->e->d-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->i->n->c->l->u->d->e->d->
+->
+->--> ->[-> ->]-> ->R->e->f->e->r->e->n->c->e->s-> ->s->e->c->t->i->o->n-> ->c->o->m->p->l->e->t->e-> ->(->i->f-> ->a->p->p->l->i->c->a->b->l->e->)->
+->
+->--> ->[-> ->]-> ->C->r->o->s->s->-->r->e->f->e->r->e->n->c->e->s-> ->a->c->c->u->r->a->t->e->
+->
+->--> ->[-> ->]-> ->N->o-> ->b->r->o->k->e->n-> ->i->n->t->e->r->n->a->l-> ->l->i->n->k->s->
+->
+->
+->
+->*->*->C->o->m->p->l->i->a->n->c->e->*->*->:->
+->
+->
+->
+->--> ->[-> ->]-> ->D->o->c->u->m->e->n->t-> ->p->r->e->s->e->r->v->e->s-> ->e->x->i->s->t->i->n->g-> ->f->e->a->t->u->r->e->s->
+->
+->--> ->[-> ->]-> ->N->o->n->-->d->e->s->t->r->u->c->t->i->v->e-> ->a->p->p->r->o->a->c->h-> ->m->a->i->n->t->a->i->n->e->d->
+->
+->--> ->[-> ->]-> ->A->r->c->h->i->v->e-> ->p->r->o->c->e->d->u->r->e->s-> ->f->o->l->l->o->w->e->d-> ->(->i->f-> ->d->e->l->e->t->i->n->g->)->
+->
+->--> ->[-> ->]-> ->M->e->t->a->d->a->t->a-> ->p->r->o->p->e->r->l->y-> ->t->r->a->c->k->e->d->
+->
+->--> ->[-> ->]-> ->A->u->d->i->t-> ->t->r->a->i->l-> ->n->o->t->e->d->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->C->o->m->m->o->n-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> ->Q->u->e->s->t->i->o->n->s->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->W->h->a->t->'->s-> ->t->h->e-> ->d->i->f->f->e->r->e->n->c->e-> ->b->e->t->w->e->e->n-> ->a-> ->g->u->i->d->e-> ->a->n->d-> ->a-> ->p->r->o->c->e->d->u->r->e->?->
+->
+->
+->
+->*->*->A->*->*->:->
+->
+->
+->
+->--> ->*->*->G->u->i->d->e->*->*->:-> ->E->d->u->c->a->t->i->o->n->a->l-> ->c->o->n->t->e->n->t-> ->e->x->p->l->a->i->n->i->n->g-> ->c->o->n->c->e->p->t->s->,-> ->w->i->t->h-> ->e->x->a->m->p->l->e->s->.-> ->T->i->e->r-> ->2->.->
+->
+->--> ->*->*->P->r->o->c->e->d->u->r->e->*->*->:-> ->S->t->e->p->-->b->y->-->s->t->e->p-> ->i->n->s->t->r->u->c->t->i->o->n->s-> ->f->o->r-> ->h->o->w-> ->t->o-> ->d->o-> ->s->o->m->e->t->h->i->n->g->.-> ->C->a->n-> ->b->e-> ->T->i->e->r-> ->1-> ->(->i->n->f->r->a->s->t->r->u->c->t->u->r->e->)-> ->o->r-> ->T->i->e->r-> ->2-> ->(->u->s->e->r-> ->p->r->o->c->e->d->u->r->e->)->.->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->S->h->o->u->l->d-> ->I-> ->u->p->d->a->t->e-> ->t->h->e-> ->m->a->i->n-> ->R->E->A->D->M->E-> ->o->r-> ->c->r->e->a->t->e-> ->a-> ->s->e->p->a->r->a->t->e-> ->g->u->i->d->e->?->
+->
+->
+->
+->*->*->A->*->*->:->
+->
+->
+->
+->--> ->U->p->d->a->t->e-> ->R->E->A->D->M->E-> ->f->o->r-> ->m->a->j->o->r->,-> ->c->o->m->m->o->n->l->y->-->n->e->e->d->e->d-> ->i->n->f->o->r->m->a->t->i->o->n->
+->
+->--> ->C->r->e->a->t->e-> ->s->e->p->a->r->a->t->e-> ->g->u->i->d->e-> ->f->o->r-> ->d->e->t->a->i->l->e->d->,-> ->s->p->e->c->i->a->l->i->z->e->d-> ->c->o->n->t->e->n->t->
+->
+->--> ->L->i->n->k-> ->f->r->o->m-> ->R->E->A->D->M->E-> ->t->o-> ->g->u->i->d->e->s-> ->f->o->r-> ->d->i->s->c->o->v->e->r->a->b->i->l->i->t->y->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->H->o->w-> ->d->o-> ->I-> ->h->a->n->d->l->e-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->t->h->a->t-> ->d->e->p->e->n->d->s-> ->o->n-> ->c->o->d->e->?->
+->
+->
+->
+->*->*->A->*->*->:->
+->
+->
+->
+->--> ->C->o->d->e-> ->e->x->a->m->p->l->e->s-> ->m->u->s->t-> ->m->a->t->c->h-> ->c->u->r->r->e->n->t-> ->c->o->d->e->
+->
+->--> ->D->o->c->u->m->e->n->t-> ->c->o->d->e-> ->a->s-> ->i->t-> ->i->s->,-> ->n->o->t-> ->a->s-> ->i->t-> ->s->h->o->u->l->d-> ->b->e->
+->
+->--> ->I->f-> ->c->o->d->e-> ->c->h->a->n->g->e->s->,-> ->u->p->d->a->t->e-> ->d->o->c->u->m->e->n->t->a->t->i->o->n->
+->
+->--> ->C->o->n->s->i->d->e->r-> ->c->r->e->a->t->i->n->g-> ->a->u->t->o->m->a->t->e->d-> ->t->e->s->t->s-> ->f->o->r-> ->c->o->d->e-> ->e->x->a->m->p->l->e->s->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->C->a->n-> ->I-> ->d->e->l->e->t->e-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->t->h->a->t->'->s-> ->"->o->u->t->d->a->t->e->d->"->?->
+->
+->
+->
+->*->*->A->*->*->:-> ->N->o->.-> ->F->o->l->l->o->w-> ->a->r->c->h->i->v->a->l-> ->p->r->o->c->e->d->u->r->e->:->
+->
+->
+->
+->1->.-> ->A->r->c->h->i->v->e-> ->t->o-> ->i->n->a->c->t->i->v->e-> ->l->o->c->a->t->i->o->n-> ->w->i->t->h-> ->m->e->t->a->d->a->t->a->
+->
+->2->.-> ->K->e->e->p-> ->a->l->l-> ->h->i->s->t->o->r->i->c->a->l-> ->v->e->r->s->i->o->n->s->
+->
+->3->.-> ->O->n->l->y-> ->d->e->l->e->t->e-> ->w->i->t->h-> ->e->x->p->l->i->c->i->t-> ->u->s->e->r-> ->a->p->p->r->o->v->a->l->
+->
+->4->.-> ->D->o->c->u->m->e->n->t-> ->w->h->y-> ->i->t-> ->w->a->s-> ->a->r->c->h->i->v->e->d->
+->
+->
+->
+->#->#->#-> ->Q->:-> ->H->o->w-> ->d->o-> ->I-> ->h->a->n->d->l->e-> ->v->e->r->s->i->o->n-> ->h->i->s->t->o->r->y-> ->i->n-> ->d->o->c->u->m->e->n->t->a->t->i->o->n->?->
+->
+->
+->
+->*->*->A->*->*->:-> ->A->d->d-> ->s->e->c->t->i->o->n-> ->t->o-> ->d->o->c->u->m->e->n->t->:->
+->
+->
+->
+->`->`->`->m->a->r->k->d->o->w->n->
+->
+->#->#-> ->V->e->r->s->i->o->n-> ->H->i->s->t->o->r->y->
+->
+->
+->
+->|-> ->V->e->r->s->i->o->n-> ->|-> ->D->a->t->e-> ->|-> ->A->u->t->h->o->r-> ->|-> ->C->h->a->n->g->e->s-> ->|->
+->
+->|->-->-->-->-->-->-->-->-->-->|->-->-->-->-->-->-->|->-->-->-->-->-->-->-->-->|->-->-->-->-->-->-->-->-->-->|->
+->
+->|-> ->1->.->1-> ->|-> ->N->o->v-> ->1->5-> ->|-> ->A->g->e->n->t-> ->|-> ->A->d->d->e->d-> ->n->e->w-> ->s->e->c->t->i->o->n-> ->|->
+->
+->|-> ->1->.->0-> ->|-> ->N->o->v-> ->7-> ->|-> ->A->g->e->n->t-> ->|-> ->I->n->i->t->i->a->l-> ->v->e->r->s->i->o->n-> ->|->
+->
+->`->`->`->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->F->i->l->e-> ->O->r->g->a->n->i->z->a->t->i->o->n-> ->R->e->f->e->r->e->n->c->e->
+->
+->
+->
+->`->`->`->
+->
+->d->o->c->s->/->
+->
+-> ->a->r->c->h->i->t->e->c->t->u->r->e->/-> -> -> -> -> -> -> -> -> -> ->#-> ->T->i->e->r-> ->1->:-> ->P->o->l->i->c->i->e->s->,-> ->c->l->a->s->s->i->f->i->c->a->t->i->o->n->,-> ->s->t->r->a->t->e->g->y->
+->
+-> -> -> -> ->P->O->L->I->C->Y->.->m->d->
+->
+-> -> -> -> ->D->O->C->U->M->E->N->T->_->C->L->A->S->S->I->F->I->C->A->T->I->O->N->.->m->d->
+->
+-> -> -> -> ->A->G->E->N->T->_->I->N->S->T->R->U->C->T->I->O->N->_->S->T->R->A->T->E->G->Y->.->m->d->
+->
+->
+->
+-> ->g->u->i->d->e->s->/-> -> -> -> -> -> -> -> -> -> -> -> -> -> -> ->#-> ->T->i->e->r-> ->2->:-> ->U->s->e->r-> ->g->u->i->d->e->s-> ->a->n->d-> ->t->u->t->o->r->i->a->l->s->
+->
+-> -> -> -> ->g->e->t->t->i->n->g->_->s->t->a->r->t->e->d->.->m->d->
+->
+-> -> -> -> ->i->n->s->t->a->l->l->a->t->i->o->n->.->m->d->
+->
+-> -> -> -> ->[->t->o->p->i->c->]->/->
+->
+->
+->
+-> ->a->p->i->/-> -> -> -> -> -> -> -> -> -> -> -> -> -> -> -> -> -> ->#-> ->T->i->e->r-> ->2->:-> ->A->P->I-> ->d->o->c->u->m->e->n->t->a->t->i->o->n->
+->
+-> -> -> -> ->c->l->i->.->m->d->
+->
+-> -> -> -> ->c->o->r->e->.->m->d->
+->
+-> -> -> -> ->u->t->i->l->s->.->m->d->
+->
+->
+->
+-> ->f->e->a->t->u->r->e->s->/-> -> -> -> -> -> -> -> -> -> -> -> -> ->#-> ->T->i->e->r-> ->2->:-> ->F->e->a->t->u->r->e-> ->d->e->s->c->r->i->p->t->i->o->n->s->
+->
+-> -> -> -> ->[->f->e->a->t->u->r->e->_->n->a->m->e->]->.->m->d->
+->
+->
+->
+-> ->p->r->o->c->e->d->u->r->e->s->/-> -> -> -> -> -> -> -> -> -> -> ->#-> ->T->i->e->r-> ->1->:-> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e-> ->p->r->o->c->e->d->u->r->e->s->
+->
+-> -> -> -> ->d->e->p->l->o->y->m->e->n->t->.->m->d->
+->
+-> -> -> -> ->m->a->i->n->t->e->n->a->n->c->e->.->m->d->
+->
+->
+->
+-> ->r->e->p->o->r->t->s->/-> -> -> -> -> -> -> -> -> -> -> -> -> -> ->#-> ->T->i->e->r-> ->1->:-> ->A->u->d->i->t-> ->a->n->d-> ->c->o->m->p->l->i->a->n->c->e-> ->r->e->p->o->r->t->s->
+->
+-> -> -> -> ->[->a->u->d->i->t->_->n->a->m->e->]->_->[->D->A->T->E->]->.->m->d->
+->
+->
+->
+-> ->R->E->A->D->M->E->.->m->d-> -> -> -> -> -> -> -> -> -> -> -> ->#-> ->H->i->g->h->-->l->e->v->e->l-> ->o->v->e->r->v->i->e->w-> ->(->T->i->e->r-> ->2->)->
+->
+->`->`->`->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->#->#-> ->R->e->f->e->r->e->n->c->e->s-> ->&-> ->L->i->n->k->s->
+->
+->
+->
+->*->*->C->o->r->e-> ->D->o->c->u->m->e->n->t->a->t->i->o->n->*->*->:->
+->
+->
+->
+->--> ->G->l->o->b->a->l-> ->P->o->l->i->c->y->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->P->O->L->I->C->Y->.->m->d->`->
+->
+->--> ->C->l->a->s->s->i->f->i->c->a->t->i->o->n-> ->F->r->a->m->e->w->o->r->k->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->D->O->C->U->M->E->N->T->_->C->L->A->S->S->I->F->I->C->A->T->I->O->N->.->m->d->`->
+->
+->--> ->G->e->n->e->r->a->l-> ->S->t->r->a->t->e->g->y->:-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->A->G->E->N->T->_->I->N->S->T->R->U->C->T->I->O->N->_->S->T->R->A->T->E->G->Y->.->m->d->`->
+->
+->
+->
+->*->*->D->o->c->u->m->e->n->t->a->t->i->o->n-> ->S->t->a->n->d->a->r->d->s->*->*->:->
+->
+->
+->
+->--> ->P->r->o->f->e->s->s->i->o->n->a->l-> ->S->t->a->n->d->a->r->d->s->:-> ->I->n-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->P->O->L->I->C->Y->.->m->d->`->
+->
+->--> ->E->m->o->j->i-> ->P->o->l->i->c->y->:-> ->I->n-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->P->O->L->I->C->Y->.->m->d->`->
+->
+->--> ->A->r->c->h->i->v->e-> ->S->t->r->a->t->e->g->y->:-> ->I->n-> ->`->d->o->c->s->/->a->r->c->h->i->t->e->c->t->u->r->e->/->D->O->C->U->M->E->N->T->_->C->L->A->S->S->I->F->I->C->A->T->I->O->N->.->m->d->`->
+->
+->
+->
+->*->*->R->e->l->a->t->e->d-> ->D->o->c->u->m->e->n->t->s->*->*->:->
+->
+->
+->
+->--> ->S->a->t->e->l->l->i->t->e-> ->A->r->c->h->i->v->e-> ->I->n->s->t->r->u->c->t->i->o->n->s->:-> ->`->a->r->c->h->i->v->e->/->A->G->E->N->T->_->I->N->S->T->R->U->C->T->I->O->N->S->.->m->d->`->
+->
+->--> ->T->e->s->t->i->n->g-> ->I->n->s->t->r->u->c->t->i->o->n->s->:-> ->`->t->e->s->t->s->/->A->G->E->N->T->_->I->N->S->T->R->U->C->T->I->O->N->S->.->m->d->`->
+->
+->--> ->C->o->r->e-> ->P->a->c->k->a->g->e-> ->I->n->s->t->r->u->c->t->i->o->n->s->:-> ->`->c->o->d->e->s->e->n->t->i->n->e->l->/->A->G->E->N->T->_->I->N->S->T->R->U->C->T->I->O->N->S->.->m->d->`->
+->
+->
+->
+->-->-->-->
+->
+->
+->
+->*->*->C->l->a->s->s->i->f->i->c->a->t->i->o->n->*->*->:-> ->T->4->b-> ->--> ->I->n->f->r->a->s->t->r->u->c->t->u->r->e-> ->&-> ->P->r->o->c->e->d->u->r->a->l-> ->A->g->e->n->t-> ->D->o->c->u->m->e->n->t->a->t->i->o->n-> -> ->
+->
+->*->*->A->u->t->h->o->r->i->t->y->*->*->:-> ->G->u->i->d->e->l->i->n->e->s-> ->f->o->r-> ->a->g->e->n->t->s-> ->c->r->e->a->t->i->n->g-> ->a->n->d-> ->m->a->n->a->g->i->n->g-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> -> ->
+->
+->*->*->U->p->d->a->t->e-> ->F->r->e->q->u->e->n->c->y->*->*->:-> ->W->h->e->n-> ->d->o->c->u->m->e->n->t->a->t->i->o->n-> ->p->r->o->c->e->d->u->r->e->s-> ->o->r-> ->p->o->l->i->c->i->e->s-> ->c->h->a->n->g->e-> -> ->
+->
+->*->*->L->a->s->t-> ->U->p->d->a->t->e->d->*->*->:-> ->N->o->v->e->m->b->e->r-> ->7->,-> ->2->0->2->5-> -> ->
+->
+->*->*->N->e->x->t-> ->R->e->v->i->e->w->*->*->:-> ->D->e->c->e->m->b->e->r-> ->7->,-> ->2->0->2->5-> ->(->q->u->a->r->t->e->r->l->y-> ->s->a->t->e->l->l->i->t->e-> ->a->u->d->i->t->)->
+->
+->
