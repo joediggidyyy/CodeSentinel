@@ -32,3 +32,30 @@ codesentinel.json
 
 # Archive
 quarantine_legacy_archive/
+
+# Agent Session Data
+.agent_session/
+.codesentinel/
+agent_integration_requests/
+
+# Temporary Development Scripts (root directory policy violations)
+/analyze_blocks.py
+/analyze_duplication.py
+/check_end.py
+/diagnosis.py
+/fix_syntax.py
+/remove_duplicates.py
+/root_cause_analysis.py
+
+# Temporary Documentation (should be in docs/)
+/DEV_AUDIT_INTEGRATION_SUMMARY.md
+/EXECUTION_SUMMARY.md
+/ORPHANED_MODULES_ANALYSIS.md
+/orphaned_modules_report.md
+
+# Beta Testing Artifacts
+tests/beta_testing/**/environment/
+tests/beta_testing/**/iterations/*.md
+tests/beta_testing/**/consolidated/*.md
+tests/beta_testing/**/sessions/*.json
+!tests/beta_testing/**/templates/

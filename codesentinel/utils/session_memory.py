@@ -14,6 +14,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import logging
+import atexit
+import threading
+
+from .oracl_context_tier import add_context_summary
 
 logger = logging.getLogger(__name__)
 
@@ -53,12 +57,80 @@ class SessionMemory:
         self.MAX_CACHE_SIZE_MB = 5
         self.CACHE_TTL_MINUTES = 60
         
+        # Unique ID for this session
+        self.session_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}-{Path.cwd().name}"
+
         # Initialize cache directory
         self._init_cache_dir()
         
         # Load existing session if valid
         self._load_session()
-    
+
+        # Register persistence and promotion on exit
+        self._register_exit_handler()
+
+    def _register_exit_handler(self):
+        """Register persistence and promotion logic to run on script exit."""
+        atexit.register(self.persist)
+        atexit.register(self.promote_session_to_context)
+
+    def is_task_successful(self) -> bool:
+        """
+        Determine if the overall task was successful.
+        
+        For now, success is defined as having at least one 'completed' task
+        and no 'in-progress' tasks.
+        """
+        if not self._tasks:
+            return False
+        
+        has_completed = any(t.get('status') == 'completed' for t in self._tasks)
+        has_in_progress = any(t.get('status') == 'in-progress' for t in self._tasks)
+        
+        return has_completed and not has_in_progress
+
+    def has_significant_decisions(self, min_decisions: int = 2) -> bool:
+        """Check if the session contains a minimum number of decisions."""
+        return len(self._decisions) >= min_decisions
+
+    def get_most_accessed_files(self, limit: int = 3) -> List[str]:
+        """Get the most frequently accessed files from the cache history."""
+        # This is a simple proxy for access frequency.
+        # A more robust implementation would track access counts.
+        sorted_files = sorted(self._file_cache.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+        return [path for path, _ in sorted_files[:limit]]
+
+    def promote_session_to_context(self) -> None:
+        """
+        Extracts a high-level summary and sends it to the Context Tier (Tier 2).
+        
+        This is designed to be called on exit, and runs in a background thread
+        to avoid blocking the main process.
+        """
+        def promotion_task():
+            if not self.is_task_successful() or not self.has_significant_decisions():
+                logger.debug("Session not eligible for promotion to Tier 2.")
+                return
+
+            summary = {
+                "session_id": self.session_id,
+                "timestamp": datetime.now().isoformat(),
+                "outcome": "success",
+                "task_summary": self.get_task_summary(),
+                "key_decisions": self.get_recent_decisions(limit=5),
+                "critical_files": self.get_most_accessed_files(limit=3)
+            }
+            
+            try:
+                add_context_summary(self.workspace_root, summary)
+                logger.debug(f"Successfully promoted session {self.session_id} to Tier 2.")
+            except Exception as e:
+                logger.error(f"Error during session promotion to Tier 2: {e}", exc_info=True)
+
+        # Run promotion in a non-daemon thread to ensure it completes on exit
+        promo_thread = threading.Thread(target=promotion_task, daemon=False)
+        promo_thread.start()
+
     def _init_cache_dir(self) -> None:
         """Create cache directory if it doesn't exist."""
         try:

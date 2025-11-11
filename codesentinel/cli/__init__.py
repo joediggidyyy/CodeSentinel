@@ -1757,135 +1757,67 @@ except KeyboardInterrupt:
                 
                 # Full policy validation (only if --full flag is used)
                 if getattr(args, 'full', False):
-                    print("🔍 Scanning for policy violations (--full mode)...")
+                    print("🔍 Scanning for policy violations (--full mode)...\n")
                     
-                    # Define allowed files and directories (from root_cleanup.py)
-                    ALLOWED_ROOT_FILES = {
-                        'setup.py', 'pyproject.toml', 'MANIFEST.in', 'pytest.ini',
-                        'requirements.txt', 'requirements-dev.txt', 'run_tests.py',
-                        'publish_to_pypi.py', 'README.md', 'LICENSE', 'CHANGELOG.md',
-                        'CONTRIBUTING.md', 'SECURITY.md', 'QUICK_START.md',
-                        'codesentinel.json', 'codesentinel.log', '.codesentinel_integrity.json',
-                        '.test_integrity.json', '.gitignore',
-                    }
+                    # Use improved root cleanup utilities
+                    from codesentinel.cli.root_clean_utils import (
+                        scan_root_for_violations,
+                        display_violations_summary,
+                        show_interactive_menu,
+                        interactive_item_review,
+                        execute_cleanup_actions
+                    )
                     
-                    ALLOWED_ROOT_DIRS = {
-                        '.git', '.github', 'archive', 'codesentinel', 'deployment',
-                        'docs', 'github', 'infrastructure', 'logs', 'requirements',
-                        'scripts', 'tests', 'tools', 'quarantine_legacy_archive',
-                    }
+                    # Scan for violations with intelligent suggestions
+                    policy_violations = scan_root_for_violations(workspace_root, verbose=verbose)
                     
-                    # Assess unauthorized items for proper placement (NON-DESTRUCTIVE approach)
-                    # Policy: Never delete without archiving first
-                    policy_violations = []
-                    
-                    # Check all items at root level
-                    for item in workspace_root.iterdir():
-                        # Skip git-related items
-                        if item.name in {'.git', '.gitignore'}:
-                            continue
-                        
-                        if item.is_dir():
-                            # Check if directory is allowed
-                            if item.name not in ALLOWED_ROOT_DIRS:
-                                reason = ''
-                                target_location = 'quarantine_legacy_archive/'  # Always archive first
-                                
-                                if item.name.startswith('.'):
-                                    reason = 'unauthorized dot directory'
-                                else:
-                                    reason = 'unauthorized directory'
-                                
-                                policy_violations.append({
-                                    'type': 'directory',
-                                    'path': item,
-                                    'name': item.name,
-                                    'reason': reason,
-                                    'target': target_location,
-                                    'action': 'archive'  # Always archive, never delete
-                                })
-                                
-                                if verbose:
-                                    print(f"  Found (policy violation): {item.name} [{reason}]")
-                        else:
-                            # Check if file is allowed
-                            if item.name not in ALLOWED_ROOT_FILES:
-                                reason = 'unauthorized file'
-                                target_location = 'quarantine_legacy_archive'
-                                
-                                # Assess file type and suggest proper action
-                                if item.name.startswith('test_') or item.name.endswith('_test.py'):
-                                    reason = 'test/diagnostic file'
-                                elif item.name.endswith('.md'):
-                                    reason = 'documentation file - review placement'
-                                elif item.name.endswith('.json'):
-                                    reason = 'configuration/state file - review placement'
-                                
-                                policy_violations.append({
-                                    'type': 'file',
-                                    'path': item,
-                                    'name': item.name,
-                                    'reason': reason,
-                                    'target': target_location,
-                                    'action': 'archive'  # Always archive, never delete
-                                })
-                                
-                                if verbose:
-                                    print(f"  Found (policy violation): {item.name} [{reason}] → archive to {target_location}")
-                    
-                    # If violations found, show assessment and ask for approval
+                    # If violations found, show assessment with interactive menu
                     if policy_violations:
-                        print(f"\n⚠️  Found {len(policy_violations)} policy violations:")
-                        print("All items will be ARCHIVED (not deleted) per NON-DESTRUCTIVE policy\n")
-                        
-                        for i, violation in enumerate(policy_violations, 1):
-                            print(f"  {i}. [{violation['type'].upper()}] {violation['name']}")
-                            print(f"     Reason: {violation['reason']}")
-                            print(f"     Action: Archive to {violation['target']}")
+                        display_violations_summary(policy_violations)
                         
                         if dry_run:
-                            print("\n[DRY-RUN] Would archive the items above")
-                        else:
-                            if not force:
-                                response = input("\nArchive these items to quarantine_legacy_archive/? (y/N): ").strip().lower()
-                                if response != 'y':
-                                    print("Policy compliance cleanup cancelled.")
-                                    return
-                            
-                            # Archive all violations (non-destructive)
-                            archive_dir = workspace_root / 'quarantine_legacy_archive'
-                            archive_dir.mkdir(parents=True, exist_ok=True)
-                            archived_count = 0
-                            for violation in policy_violations:
-                                try:
-                                    import shutil
-                                    target_path = archive_dir / violation['path'].name
-                                    
-                                    # If target already exists, create timestamped copy
-                                    if target_path.exists():
-                                        from datetime import datetime
-                                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                                        base_name = violation['path'].name
-                                        if '.' in base_name:
-                                            name_parts = base_name.rsplit('.', 1)
-                                            target_path = archive_dir / f"{name_parts[0]}_{timestamp}.{name_parts[1]}"
-                                        else:
-                                            target_path = archive_dir / f"{base_name}_{timestamp}"
-                                    
-                                    if violation['type'] == 'directory':
-                                        shutil.move(str(violation['path']), str(target_path))
-                                    else:
-                                        shutil.move(str(violation['path']), str(target_path))
-                                    
-                                    archived_count += 1
-                                    if verbose:
-                                        print(f"  ✓ Archived: {violation['name']} → quarantine_legacy_archive/")
-                                except Exception as e:
-                                    print(f"  ✗ Failed to archive {violation['name']}: {e}")
-                            
-                            print(f"\n✓ Successfully archived {archived_count}/{len(policy_violations)} items")
-                            print("  Items are preserved in quarantine_legacy_archive/ for review")
+                            print("\n[DRY-RUN] Would process the items above")
                             return
+                        
+                        # Interactive menu
+                        if not force:
+                            choice = show_interactive_menu()
+                            
+                            if choice == '4':
+                                print("Policy compliance cleanup cancelled.")
+                                return
+                            elif choice == '2':
+                                # Interactive mode
+                                actions_to_take = interactive_item_review(policy_violations)
+                                
+                                if not actions_to_take:
+                                    print("\n  No actions to perform.")
+                                    return
+                                
+                                policy_violations = actions_to_take
+                            
+                            elif choice == '3':
+                                # Archive all
+                                for violation in policy_violations:
+                                    violation['action'] = 'archive'
+                                    violation['target'] = 'quarantine_legacy_archive/'
+                            
+                            elif choice != '1':
+                                print("Invalid choice. Cancelled.")
+                                return
+                        
+                        # Execute actions
+                        success_count, total_count = execute_cleanup_actions(
+                            policy_violations,
+                            workspace_root,
+                            verbose=verbose
+                        )
+                        
+                        print(f"\n✅ Successfully processed {success_count}/{total_count} items")
+                        return
+                    else:
+                        print("✅ No policy violations found - root directory is compliant!")
+                        return
 
 
 

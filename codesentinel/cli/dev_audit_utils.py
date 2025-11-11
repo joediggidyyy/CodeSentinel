@@ -209,6 +209,41 @@ def perform_dev_audit(args, codesentinel):
             print(f"Focus area: {focus_area}")
         agent_context = codesentinel.dev_audit.get_agent_context()
 
+        # ORACL Integration: Enrich agent context with historical intelligence
+        try:
+            from codesentinel.utils.archive_decision_provider import get_decision_context_provider
+            
+            provider = get_decision_context_provider()
+            
+            # Query ORACL for relevant historical patterns
+            # Focus on policy violations (most common in dev audits)
+            oracl_context = provider.get_decision_context(
+                decision_type="policy_violation_handling",
+                current_state={
+                    "context": "dev_audit",
+                    "severity": "medium",
+                    "source": "automated_audit"
+                },
+                search_radius_days=90
+            )
+            
+            if oracl_context and oracl_context.confidence_score >= 0.5:
+                # Add ORACL insights to agent context
+                agent_context['oracl_intelligence'] = {
+                    'available': True,
+                    'confidence': oracl_context.confidence_score,
+                    'recommendations': oracl_context.recommended_actions,
+                    'success_rate': oracl_context.success_rate,
+                    'similar_cases': len(oracl_context.similar_past_cases),
+                    'guidance': f"ORACL has {len(oracl_context.similar_past_cases)} similar cases with {oracl_context.success_rate:.0%} success rate (confidence: {oracl_context.confidence_score:.0%})"
+                }
+                print(f"✓ ORACL intelligence: {len(oracl_context.similar_past_cases)} similar cases found (confidence: {oracl_context.confidence_score:.0%})")
+            else:
+                agent_context['oracl_intelligence'] = {'available': False, 'reason': 'insufficient_historical_data'}
+        except Exception as e:
+            # ORACL optional - fail gracefully
+            agent_context['oracl_intelligence'] = {'available': False, 'reason': str(e)}
+
         # Add focus area to agent context if specified
         if focus_area:
             agent_context['focus_area'] = focus_area
@@ -292,7 +327,7 @@ While the full audit context is provided below, you should:
         print(json.dumps(results.get('summary', {}), indent=2))
     return
 
-def apply_automated_fixes(codesentinel):
+def apply_automated_fixes(codesentinel, dry_run=True):
     """
     Apply safe automated fixes based on audit findings.
     
@@ -305,6 +340,7 @@ def apply_automated_fixes(codesentinel):
     
     Args:
         codesentinel: An instance of the CodeSentinel core class
+        dry_run (bool): If True, only show what would be fixed without making changes
     
     Returns:
         dict: Summary of fixes applied or that would be applied

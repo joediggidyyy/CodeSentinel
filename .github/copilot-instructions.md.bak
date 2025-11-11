@@ -1,10 +1,5 @@
 <!-- 
 This file is auto-organized by the instruction defragmentation utility.
-Last organized: 2025-11-11 14:15:24
--->
-
-<!-- 
-This file is auto-organized by the instruction defragmentation utility.
 Last organized: 2025-11-11 13:59:19
 -->
 
@@ -13,8 +8,6 @@ Last organized: 2025-11-11 13:59:19
 
 CodeSentinel is a security-first automated maintenance and monitoring system with SEAM Protection™:
 **Security, Efficiency, And Minimalism** (with Security taking absolute priority).
-
----
 
 ---
 
@@ -63,8 +56,6 @@ CodeSentinel is a security-first automated maintenance and monitoring system wit
   - Scan for new/modified files
   - Check for external tampering
   - Log all access and modifications
-
----
 
 ---
 
@@ -178,12 +169,8 @@ Before committing file operation features:
 
 ---
 
----
-
 ## ORACL Intelligence Ecosystem
 
-
----
 
 ---
 
@@ -240,8 +227,6 @@ Your role is to:
 
 ---
 
----
-
 ## Persistent Policies
 
 When working with this codebase:
@@ -264,8 +249,6 @@ When working with this codebase:
 
 ---
 
----
-
 ## Architecture Overview
 
 The codebase follows a dual-architecture pattern:
@@ -274,8 +257,6 @@ The codebase follows a dual-architecture pattern:
 - **`tools/codesentinel/`** - Comprehensive maintenance automation scripts
 - **`tools/config/`** - JSON configuration files for alerts, scheduling, and policies
 - **`tests/`** - Test suite using pytest with unittest fallback
-
----
 
 ---
 
@@ -301,8 +282,6 @@ python tools/codesentinel/scheduler.py --schedule weekly
 
 ---
 
----
-
 ## Integration Points
 
 ### GitHub Integration
@@ -317,8 +296,6 @@ python tools/codesentinel/scheduler.py --schedule weekly
 
 ---
 
----
-
 ## When Modifying This Codebase
 
 1. **Understand the dual architecture** - Core package vs. tools scripts serve different purposes
@@ -327,40 +304,6 @@ python tools/codesentinel/scheduler.py --schedule weekly
 4. **Test both execution paths** - pytest and unittest must both work
 5. **Follow security-first principle** - Never compromise security for convenience
 6. **Update timeout values carefully** - Task timeouts affect workflow reliability
-
----
-
----
-
-## Safe Actions (can automate)
-
-- Moving test files to proper directories
-- Adding entries to .gitignore
-- Removing __pycache__ directories
-- Archiving confirmed-redundant files to quarantine_legacy_archive/
-
----
-
----
-
-## Requires Review (agent decision needed)
-
-- Deleting or archiving potentially-used code
-- Consolidating multiple implementations
-- Removing packaging configurations
-- Modifying imports or entry points
-
----
-
----
-
-## Forbidden Actions
-
-- Deleting files without archiving
-- Forcing code style changes
-- Removing features without verification
-- Modifying core functionality without explicit approval
-- Excessive use of emojis in documentation or code comments
 
 ---
 
@@ -669,3 +612,29 @@ When executing README rebuild operations:
 - Aligns documentation with SEAM Protection™ standards
 
 ---
+
+## Safe Actions (can automate)
+
+- Moving test files to proper directories
+- Adding entries to .gitignore
+- Removing __pycache__ directories
+- Archiving confirmed-redundant files to quarantine_legacy_archive/
+
+---
+
+## Requires Review (agent decision needed)
+
+- Deleting or archiving potentially-used code
+- Consolidating multiple implementations
+- Removing packaging configurations
+- Modifying imports or entry points
+
+---
+
+## Forbidden Actions
+
+- Deleting files without archiving
+- Forcing code style changes
+- Removing features without verification
+- Modifying core functionality without explicit approval
+- Excessive use of emojis in documentation or code comments
