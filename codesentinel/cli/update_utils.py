@@ -64,6 +64,58 @@ def _validate_content_links(content: str, file_name: str) -> (list, list):
     return issues, warnings
 
 
+def _validate_oracl_documentation(content: str, file_name: str) -> tuple[list, list]:
+    """
+    Validates ORACL™ Intelligence Ecosystem documentation in README and SECURITY files.
+    
+    Returns:
+        (issues, warnings) - Lists of validation findings
+    """
+    issues = []
+    warnings = []
+    
+    # Only validate README.md and SECURITY.md
+    if file_name not in ['README.md', 'SECURITY.md']:
+        return issues, warnings
+    
+    if file_name == 'README.md':
+        # README should document ORACL™ as a major feature
+        if 'ORACL™' not in content and 'ORACL' not in content:
+            issues.append(f"  - {file_name}: ORACL™ Intelligence Ecosystem not documented (major architectural feature)")
+        else:
+            # Verify comprehensive coverage
+            required_elements = {
+                'ORACL™ trademark': 'ORACL™' in content,
+                'Intelligence & Learning section': '### Intelligence & Learning' in content,
+                '3-Tier architecture mention': any(x in content.lower() for x in ['3-tier', 'tier 1', 'tier 2', 'tier 3']),
+                'ORACL™ architecture section': 'ORACL™ Intelligence Ecosystem' in content,
+                'Documentation reference': 'ORACL_MEMORY_ARCHITECTURE.md' in content or 'ORACL_MEMORY_ECOSYSTEM' in content
+            }
+            
+            missing = [k for k, v in required_elements.items() if not v]
+            if missing:
+                warnings.append(f"  - {file_name}: ORACL™ documentation incomplete - missing: {', '.join(missing)}")
+    
+    elif file_name == 'SECURITY.md':
+        # SECURITY.md should document ORACL™ security features
+        if 'ORACL™' not in content and 'ORACL' not in content:
+            warnings.append(f"  - {file_name}: ORACL™ archive security features not documented")
+        else:
+            # Verify security-specific ORACL™ coverage
+            security_elements = {
+                'ORACL™ trademark': 'ORACL™' in content,
+                'Archive integrity': any(x in content.lower() for x in ['archive integrity', 'oracl™ archive security']),
+                'SHA-256 checksums': 'SHA-256' in content or 'sha-256' in content.lower(),
+                'Tamper detection': 'tamper' in content.lower()
+            }
+            
+            missing = [k for k, v in security_elements.items() if not v]
+            if missing:
+                warnings.append(f"  - {file_name}: ORACL™ security documentation incomplete - missing: {', '.join(missing)}")
+    
+    return issues, warnings
+
+
 def perform_content_validation(file_paths: list[Path], verbose: bool = False):
     """Performs deep content validation on a list of files."""
     print("Performing deep content validation...")
@@ -80,9 +132,10 @@ def perform_content_validation(file_paths: list[Path], verbose: bool = False):
         
         placeholder_issues, placeholder_warnings = _validate_content_placeholders(content, file_path.name)
         link_issues, link_warnings = _validate_content_links(content, file_path.name)
+        oracl_issues, oracl_warnings = _validate_oracl_documentation(content, file_path.name)
 
-        issues = placeholder_issues + link_issues
-        warnings = placeholder_warnings + link_warnings
+        issues = placeholder_issues + link_issues + oracl_issues
+        warnings = placeholder_warnings + link_warnings + oracl_warnings
 
         if issues:
             total_issues += len(issues)
@@ -320,6 +373,26 @@ def perform_update(args):
                 passes.append("  ✓ Python version requirement documented")
             else:
                 warnings.append("  ⚠️  Python version requirement unclear")
+            
+            # Check for ORACL™ Intelligence Ecosystem documentation
+            if 'ORACL™' in content or 'ORACL' in content:
+                passes.append("  ✓ ORACL™ Intelligence Ecosystem referenced")
+                
+                # Verify key ORACL™ concepts are documented
+                oracl_concepts = {
+                    'Intelligence & Learning': '### Intelligence & Learning' in content,
+                    '3-Tier Architecture': '3-tier' in content.lower() or 'tier 1' in content.lower(),
+                    'Architecture Section': '### ORACL™ Intelligence Ecosystem' in content or 'ORACL™ Intelligence Ecosystem' in content,
+                    'Documentation Link': 'ORACL_MEMORY_ARCHITECTURE.md' in content or 'docs/ORACL' in content
+                }
+                
+                missing_concepts = [k for k, v in oracl_concepts.items() if not v]
+                if not missing_concepts:
+                    passes.append("  ✓ ORACL™ fully documented (features, architecture, links)")
+                else:
+                    warnings.append(f"  ⚠️  ORACL™ incomplete: Missing {', '.join(missing_concepts)}")
+            else:
+                issues.append("  ❌ ORACL™ Intelligence Ecosystem not documented (major architectural feature)")
             
             # 5. Documentation Links
             print("\n🔗 Documentation Links")

@@ -365,7 +365,7 @@ def enrich_from_context_tier(workspace_root: Path) -> Dict[str, Any]:
     temp_discovery_engine = PatternDiscoveryEngine(get_archive_manager())
     discovered_patterns = temp_discovery_engine._discover_remediation_patterns(records_for_discovery)
 
-    # 4. Promote high-confidence patterns to the ORACL archive (Tier 3)
+    # 4. Promote high-confidence patterns to the ORACL™ archive (Tier 3)
     patterns_promoted = 0
     archive_manager = get_archive_manager()
     for pattern in discovered_patterns:

@@ -7,6 +7,8 @@
 
 CodeSentinel is a cross-platform automated maintenance and security monitoring system that integrates seamlessly with development workflows. It provides intelligent repository maintenance, security scanning, and multi-channel alerting to keep your codebase healthy, secure, and SEAM-tight.
 
+**Powered by ORACL™** - An intelligent decision support system that learns from your repository's history to provide context-aware recommendations and automated remediation guidance.
+
 [![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-1.1.0--beta.1-green.svg)](https://github.com/joediggidyyy/CodeSentinel)
@@ -36,13 +38,22 @@ CodeSentinel is a cross-platform automated maintenance and security monitoring s
 - **Dependency optimization** - Minimal, essential dependencies only
 - **Clean repository structure** - Automated policy enforcement
 
+### Intelligence & Learning
+
+- **ORACL™ Intelligence Ecosystem** - *Omniscient Recommendation Archive & Curation Ledger*
+  - **Historical decision context** - Learn from past operations and remediation patterns
+  - **3-Tier memory architecture** - Short-term session cache, mid-term weekly summaries, long-term strategic patterns
+  - **Confidence-based recommendations** - AI-powered suggestions with success rate tracking
+  - **Pattern discovery** - Automatic identification of recurring issues and optimal solutions
+  - **Intelligent remediation** - Context-aware guidance for policy violations and code quality issues
+
 ### Developer Experience
 
 - **Multi-channel alerts** - Email, Slack, console, and file notifications
 - **CLI-first design** - Comprehensive command-line interface
 - **GUI setup wizard** - User-friendly configuration assistant
 - **IDE integration** - VS Code and GitHub Copilot support
-- **Development audits** - Interactive `!!!!` command for rapid assessment
+- **Development audits** - Interactive `!!!!` command with ORACL™-powered insights
 
 ---
 
@@ -167,7 +178,7 @@ codesentinel scan --bloat-audit && codesentinel clean --cache --test --build --f
 |---------|-------------|
 | `codesentinel dev-audit` | Run interactive development audit |
 | `codesentinel !!!!` | Quick trigger for dev-audit |
-| `codesentinel !!!! --agent` | AI-assisted remediation with GitHub Copilot |
+| `codesentinel !!!! --agent` | AI-assisted remediation with ORACL™-powered context and GitHub Copilot |
 | `codesentinel !!!! <focus>` | Focused audit on specific area |
 
 ### Alert Commands
@@ -307,7 +318,7 @@ CodeSentinel/
     cli/              # Command-line interface
     core/             # Core business logic
     gui/              # GUI components
-    utils/            # Shared utilities
+    utils/            # Shared utilities (including ORACL™)
  tools/                # Automation scripts
     codesentinel/     # Maintenance automation
     config/           # Configuration templates
@@ -323,6 +334,38 @@ CodeSentinel follows a dual-architecture pattern:
 - **`codesentinel/`** - Main Python package with CLI (`codesentinel`, `codesentinel-setup`)
 - **`tools/codesentinel/`** - Comprehensive maintenance automation scripts
 - **`tools/config/`** - JSON configuration files for alerts, scheduling, and policies
+
+### ORACL™ Intelligence Ecosystem
+
+**ORACL™** (Omniscient Recommendation Archive & Curation Ledger) provides intelligent decision support through a 3-tier memory architecture:
+
+#### Tier 1: Session Memory (0-60 minutes)
+
+- High-speed ephemeral cache for current task context
+- Prevents redundant file reads and re-analysis within active sessions
+- Automatic invalidation after 60 minutes
+
+#### Tier 2: Context Memory (7-day rolling window)
+
+- Curated summaries from recently completed sessions
+- Aggregated insights on successful operations and key decisions
+- Provides recent historical context for related work
+
+#### Tier 3: Intelligence Archive (Permanent)
+
+- Long-term strategic patterns and historical wisdom
+- Pattern discovery engine for recurring issues
+- Confidence-scored recommendations based on success rates
+- Tamper-proof verification with SHA-256 checksums
+
+**Key Benefits:**
+
+- **20-50% reduction** in redundant agent operations
+- **Historical learning** from past remediation attempts
+- **Confidence scoring** for automated decision-making
+- **Pattern recognition** for proactive issue resolution
+
+Learn more: See `docs/ORACL_MEMORY_ARCHITECTURE.md` for technical details.
 
 ---
 

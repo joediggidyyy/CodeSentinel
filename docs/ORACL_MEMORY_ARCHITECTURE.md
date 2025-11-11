@@ -1,4 +1,6 @@
-# ORACL Memory Architecture: A 3-Tier Ecosystem
+# ORACL™ Memory Architecture: A 3-Tier Ecosystem
+
+**ORACL™** (Omniscient Recommendation Archive & Curation Ledger) — *Intelligent Decision Support*
 
 **Status**: Draft  
 **Date**: November 11, 2025  
@@ -8,7 +10,7 @@
 
 ## 1. Overview
 
-This document outlines the 3-tier memory architecture for the ORACL (Omniscient Recommendation Archive Curation Ledger) ecosystem. This architecture unifies the existing short-term session cache with new mid-term and long-term memory tiers, creating a cohesive system for agent intelligence, from immediate task context to deep historical patterns.
+This document outlines the 3-tier memory architecture for the ORACL™ ecosystem. This architecture unifies the existing short-term session cache with new mid-term and long-term memory tiers, creating a cohesive system for agent intelligence, from immediate task context to deep historical patterns.
 
 The primary goals of this architecture are:
 
@@ -21,11 +23,11 @@ The primary goals of this architecture are:
 
 ## 2. The 3-Tier Model
 
-The ORACL Memory Ecosystem is composed of three distinct tiers, each serving a specific purpose with a defined data lifetime.
+The ORACL™ Memory Ecosystem is composed of three distinct tiers, each serving a specific purpose with a defined data lifetime.
 
-![ORACL 3-Tier Memory Architecture](https://i.imgur.com/3-Tier-Diagram.png)
+![ORACL™ 3-Tier Memory Architecture](https://i.imgur.com/3-Tier-Diagram.png)
 
-### Tier 1: ORACL Session Tier (Short-Term Cache)
+### Tier 1: ORACL™ Session Tier (Short-Term Cache)
 
 - **Component**: The existing `session_memory.py` module.
 - **Purpose**: High-speed, ephemeral cache for the agent's **current, active task**. It stores raw operational context to prevent re-reading files and re-analyzing decisions within a single work session.
@@ -33,7 +35,7 @@ The ORACL Memory Ecosystem is composed of three distinct tiers, each serving a s
 - **Lifetime**: **0-60 minutes**. Data is considered stale after one hour and is automatically invalidated.
 - **Key Attribute**: **Speed**.
 
-### Tier 2: ORACL Context Tier (Mid-Term Aggregates)
+### Tier 2: ORACL™ Context Tier (Mid-Term Aggregates)
 
 - **Component**: A new module, `oracl_context_tier.py`.
 - **Purpose**: To store curated, high-value summaries from **recently completed sessions**. It provides context on what the agent has successfully accomplished and learned in the recent past.
@@ -41,9 +43,9 @@ The ORACL Memory Ecosystem is composed of three distinct tiers, each serving a s
 - **Lifetime**: **7 days** (rolling window).
 - **Key Attribute**: **Relevance**.
 
-### Tier 3: ORACL Intelligence Tier (Long-Term Archive)
+### Tier 3: ORACL™ Intelligence Tier (Long-Term Archive)
 
-- **Component**: The existing ORACL system (`archive_index_manager.py`, `archive_decision_provider.py`).
+- **Component**: The existing ORACL™ system (`archive_index_manager.py`, `archive_decision_provider.py`).
 - **Purpose**: Permanent, long-term storage for identifying significant, **historical patterns and strategies**. It provides deep wisdom derived from months of operations.
 - **Data Scope**: High-level, strategic insights, such as recurring policy violation patterns, successful remediation workflows, and the evolution of the codebase structure.
 - **Lifetime**: **Permanent** (with data compression and archival policies).
@@ -85,14 +87,14 @@ The agent will query the appropriate tier based on the context of its needs, ens
 
 - **For strategic decisions**:
   > "What is the historically most successful way to resolve an 'unauthorized file in root' violation?"
-  - **Action**: Query **Tier 3**. The agent retrieves a high-confidence recommendation from the ORACL decision provider, based on months of data.
+  - **Action**: Query **Tier 3**. The agent retrieves a high-confidence recommendation from the ORACL™ decision provider, based on months of data.
 
 ---
 
 ## 5. Implementation Details
 
-- **Tier 1**: Requires minimal changes. The `SessionMemory` class will be conceptually rebranded to `ORACLSessionCache` in documentation. A hook will be added to call the promotion function upon session completion.
+- **Tier 1**: Requires minimal changes. The `SessionMemory` class will be conceptually rebranded to `ORACL™ SessionCache` in documentation. A hook will be added to call the promotion function upon session completion.
 - **Tier 2**: A new module, `oracl_context_tier.py`, will be created. It will manage a simple, file-based data store (e.g., a directory with daily JSON files) and expose functions for adding new summaries and querying recent entries.
-- **Tier 3**: The existing ORACL modules will be used as-is. The `archive_enrichment_pipeline`'s configuration will be updated to use Tier 2 as a data source.
+- **Tier 3**: The existing ORACL™ modules will be used as-is. The `archive_enrichment_pipeline`'s configuration will be updated to use Tier 2 as a data source.
 
 This architecture provides a clear and scalable path for evolving the agent's intelligence, building from immediate operational memory to deep, strategic wisdom.

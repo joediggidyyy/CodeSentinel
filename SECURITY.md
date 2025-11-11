@@ -22,6 +22,8 @@ This principle guides all architectural and operational decisions, with Security
 - **Configuration Validation**: Automatic validation and secure defaults for all configuration files
 - **Dependency Scanning**: Automated vulnerability detection in dependencies
 - **Process Monitoring**: Built-in daemon to detect and manage orphan processes
+- **ORACL™ Archive Integrity**: Tamper-proof verification with SHA-256 checksums and integrity validation pipeline
+- **Decision Audit Trail**: All automated decisions are logged with context and confidence scores for security review
 
 ### Security Practices
 
@@ -106,6 +108,7 @@ CodeSentinel includes hash-based file integrity validation to detect unauthorize
 - **Whitelist System**: Exclude frequently-changing files from integrity checks
 - **Critical File Designation**: Mark security-sensitive files for priority monitoring
 - **Integrated Audit Reporting**: Violations reported during `codesentinel !!!!` audits
+- **ORACL™ Archive Verification**: Automated tamper detection in historical decision archives
 
 ### Setup
 
@@ -201,6 +204,44 @@ If integrity check fails:
 - Enable `alert_on_violation` to receive immediate notifications
 - Mark security-critical files (config, auth, core) as critical
 - Review integrity violations during code reviews and audits
+
+---
+
+## ORACL™ Archive Security
+
+The ORACL™ Intelligence Ecosystem maintains historical decision records and patterns. Security measures include:
+
+### Archive Integrity
+
+- **SHA-256 Checksums**: All archive records are checksummed to detect tampering
+- **Verification Pipeline**: Automated integrity checks run during maintenance cycles
+- **Tamper Detection**: Any modification to historical records triggers security alerts
+- **Immutable Records**: Decision outcomes and patterns are write-once, append-only
+
+### Access Control
+
+- **Read-Only Archives**: Historical data cannot be modified after creation
+- **Audit Trail**: All archive queries are logged with timestamps and context
+- **Secure Storage**: Archive files stored with restrictive permissions (600)
+- **Quarantine Integration**: Legacy archive follows same security policies as main codebase
+
+### Data Privacy
+
+- **No PII Storage**: ORACL™ archives contain only technical decision context, never personal data
+- **Sanitized Logs**: All logged data sanitized to remove sensitive information
+- **Configurable Retention**: Archive retention policies can be customized per security requirements
+- **Secure Cleanup**: Old archives securely deleted (not just unlinked)
+
+### Threat Mitigation
+
+- **Malicious Pattern Injection**: Archive verification prevents poisoned decision patterns from being used
+- **Archive Corruption**: Checksum validation ensures data integrity before use
+- **Unauthorized Modification**: File permission controls and integrity monitoring prevent tampering
+- **Information Leakage**: Archive content scoped to decision patterns only, no code or credentials
+
+For ORACL™ architecture details, see `docs/ORACL_MEMORY_ARCHITECTURE.md`.
+
+---
 
 ## Security Best Practices for Users
 

@@ -5,7 +5,7 @@ SEAM-Tight Integrity Tests for New Systems
 This test suite validates the core functionality, security, and efficiency of
 recently implemented systems, ensuring they adhere to the SEAM principles.
 
-- ORACL Memory Ecosystem (Tiers 1, 2, 3)
+- ORACL™ Memory Ecosystem (Tiers 1, 2, 3)
 - Instruction Defragmentation Utility
 
 Author: GitHub Copilot
@@ -129,7 +129,7 @@ def test_defrag_handles_file_not_found(mock_defrag_files, caplog):
     assert result is False
     assert "Schema file not found" in caplog.text
 
-# --- ORACL Memory Ecosystem Tests ---
+# --- ORACL™ Memory Ecosystem Tests ---
 
 @patch('codesentinel.utils.session_memory.add_context_summary')
 def test_session_promotion_to_context(mock_add_summary, test_environment):

@@ -209,13 +209,13 @@ def perform_dev_audit(args, codesentinel):
             print(f"Focus area: {focus_area}")
         agent_context = codesentinel.dev_audit.get_agent_context()
 
-        # ORACL Integration: Enrich agent context with historical intelligence
+        # ORACL™ Integration: Enrich agent context with historical intelligence
         try:
             from codesentinel.utils.archive_decision_provider import get_decision_context_provider
             
             provider = get_decision_context_provider()
             
-            # Query ORACL for relevant historical patterns
+            # Query ORACL™ for relevant historical patterns
             # Focus on policy violations (most common in dev audits)
             oracl_context = provider.get_decision_context(
                 decision_type="policy_violation_handling",
@@ -228,7 +228,7 @@ def perform_dev_audit(args, codesentinel):
             )
             
             if oracl_context and oracl_context.confidence_score >= 0.5:
-                # Add ORACL insights to agent context
+                # Add ORACL™ insights to agent context
                 agent_context['oracl_intelligence'] = {
                     'available': True,
                     'confidence': oracl_context.confidence_score,
@@ -237,11 +237,11 @@ def perform_dev_audit(args, codesentinel):
                     'similar_cases': len(oracl_context.similar_past_cases),
                     'guidance': f"ORACL has {len(oracl_context.similar_past_cases)} similar cases with {oracl_context.success_rate:.0%} success rate (confidence: {oracl_context.confidence_score:.0%})"
                 }
-                print(f"✓ ORACL intelligence: {len(oracl_context.similar_past_cases)} similar cases found (confidence: {oracl_context.confidence_score:.0%})")
+                print(f"[OK] ORACL intelligence: {len(oracl_context.similar_past_cases)} similar cases found (confidence: {oracl_context.confidence_score:.0%})")
             else:
                 agent_context['oracl_intelligence'] = {'available': False, 'reason': 'insufficient_historical_data'}
         except Exception as e:
-            # ORACL optional - fail gracefully
+            # ORACL™ optional - fail gracefully
             agent_context['oracl_intelligence'] = {'available': False, 'reason': str(e)}
 
         # Add focus area to agent context if specified

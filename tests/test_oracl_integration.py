@@ -1,5 +1,7 @@
 """
-ORACL (Omniscient Recommendation Archive Curation Ledger) Integration Tests
+ORACL™ (Omniscient Recommendation Archive & Curation Ledger) Integration Tests
+
+**ORACL™** — *Intelligent Decision Support*
 
 Comprehensive test suite for:
 - Archive Index Manager (cache, queries, performance monitoring)
@@ -376,7 +378,7 @@ class TestVerificationPipeline:
 
 
 class TestOraclIntegration:
-    """End-to-end ORACL system integration tests."""
+    """End-to-end ORACL™ system integration tests."""
     
     def test_query_to_decision_flow(self):
         """Test complete flow: Query archive -> Get decision context."""
@@ -452,7 +454,7 @@ class TestOraclIntegration:
 
 
 class TestPerformanceBaselines:
-    """Performance baseline tests for ORACL."""
+    """Performance baseline tests for ORACL™."""
     
     def test_query_latency_target(self):
         """Test that queries meet latency targets."""

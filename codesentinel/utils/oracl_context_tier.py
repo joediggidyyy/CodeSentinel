@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-ORACL Context Tier (Tier 2)
+ORACL™ Context Tier (Tier 2)
 
 Purpose:
 --------
-This module implements the Mid-Term Memory tier of the ORACL Memory Ecosystem. 
+This module implements the Mid-Term Memory tier of the ORACL™ Memory Ecosystem. 
 It stores curated, high-value summaries from recently completed sessions, providing 
 context on what the agent has successfully accomplished and learned in the recent past.
 

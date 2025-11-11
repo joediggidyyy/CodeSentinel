@@ -188,8 +188,9 @@ Before committing file operation features:
 
 ---
 
-## ORACL Intelligence Ecosystem
+## ORACL™ Intelligence Ecosystem
 
+**ORACL™** (Omniscient Recommendation Archive & Curation Ledger) — *Intelligent Decision Support*
 
 ---
 
@@ -506,22 +507,22 @@ read_file(path, start, end)  # Inspect current state
 replace_string_in_file(...)  # Clean, targeted edit
 ```
 
-### ORACL Integration (Omniscient Recommendation Archive Curation Ledger)
+### ORACL™ Integration
 
-**LIGHTWEIGHT INTELLIGENT DECISION SUPPORT - Use for high-impact decisions only**
+**Lightweight Intelligent Decision Support - Use for high-impact decisions only**
 
-ORACL is an intelligent archive-based decision support system that provides historically-aware context. Use ORACL to improve decision accuracy and compliance WITHOUT adding overhead to simple operations.
+ORACL™ is an intelligent archive-based decision support system that provides historically-aware context. Use ORACL™ to improve decision accuracy and compliance WITHOUT adding overhead to simple operations.
 
-#### When to Query ORACL (High-Impact Decisions Only)
+#### When to Query ORACL™ (High-Impact Decisions Only)
 
-**✅ DO query ORACL for:**
+**[OK] DO query ORACL™ for:**
 - Policy violation handling (root cleanup, unauthorized files)
 - Cleanup strategy decisions (archive vs. move vs. delete)
 - Dependency update decisions (breaking changes, security patches)
 - Large-scale refactoring (pattern selection, migration strategy)
 - Recurring issues (pattern analysis, historical success rates)
 
-**❌ DON'T query ORACL for:**
+**[FAIL] DON'T query ORACL™ for:**
 - Simple file reads/writes
 - Standard CLI operations
 - Trivial decisions with no historical pattern
@@ -548,9 +549,9 @@ context = provider.get_decision_context(
 
 # Use context to inform decision
 if context and context.confidence_score > 0.7:
-    # High confidence - use ORACL recommendation
+    # High confidence - use ORACL™ recommendation
     recommended_action = context.recommended_actions[0]
-    print(f"ORACL suggests: {recommended_action} (confidence: {context.confidence_score:.0%})")
+    print(f"ORACL™ suggests: {recommended_action} (confidence: {context.confidence_score:.0%})")
     # Execute with high confidence
 else:
     # Low/no confidence - use default logic or ask user
@@ -566,7 +567,7 @@ provider.report_decision_outcome(
 )
 ```
 
-#### ORACL Decision Types
+#### ORACL™ Decision Types
 
 - `policy_violation_handling` - Root policy, security violations
 - `cleanup_strategy` - File/directory cleanup decisions
@@ -578,28 +579,28 @@ provider.report_decision_outcome(
 - **Target latency**: < 100ms for cached queries, < 500ms for cold queries
 - **Cache TTL**: 30 minutes for decision context (auto-managed)
 - **Minimal overhead**: Decision context queries are O(1) to O(log n)
-- **Fail gracefully**: If ORACL unavailable, fall back to default logic
+- **Fail gracefully**: If ORACL™ unavailable, fall back to default logic
 
 #### Confidence Score Interpretation
 
 - **≥ 0.90**: Very high confidence - auto-execute recommended action
 - **0.70-0.89**: Good confidence - execute with logging
 - **0.50-0.69**: Moderate confidence - consider alternatives or ask user
-- **< 0.50**: Low confidence - use default logic, don't rely on ORACL
+- **< 0.50**: Low confidence - use default logic, don't rely on ORACL™
 
-#### Current ORACL Integrations
+#### Current ORACL™ Integrations
 
-**✅ Active Integrations** (lightweight, high-impact only):
+**[OK] Active Integrations** (lightweight, high-impact only):
 
 1. **Dev Audit Agent Mode** (`codesentinel !!!! --agent`)
-   - Queries ORACL for policy violation patterns
+   - Queries ORACL™ for policy violation patterns
    - Enriches agent context with historical success rates
    - Adds confidence scores to remediation recommendations
    - Location: `codesentinel/cli/dev_audit_utils.py`
 
 2. **Root Directory Cleanup** (`codesentinel clean --root`)
-   - `suggest_action_for_file()`: Queries ORACL before suggesting actions
-   - `execute_cleanup_actions()`: Reports outcomes back to ORACL
+   - `suggest_action_for_file()`: Queries ORACL™ before suggesting actions
+   - `execute_cleanup_actions()`: Reports outcomes back to ORACL™
    - Builds intelligence on successful/failed cleanup strategies
    - Location: `codesentinel/cli/root_clean_utils.py`
 
@@ -612,14 +613,14 @@ provider.report_decision_outcome(
 - Performance tuning recommendations
 
 **Integration Philosophy**:
-- ORACL calls are **optional** - always fail gracefully
+- ORACL™ calls are **optional** - always fail gracefully
 - Only query for **high-impact decisions** (not simple operations)
 - Always **report outcomes** to build intelligence
 - Target < 100ms latency for cached queries
 
-### ORACL Memory Ecosystem (3-Tier Architecture)
+### ORACL™ Memory Ecosystem (3-Tier Architecture)
 
-To enhance agent efficiency and long-term learning, ORACL is integrated with a 3-tier memory system. This allows the agent to access context at different levels of granularity, from immediate task details to deep historical wisdom.
+To enhance agent efficiency and long-term learning, ORACL™ is integrated with a 3-tier memory system. This allows the agent to access context at different levels of granularity, from immediate task details to deep historical wisdom.
 
 #### Tier 1: Session Tier (Short-Term Cache)
 - **Component**: `codesentinel/utils/session_memory.py`
@@ -638,12 +639,12 @@ To enhance agent efficiency and long-term learning, ORACL is integrated with a 3
   - *Action*: Use `get_weekly_summaries()` from the context tier module.
 
 #### Tier 3: Intelligence Tier (Long-Term Archive)
-- **Component**: The main ORACL Archive (`archive_index_manager.py`, `archive_decision_provider.py`).
+- **Component**: The main ORACL™ Archive (`archive_index_manager.py`, `archive_decision_provider.py`).
 - **Purpose**: Permanent storage for identifying **significant, historical patterns and strategies**.
 - **Lifetime**: **Permanent**.
 - **When to Use**: For strategic decisions requiring historical wisdom.
   - *Query*: "What is the historically most successful way to resolve a specific policy violation?"
-  - *Action*: Use `get_decision_context_provider()` as per the standard ORACL integration pattern.
+  - *Action*: Use `get_decision_context_provider()` as per the standard ORACL™ integration pattern.
 
 #### Data Flow (One-Way Promotion)
 

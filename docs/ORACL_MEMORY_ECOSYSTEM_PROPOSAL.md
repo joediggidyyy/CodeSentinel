@@ -1,4 +1,6 @@
-# Proposal: The ORACL Memory Ecosystem
+# Proposal: The ORACL™ Memory Ecosystem
+
+**ORACL™** (Omniscient Recommendation Archive & Curation Ledger) — *Intelligent Decision Support*
 
 **Status**: Draft  
 **Date**: November 11, 2025  
@@ -8,7 +10,7 @@
 
 ## 1. Executive Summary
 
-This document proposes the formalization of the **ORACL Memory Ecosystem**, a unified, 3-tier memory architecture designed to significantly enhance the CodeSentinel agent's efficiency, intelligence, and long-term strategic capabilities.
+This document proposes the formalization of the **ORACL™ Memory Ecosystem**, a unified, 3-tier memory architecture designed to significantly enhance the CodeSentinel agent's efficiency, intelligence, and long-term strategic capabilities.
 
 The ecosystem integrates the existing short-term session cache into a broader framework that includes new mid-term and long-term memory tiers. This tiered approach allows the agent to access information at the right level of granularity for any given task, from immediate operational details to deep historical patterns.
 
@@ -24,7 +26,7 @@ The proposed architecture is detailed in the `ORACL_MEMORY_ARCHITECTURE.md` docu
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **1** | **Session Tier** | `session_memory.py` | 60 minutes | Immediate task context | **Speed** |
 | **2** | **Context Tier** | `oracl_context_tier.py` (new) | 7 days | Recent task summaries | **Relevance** |
-| **3** | **Intelligence Tier** | ORACL Archive | Permanent | Historical patterns & wisdom | **Wisdom** |
+| **3** | **Intelligence Tier** | ORACL™ Archive | Permanent | Historical patterns & wisdom | **Wisdom** |
 
 This structure ensures a clean separation of concerns, with a one-way data flow that promotes valuable insights from ephemeral, short-term memory into permanent, long-term intelligence.
 
@@ -79,7 +81,7 @@ The primary interaction is the promotion of data up the hierarchy:
             # Discover patterns (e.g., recurring successful actions)
             new_patterns = discover_patterns(recent_summaries)
             
-            # Promote significant patterns to the ORACL archive
+            # Promote significant patterns to the ORACL™ archive
             for pattern in new_patterns:
                 if pattern.confidence > 0.9:
                     get_archive_manager().add_strategic_insight(pattern)
@@ -102,7 +104,7 @@ A unified query function, `query_oracl_ecosystem()`, can be developed in a futur
 This project will be rolled out in five manageable stages.
 
 - **Stage 1: Rebranding and Scaffolding (1 day)**
-    1. Conceptually rebrand `SessionMemory` to the "ORACL Session Tier" in all documentation.
+    1. Conceptually rebrand `SessionMemory` to the "ORACL™ Session Tier" in all documentation.
     2. Create the initial `oracl_context_tier.py` file with placeholder functions (`add_context_summary`, `get_weekly_summaries`).
     3. Create the `docs/ORACL_MEMORY_ARCHITECTURE.md` file.
 
@@ -119,7 +121,7 @@ This project will be rolled out in five manageable stages.
 - **Stage 4: Implement Tier 2 to Tier 3 Promotion (1 day)**
     1. Update the `archive_maintenance_scheduler` to include a new weekly task for `enrich_from_context_tier`.
     2. Implement the core logic in `archive_enrichment_pipeline` to process the weekly summaries.
-    3. Add integration tests to verify that new insights are successfully promoted to the ORACL archive.
+    3. Add integration tests to verify that new insights are successfully promoted to the ORACL™ archive.
 
 - **Stage 5: Documentation and Finalization (1 day)**
     1. Update `.github/copilot-instructions.md` with detailed guidance on how to query and utilize the 3-tier system.
@@ -130,6 +132,6 @@ This project will be rolled out in five manageable stages.
 
 ## 5. Conclusion
 
-The ORACL Memory Ecosystem represents a significant step forward in the evolution of the CodeSentinel agent. By providing a structured, multi-layered memory, it moves the agent beyond simple, reactive operations toward a more proactive, intelligent, and strategic mode of functioning.
+The ORACL™ Memory Ecosystem represents a significant step forward in the evolution of the CodeSentinel agent. By providing a structured, multi-layered memory, it moves the agent beyond simple, reactive operations toward a more proactive, intelligent, and strategic mode of functioning.
 
 This proposal outlines a clear, phased, and low-risk path to implementation. We recommend proceeding with Stage 1 immediately.
