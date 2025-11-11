@@ -834,7 +834,7 @@ RECOMMENDED APPROACH:
         if verified_fps:
             print("\nSecurity - Verified False Positives:")
             for fp in verified_fps[:5]:
-                print(f"  ✓ {fp['file']} (pattern: {fp['pattern']})")
+                print(f"  [OK] {fp['file']} (pattern: {fp['pattern']})")
                 print(f"    Reason: {fp['reason']}")
         
         # File Integrity Report
@@ -849,11 +849,11 @@ RECOMMENDED APPROACH:
                 print(f"  Files checked: {stats.get('files_checked', 0)}")
                 print(f"  Passed: {stats.get('files_passed', 0)}")
                 if stats.get('files_modified', 0) > 0:
-                    print(f"  ⚠ Modified: {stats.get('files_modified', 0)}")
+                    print(f"   Modified: {stats.get('files_modified', 0)}")
                 if stats.get('files_missing', 0) > 0:
-                    print(f"  ⚠ Missing: {stats.get('files_missing', 0)}")
+                    print(f"   Missing: {stats.get('files_missing', 0)}")
                 if stats.get('files_unauthorized', 0) > 0:
-                    print(f"  ⚠ Unauthorized: {stats.get('files_unauthorized', 0)}")
+                    print(f"   Unauthorized: {stats.get('files_unauthorized', 0)}")
             
             # Show critical violations
             critical_issues = [issue for issue in file_integrity.get("issues", []) if issue.get("is_critical")]
@@ -881,7 +881,7 @@ RECOMMENDED APPROACH:
         if min_fps:
             print("\nMinimalism - Verified False Positives:")
             for fp in min_fps:
-                print(f"  ✓ {fp['violation']}")
+                print(f"  [OK] {fp['violation']}")
                 print(f"    Reason: {fp['reason']}")
         
         print("\nStyle Preservation:")

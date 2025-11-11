@@ -10,6 +10,7 @@ This module is executed as part of daily maintenance workflows and pre-commit ho
 """
 
 import os
+import sys
 import json
 import logging
 import shutil
@@ -17,86 +18,17 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from datetime import datetime
 
+# Add parent directory to path to import from codesentinel package
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from codesentinel.utils.root_policy import (
+    ALLOWED_ROOT_FILES,
+    ALLOWED_ROOT_DIRS,
+    FILE_MAPPINGS
+)
+
 
 class RootDirectoryValidator:
     """Validates and cleans up repository root directory."""
-
-    # Essential files that are allowed in root
-    ALLOWED_ROOT_FILES = {
-        # Python project files
-        'setup.py',
-        'pyproject.toml',
-        'MANIFEST.in',
-        
-        # Configuration files
-        'pytest.ini',
-        'requirements.txt',
-        'requirements-dev.txt',
-        
-        # Scripts
-        'run_tests.py',
-        'publish_to_pypi.py',
-        
-        # Documentation
-        'README.md',
-        'LICENSE',
-        'CHANGELOG.md',
-        'CONTRIBUTING.md',
-        'SECURITY.md',
-        'QUICK_START.md',
-        
-        # Policy and Implementation Documentation
-        'ARCHIVE_COMPRESSION_IMPLEMENTATION.md',
-        'POLICY_VIOLATION_PREVENTION.md',
-        'ROOT_DIRECTORY_ASSESSMENT.md',
-        
-        # Project-specific
-        'codesentinel.json',
-        'codesentinel.log',
-        '.codesentinel_integrity.json',
-        '.test_integrity.json',
-        '.gitignore',
-    }
-
-    # Essential directories that are allowed in root
-    ALLOWED_ROOT_DIRS = {
-        '.git',
-        '.github',
-        'archive',
-        'codesentinel',
-        'deployment',
-        'docs',
-        'github',
-        'infrastructure',
-        'logs',
-        'requirements',
-        'scripts',
-        'tests',
-        'tools',
-        'quarantine_legacy_archive',
-    }
-
-    # Files that belong in specific subdirectories
-    FILE_MAPPINGS = {
-        # Audit files -> docs/audit/
-        'AUDIT_': 'docs/audit/',
-        
-        # Report files -> docs/reports/
-        'PHASE_': 'docs/reports/',
-        'TEST_CASE_': 'docs/reports/',
-        'MEASUREMENT_': 'docs/reports/',
-        'FINAL_DOC_': 'docs/reports/',
-        'READY_FOR_': 'docs/reports/',
-        'SYSTEM_': 'docs/reports/',
-        'MERGE_READY_': 'docs/reports/',
-        
-        # Planning files -> docs/planning/
-        'ROADMAP': 'docs/planning/',
-        'PLAN': 'docs/planning/',
-        'PROPOSED_': 'docs/planning/',
-        'SECURE_CREDENTIALS_': 'docs/planning/',
-        'DEVELOPMENT_': 'docs/planning/',
-    }
 
     def __init__(self, repo_root: str, dry_run: bool = False, logger: logging.Logger = None):
         """
@@ -134,8 +66,8 @@ class RootDirectoryValidator:
             if item.name.startswith('.') and item.is_dir():
                 # Allow dot directories like .git, .github
                 if item.name not in {'.git', '.github', '.gitignore'}:
-                    if not item.is_file() or item.name not in self.ALLOWED_ROOT_FILES:
-                        if item.name not in self.ALLOWED_ROOT_DIRS:
+                    if not item.is_file() or item.name not in ALLOWED_ROOT_FILES:
+                        if item.name not in ALLOWED_ROOT_DIRS:
                             self.issues_found.append({
                                 'type': 'unauthorized_dot_dir',
                                 'path': str(item),
@@ -145,7 +77,7 @@ class RootDirectoryValidator:
 
             if item.is_dir():
                 # Check if directory is allowed
-                if item.name not in self.ALLOWED_ROOT_DIRS:
+                if item.name not in ALLOWED_ROOT_DIRS:
                     self.issues_found.append({
                         'type': 'unauthorized_directory',
                         'path': str(item),
@@ -182,7 +114,7 @@ class RootDirectoryValidator:
         filename = file_path.name
 
         # Check if file is in allowed list
-        if filename in self.ALLOWED_ROOT_FILES:
+        if filename in ALLOWED_ROOT_FILES:
             return
 
         # Check if file should be moved
@@ -213,7 +145,7 @@ class RootDirectoryValidator:
         Returns:
             Target directory path or empty string if not found.
         """
-        for prefix, target_dir in self.FILE_MAPPINGS.items():
+        for prefix, target_dir in FILE_MAPPINGS.items():
             if prefix in filename:
                 return target_dir
         return ""
@@ -405,7 +337,7 @@ def main():
             logger.info("(Dry run - no actual changes made)")
         return 0
     else:
-        logger.warning("✗ No files could be processed")
+        logger.warning(" No files could be processed")
         return 1
 
 

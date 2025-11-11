@@ -57,6 +57,10 @@ class CodeSentinel:
         except Exception:
             self.version = "unknown"
         
+        # Initialize session memory for agent efficiency
+        from codesentinel.utils.session_memory import SessionMemory
+        self.session_memory = SessionMemory(Path.cwd())
+        
         # Initialize dev_audit for agent-driven remediation
         self._dev_audit_instance = None
         
@@ -71,6 +75,18 @@ class CodeSentinel:
         except Exception as e:
             logging.warning(f"Process monitor could not start: {e}")
             self.process_monitor = None
+        
+        # Register session memory persistence on exit
+        atexit.register(self._persist_session_memory)
+
+    def _persist_session_memory(self) -> None:
+        """Persist session memory state before exiting."""
+        try:
+            if hasattr(self, 'session_memory'):
+                self.session_memory.persist()
+                logging.debug("Session memory persisted")
+        except Exception as e:
+            logging.debug(f"Failed to persist session memory: {e}")
 
     @property
     def dev_audit(self) -> DevAudit:

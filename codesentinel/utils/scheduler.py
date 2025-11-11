@@ -49,10 +49,20 @@ class MaintenanceScheduler:
         if not SCHEDULE_AVAILABLE:
             self.logger.warning("schedule library not available - scheduling features disabled")
 
+        # Initialize report generator
+        try:
+            from tools.codesentinel.report_generator import ReportGenerator
+            self.report_generator = ReportGenerator(config_manager, alert_manager)
+            self.logger.info("Report generator initialized")
+        except ImportError as e:
+            self.logger.warning(f"Report generator not available: {e}")
+            self.report_generator = None
+
         # Task registry
         self.tasks = {
             'daily': self._run_daily_tasks,
             'weekly': self._run_weekly_tasks,
+            'biweekly': self._run_biweekly_tasks,
             'monthly': self._run_monthly_tasks
         }
 
@@ -206,6 +216,34 @@ class MaintenanceScheduler:
 
             except (ValueError, AttributeError) as e:
                 self.logger.error(f"Invalid weekly schedule '{schedule_str}': {e}")
+
+        # Bi-weekly tasks
+        if maintenance_config.get('biweekly', {}).get('enabled', False):
+            schedule_str = maintenance_config['biweekly'].get('schedule', 'Friday 17:00')
+            try:
+                day, time_str = schedule_str.split(' ', 1)
+                hour, minute = map(int, time_str.split(':'))
+
+                day_map = {
+                    'monday': schedule.every(2).weeks.monday,  # type: ignore
+                    'tuesday': schedule.every(2).weeks.tuesday,  # type: ignore
+                    'wednesday': schedule.every(2).weeks.wednesday,  # type: ignore
+                    'thursday': schedule.every(2).weeks.thursday,  # type: ignore
+                    'friday': schedule.every(2).weeks.friday,  # type: ignore
+                    'saturday': schedule.every(2).weeks.saturday,  # type: ignore
+                    'sunday': schedule.every(2).weeks.sunday  # type: ignore
+                }
+
+                if day.lower() in day_map:
+                    day_map[day.lower()].at(f"{hour:02d}:{minute:02d}").do(
+                        self._execute_task, 'biweekly'
+                    )
+                    self.logger.info(f"Scheduled bi-weekly tasks for {schedule_str}")
+                else:
+                    self.logger.error(f"Invalid day '{day}' in bi-weekly schedule")
+
+            except (ValueError, AttributeError) as e:
+                self.logger.error(f"Invalid bi-weekly schedule '{schedule_str}': {e}")
 
         # Monthly tasks
         if maintenance_config.get('monthly', {}).get('enabled', False):
@@ -514,6 +552,19 @@ class MaintenanceScheduler:
         
         # Standard daily tasks
         tasks_executed.extend(['security_check', 'log_cleanup'])
+
+        # Generate daily reports
+        if self.report_generator:
+            try:
+                daily_reports = self.report_generator.generate_scheduled_reports('daily')
+                if daily_reports:
+                    tasks_executed.append(f'report_generation_{len(daily_reports)}_reports')
+                    self.logger.info(f"Generated {len(daily_reports)} daily reports")
+                else:
+                    self.logger.warning("No daily reports were generated")
+            except Exception as e:
+                self.logger.error(f"Daily report generation failed: {e}")
+                errors.append(f"Daily report generation failed: {str(e)}")
         
         return {
             'task_type': 'daily',
@@ -596,9 +647,137 @@ class MaintenanceScheduler:
         finally:
             # Restore original working directory
             os.chdir(original_cwd)
+
+        # Generate weekly reports
+        if self.report_generator:
+            try:
+                weekly_reports = self.report_generator.generate_scheduled_reports('weekly')
+                if weekly_reports:
+                    tasks_executed.append(f'report_generation_{len(weekly_reports)}_reports')
+                    self.logger.info(f"Generated {len(weekly_reports)} weekly reports")
+                else:
+                    self.logger.warning("No weekly reports were generated")
+            except Exception as e:
+                self.logger.error(f"Weekly report generation failed: {e}")
+                errors.append(f"Weekly report generation failed: {str(e)}")
         
         return {
             'task_type': 'weekly',
+            'tasks_executed': tasks_executed,
+            'errors': errors,
+            'warnings': []
+        }
+
+    def _run_biweekly_tasks(self) -> Dict[str, Any]:
+        """Run bi-weekly maintenance tasks."""
+        tasks_executed = []
+        errors = []
+
+        # Change to repo root for CLI commands
+        repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        original_cwd = os.getcwd()
+        os.chdir(repo_root)
+
+        try:
+            # Security audit using CLI audit command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'audit', '--comprehensive'
+                ], capture_output=True, text=True, timeout=600)
+
+                if result.returncode == 0:
+                    tasks_executed.append('security_audit')
+                    self.logger.info("Security audit completed successfully")
+                else:
+                    self.logger.warning(f"Security audit failed: {result.stderr}")
+                    errors.append(f"Security audit failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Security audit timed out")
+                errors.append("Security audit timed out")
+            except Exception as e:
+                self.logger.error(f"Security audit error: {e}")
+                errors.append(f"Security audit failed: {str(e)}")
+
+            # Efficiency analysis using CLI analyze command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'analyze', '--efficiency'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('efficiency_analysis')
+                    self.logger.info("Efficiency analysis completed successfully")
+                else:
+                    self.logger.warning(f"Efficiency analysis failed: {result.stderr}")
+                    errors.append(f"Efficiency analysis failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Efficiency analysis timed out")
+                errors.append("Efficiency analysis timed out")
+            except Exception as e:
+                self.logger.error(f"Efficiency analysis error: {e}")
+                errors.append(f"Efficiency analysis failed: {str(e)}")
+
+            # Minimalism compliance check using CLI clean command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'clean', '--archive', '--check-only'
+                ], capture_output=True, text=True, timeout=300)
+
+                if result.returncode == 0:
+                    tasks_executed.append('minimalism_compliance')
+                    self.logger.info("Minimalism compliance check completed successfully")
+                else:
+                    self.logger.warning(f"Minimalism compliance check failed: {result.stderr}")
+                    errors.append(f"Minimalism compliance check failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Minimalism compliance check timed out")
+                errors.append("Minimalism compliance check timed out")
+            except Exception as e:
+                self.logger.error(f"Minimalism compliance check error: {e}")
+                errors.append(f"Minimalism compliance check failed: {str(e)}")
+
+            # Integration tests using CLI test command
+            try:
+                result = subprocess.run([
+                    sys.executable, '-m', 'codesentinel.cli', 'test', '--integration'
+                ], capture_output=True, text=True, timeout=600)
+
+                if result.returncode == 0:
+                    tasks_executed.append('integration_tests')
+                    self.logger.info("Integration tests completed successfully")
+                else:
+                    self.logger.warning(f"Integration tests failed: {result.stderr}")
+                    errors.append(f"Integration tests failed: {result.stderr}")
+
+            except subprocess.TimeoutExpired:
+                self.logger.error("Integration tests timed out")
+                errors.append("Integration tests timed out")
+            except Exception as e:
+                self.logger.error(f"Integration tests error: {e}")
+                errors.append(f"Integration tests failed: {str(e)}")
+
+        finally:
+            # Restore original working directory
+            os.chdir(original_cwd)
+
+        # Generate bi-weekly reports
+        if self.report_generator:
+            try:
+                biweekly_reports = self.report_generator.generate_scheduled_reports('biweekly')
+                if biweekly_reports:
+                    tasks_executed.append(f'report_generation_{len(biweekly_reports)}_reports')
+                    self.logger.info(f"Generated {len(biweekly_reports)} bi-weekly reports")
+                else:
+                    self.logger.warning("No bi-weekly reports were generated")
+            except Exception as e:
+                self.logger.error(f"Bi-weekly report generation failed: {e}")
+                errors.append(f"Bi-weekly report generation failed: {str(e)}")
+
+        return {
+            'task_type': 'biweekly',
             'tasks_executed': tasks_executed,
             'errors': errors,
             'warnings': []

@@ -363,42 +363,42 @@ Tier 1 documents are part of the core CodeSentinel package. Infrastructure and p
 
 ```
 archive/
-├── active/
-│   ├── tier1_critical/
-│   │   ├── [doc_type]/
-│   │   │   └── [doc_name]/
-│   │   │       ├── v1/
-│   │   │       ├── v2/
-│   │   │       └── metadata.json
-│   │   └── ...
-│   ├── tier2_informative/
-│   │   ├── [doc_type]/
-│   │   │   └── [doc_name]/
-│   │   │       ├── [doc_name].md
-│   │   │       └── metadata.json
-│   │   └── ...
-│   ├── tier3_temporary/
-│   │   ├── [job_type]/
-│   │   │   ├── job_summary.md
-│   │   │   └── metadata.json
-│   │   └── ...
-│   └── tier4_agent/
-│       ├── 4a_core/
-│       │   ├── [core_doc].md
-│       │   └── metadata.json
-│       ├── 4b_infrastructure/
-│       │   ├── [procedure].md
-│       │   └── metadata.json
-│       └── 4c_temporary/
-│           ├── [operation_note].md
-│           └── metadata.json
-│
-├── inactive/
-│   ├── tier1_critical/
-│   │   └── [doc_type]/
-│   │       └── [doc_name]/
-│   │           └── archived_versions/
-│   ├── tier2_informative/
+ active/
+    tier1_critical/
+       [doc_type]/
+          [doc_name]/
+              v1/
+              v2/
+              metadata.json
+       ...
+    tier2_informative/
+       [doc_type]/
+          [doc_name]/
+              [doc_name].md
+              metadata.json
+       ...
+    tier3_temporary/
+       [job_type]/
+          job_summary.md
+          metadata.json
+       ...
+    tier4_agent/
+        4a_core/
+           [core_doc].md
+           metadata.json
+        4b_infrastructure/
+           [procedure].md
+           metadata.json
+        4c_temporary/
+            [operation_note].md
+            metadata.json
+
+ inactive/
+    tier1_critical/
+       [doc_type]/
+           [doc_name]/
+               archived_versions/
+    tier2_informative/
 
 **Note on Tier 0**: Secret documents are NOT included in this archive structure. They are stored in separate encrypted storage managed by the user.
 

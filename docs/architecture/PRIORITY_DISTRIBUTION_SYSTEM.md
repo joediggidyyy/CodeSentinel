@@ -15,7 +15,7 @@ The Priority Distribution System (PDS) is CodeSentinel's governance framework fo
 
 ## Priority Tier Structure
 
-### ⚔️ TIER 0: CONSTITUTIONAL (Irreversible)
+###  TIER 0: CONSTITUTIONAL (Irreversible)
 
 **Definition**: Immutable principles that define CodeSentinel's identity. Violations constitute existential threats.
 
@@ -38,7 +38,7 @@ The Priority Distribution System (PDS) is CodeSentinel's governance framework fo
 
 ---
 
-### 🔴 TIER 1: CRITICAL (Business Logic)
+###  TIER 1: CRITICAL (Business Logic)
 
 **Definition**: Core functionality, security measures, and system reliability. Violations create serious operational risks.
 
@@ -225,38 +225,38 @@ Example 3: T1-MEDIUM vs T3-CRITICAL
 
 ### T0: Constitutional
 
-- Security-first principle ✅
-- Non-destructive operations ✅
-- Feature preservation ✅
-- MIT license ✅
+- Security-first principle 
+- Non-destructive operations 
+- Feature preservation 
+- MIT license 
 
 ### T1: Critical
 
-- Security validation ✅
-- Test coverage (22/22 passing) ✅
-- Cross-platform compatibility ✅
-- Dependency management ✅
-- Version consistency (1.0.3.beta) ✅
+- Security validation 
+- Test coverage (22/22 passing) 
+- Cross-platform compatibility 
+- Dependency management 
+- Version consistency (1.0.3.beta) 
 
 ### T2: High
 
 - Single source of truth (consolidating now) 🟨
-- Performance standards (1.2s-1.4s ✅)
-- Modular architecture ✅
-- Configuration validation ✅
-- Audit logging ✅
-- API stability ✅
+- Performance standards (1.2s-1.4s )
+- Modular architecture 
+- Configuration validation 
+- Audit logging 
+- API stability 
 
 ### T3: Medium
 
-- Root folder cleanliness (25 files → 6 target) 🔧 **CURRENT PRIORITY**
-- Documentation organization (21 files → organized) 🔧 **CURRENT PRIORITY**
-- Publication log caching ✅
-- Code style consistency ✅
+- Root folder cleanliness (25 files → 6 target)  **CURRENT PRIORITY**
+- Documentation organization (21 files → organized)  **CURRENT PRIORITY**
+- Publication log caching 
+- Code style consistency 
 - Redundancy elimination 🟨
-- Clean imports ✅
-- Build artifact management ✅
-- Legacy code archiving ✅
+- Clean imports 
+- Build artifact management 
+- Legacy code archiving 
 
 ### T4: Low
 
@@ -306,11 +306,11 @@ Example 3: T1-MEDIUM vs T3-CRITICAL
 
 ```
 Priority Distribution Compliance Report
-├── T0 Violations: [count] (must be 0)
-├── T1 Violations: [count] (max 2 acceptable)
-├── T2 Deviations: [count] (must have remediation plan)
-├── T3 Backlog: [count] (schedule in upcoming sprint)
-└── T4 Wishlist: [count] (no deadline)
+ T0 Violations: [count] (must be 0)
+ T1 Violations: [count] (max 2 acceptable)
+ T2 Deviations: [count] (must have remediation plan)
+ T3 Backlog: [count] (schedule in upcoming sprint)
+ T4 Wishlist: [count] (no deadline)
 ```
 
 ### Escalation Path
@@ -326,10 +326,10 @@ Priority Distribution Compliance Report
 
 ## Current Status: November 6, 2025
 
-**T0 Violations**: ✅ 0  
-**T1 Violations**: ✅ 0  
+**T0 Violations**:  0  
+**T1 Violations**:  0  
 **T2 Deviations**: 🟨 2 (Single source of truth, Redundancy elimination)  
-**T3 Violations**: 🔴 2 (Root cleanliness, Documentation organization)  
+**T3 Violations**:  2 (Root cleanliness, Documentation organization)  
 **T4 Wishlist**: 🟢 3 (Type hints, Performance optimization, Code comments)
 
 **Current Priority**:

@@ -41,6 +41,11 @@ python tools/codesentinel/scheduler.py --schedule weekly
 - Dependency scanning - Automated vulnerability detection
 
 ### EFFICIENCY
+- **DRY (Don't Repeat Yourself)**: Code reuse and modularization is MANDATORY
+  - Always consolidate duplicate implementations into shared utilities
+  - Extract common patterns into reusable functions/modules
+  - Create centralized configuration files (never duplicate constants)
+  - Reference single source of truth across all implementations
 - Avoid redundant code and duplicate implementations
 - Consolidate multiple versions of similar functionality
 - Clean up orphaned test files and unused scripts
@@ -51,6 +56,7 @@ python tools/codesentinel/scheduler.py --schedule weekly
 - Archive deprecated code to quarantine_legacy_archive/
 - Maintain single source of truth for each feature
 - Keep codebase focused and maintainable
+- **Code Reuse Over Duplication**: Always prefer importing shared code over copying
 
 ### QUARANTINE_LEGACY_ARCHIVE POLICY
 - **Mandatory Reference Directory**: `quarantine_legacy_archive/` is essential for agent remediation and code archaeology
@@ -80,7 +86,9 @@ When working with this codebase:
 2. **FEATURE PRESERVATION**: All existing functionality must be maintained
 3. **STYLE PRESERVATION**: Respect existing code style and patterns
 4. **SECURITY FIRST**: Security concerns always take priority
-5. **PERMANENT POLICY (T0-5)**: Framework compliance review required with every package release
+5. **MODULARIZATION & REUSE**: Always optimize code structure through code reuse and modularization. This is default behavior.
+6. **REPOSITORY-RELATIVE PATHS**: All user-facing output must display paths relative to repository root (e.g., `RepoName/path/to/file`), never absolute system paths. This is a permanent, cross-project policy.
+7. **PERMANENT POLICY (T0-5)**: Framework compliance review required with every package release
    - Every pre-release and production release must include comprehensive framework compliance review
    - Review must verify SEAM Protected™: Security, Efficiency, And Minimalism alignment
    - Review must validate all persistent policies (non-destructive, feature preservation, security-first)
@@ -89,6 +97,162 @@ When working with this codebase:
    - Review must assess technical debt impact and long-term sustainability
    - Report must be part of release package and documentation
    - Failure to include compliance review blocks release approval
+
+## Agent Operating Rules (MANDATORY)
+
+### DRY Principle Enforcement (CRITICAL)
+
+**MANDATORY: Eliminate code duplication - Code reuse is a core SEAM Protection™ requirement**
+
+Before implementing ANY new functionality:
+
+1. **SEARCH FOR EXISTING IMPLEMENTATIONS**: 
+   - Use `grep_search` or `semantic_search` to find similar code
+   - Check for existing utilities, helpers, or shared modules
+   - Verify no duplicate constants, configurations, or data structures exist
+
+2. **CONSOLIDATE BEFORE CREATING**:
+   - If similar code exists in 2+ places, create a shared utility FIRST
+   - Extract duplicated logic into centralized modules
+   - Create configuration files for repeated constants/data
+   - Import and reuse rather than copy-paste
+
+3. **SHARED CODE LOCATIONS**:
+   - `codesentinel/utils/` - Shared utility functions
+   - `codesentinel/core/` - Core business logic
+   - `codesentinel/utils/root_policy.py` - Root directory policy (example of DRY)
+   - Configuration files - Centralized data (JSON, TOML, constants)
+
+**Recent DRY Success Examples**:
+- ✅ Created `codesentinel/utils/root_policy.py` to eliminate duplicate ALLOWED_ROOT_FILES/DIRS
+- ✅ Modularized CLI commands into `*_utils.py` to eliminate duplication in `__init__.py`
+- ✅ Created `doc_utils.py` to share documentation verification functions
+
+**DRY Violations are Efficiency Violations**:
+- Multiple implementations of the same logic = Technical debt
+- Duplicate constants = Maintenance nightmare
+- Copy-paste code = Bug multiplication
+- **Action**: Always refactor duplicates into shared modules
+
+### User-Facing Path Display Policy (PERMANENT)
+
+**MANDATORY: Display repository-relative paths in all user-facing output**
+
+When displaying file paths, directory paths, or any filesystem locations to users:
+
+1. **NEVER show absolute paths** beyond the repository root
+2. **ALWAYS show paths relative to repository root** with the repository name as prefix
+3. **Use forward slashes** for cross-platform consistency
+4. **Prefix with repository name** (e.g., `CodeSentinel/`)
+
+**Implementation Requirements**:
+- Create helper function to convert absolute paths to relative paths
+- Pattern: `repo_name/relative/path/to/file.ext`
+- Apply to ALL user-visible output: logs, reports, terminal messages, UI displays
+
+**Examples**:
+
+✅ **CORRECT:**
+```
+✓ Report generated: CodeSentinel/tests/beta_testing/v1.1.0-beta.1/iterations/iteration_1.md
+✓ Environment: CodeSentinel/tests/beta_testing/v1.1.0-beta.1/environment/venv_abc123
+✓ Removed: CodeSentinel/dist/old_build.whl
+```
+
+❌ **INCORRECT:**
+```
+✓ Report generated: C:\Users\joedi\Documents\CodeSentinel\tests\beta_testing\v1.1.0-beta.1\iterations\iteration_1.md
+✓ Environment: /home/user/projects/CodeSentinel/tests/beta_testing/v1.1.0-beta.1/environment/venv_abc123
+✓ Removed: C:\Users\joedi\Documents\CodeSentinel\dist\old_build.whl
+```
+
+**Why This Matters**:
+- **Security**: Prevents exposure of system user paths and directory structures
+- **Privacy**: Doesn't leak username or home directory locations
+- **Portability**: Paths work across Windows, macOS, Linux
+- **Clarity**: Users see workspace-relative locations that are meaningful in project context
+- **Consistency**: All output has uniform path representation
+
+**Helper Function Pattern**:
+```python
+def _get_relative_path(absolute_path):
+    """Convert absolute path to repository-relative path."""
+    try:
+        abs_path = Path(absolute_path)
+        repo_root = Path.cwd()  # Or detect via .git directory
+        rel_path = abs_path.relative_to(repo_root)
+        return f"RepoName/{rel_path}".replace("\\", "/")
+    except ValueError:
+        # Fallback for paths outside repo
+        return f"RepoName/.../{abs_path.name}"
+```
+
+**Application Scope**:
+- Terminal/console output
+- Log messages
+- Error messages
+- Report generation
+- Status updates
+- File operation confirmations
+- Any user-visible path reference
+
+**Exceptions** (use absolute paths ONLY for):
+- Internal logging to debug files (not shown to user)
+- System calls that require absolute paths
+- Configuration files that explicitly store absolute paths
+
+This is a **PERMANENT, CONSTITUTIONAL-TIER** policy that applies to ALL current and future projects.
+
+### Pre-Edit File State Validation
+
+**CRITICAL: Always check file state before making ANY edits**
+
+Before invoking `replace_string_in_file`, `edit_notebook_file`, or similar editing tools:
+
+1. **READ FIRST**: Use `read_file` to inspect current file state
+2. **VERIFY CONTEXT**: Ensure the code you're about to edit actually exists
+3. **CHECK FOR DUPLICATES**: Confirm imports/blocks aren't already present
+4. **ASSESS STRUCTURE**: Understand surrounding code to avoid corruption
+
+**Why this is mandatory:**
+- Prevents duplicate imports and code blocks
+- Avoids file corruption from mismatched oldString patterns
+- Ensures edits are contextually appropriate
+- Reduces failed edit attempts and token waste
+
+**Pattern to follow:**
+```python
+# ❌ WRONG: Edit without reading
+replace_string_in_file(...)  # May fail or duplicate code
+
+# ✅ CORRECT: Read, assess, then edit
+read_file(path, start, end)  # Inspect current state
+# Analyze what's present
+# Craft precise oldString with context
+replace_string_in_file(...)  # Clean, targeted edit
+```
+
+### README Rebuild Root Validation
+
+**CRITICAL: Always validate root directory before README rebuild**
+
+When executing README rebuild operations:
+
+1. **ROOT CLEANUP FIRST**: Call root directory validation/cleanup before analyzing repo structure
+2. **OPTIMAL DATA**: Ensure file structure diagram reflects compliant, clean repository state
+3. **POLICY ENFORCEMENT**: Root must meet specification before documentation generation
+
+**Implementation requirement:**
+- `update readme --rebuild` must invoke `clean --root --full --dry-run` or equivalent validation
+- Report any policy violations detected during root scan
+- Optionally offer to fix violations before proceeding with rebuild
+- Document root state in rebuild operation log
+
+**Why this is mandatory:**
+- README should reflect ideal repository state, not current violations
+- File structure diagrams guide contributors - must show proper organization
+- Prevents documenting temporary/unauthorized files as permanent structure
+- Aligns documentation with SEAM Protection™ standards
 
 ## Agent-Driven Remediation
 

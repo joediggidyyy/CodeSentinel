@@ -57,7 +57,7 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
 
 **Steps**:
 
-1. **Verify Authority**: Check if user has approved this feature ✅
+1. **Verify Authority**: Check if user has approved this feature 
 2. **Plan Structure**: Determine CLI command name and arguments
    - Follow existing command patterns in `cli/__init__.py`
    - Use consistent argument naming (e.g., `--config`, `--output`)
@@ -82,11 +82,11 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
    - Classify as Tier 2 (Informative)
 
 6. **Validation**:
-   - All tests pass ✅
-   - Manual testing of command ✅
-   - Help text is clear and accurate ✅
-   - No breaking changes to existing commands ✅
-   - No hardcoded secrets or credentials ✅
+   - All tests pass 
+   - Manual testing of command 
+   - Help text is clear and accurate 
+   - No breaking changes to existing commands 
+   - No hardcoded secrets or credentials 
 
 7. **Commit**:
    - Message: `feat(cli): add [command name] command`
@@ -100,7 +100,7 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
 
 **Steps**:
 
-1. **Verify Authority**: Check user approval ✅
+1. **Verify Authority**: Check user approval 
 
 2. **Design Module**:
    - Plan class/function structure
@@ -136,11 +136,11 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
    - Classify as Tier 2 (Informative)
 
 7. **Validation**:
-   - All tests pass ✅
-   - Module is properly exposed in `__init__.py` ✅
-   - No circular dependencies ✅
-   - Compatible with existing code ✅
-   - Performance acceptable ✅
+   - All tests pass 
+   - Module is properly exposed in `__init__.py` 
+   - No circular dependencies 
+   - Compatible with existing code 
+   - Performance acceptable 
 
 8. **Commit**:
    - Message: `feat(core): add [module name] module`
@@ -154,7 +154,7 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
 
 **Steps**:
 
-1. **Verify Authority**: Dependency changes require user approval ✅
+1. **Verify Authority**: Dependency changes require user approval 
 
 2. **Research Update**:
    - Check changelog for breaking changes
@@ -185,10 +185,10 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
    - Note dependency version changes in CHANGELOG.md
 
 7. **Validation**:
-   - All tests pass with new version ✅
-   - No new warnings or deprecations ✅
-   - Backward compatibility verified ✅
-   - Performance not negatively impacted ✅
+   - All tests pass with new version 
+   - No new warnings or deprecations 
+   - Backward compatibility verified 
+   - Performance not negatively impacted 
 
 8. **Commit**:
    - Message: `deps: update [dependency] to v[version]`
@@ -221,10 +221,10 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
    - Add comments if fix is non-obvious
 
 4. **Verify Fix**:
-   - Reproducer test now passes ✅
-   - All other tests still pass ✅
-   - No new warnings introduced ✅
-   - Fix is minimal and focused ✅
+   - Reproducer test now passes 
+   - All other tests still pass 
+   - No new warnings introduced 
+   - Fix is minimal and focused 
 
 5. **Check Impact**:
    - Identify if other code might be affected
@@ -232,10 +232,10 @@ This is **core infrastructure** for CodeSentinel. Changes here affect the entire
    - Consider if documentation needs updates
 
 6. **Validation**:
-   - All tests passing ✅
-   - Manual verification of fix ✅
-   - No side effects observed ✅
-   - Performance not negatively impacted ✅
+   - All tests passing 
+   - Manual verification of fix 
+   - No side effects observed 
+   - Performance not negatively impacted 
 
 7. **Commit**:
    - Message: `fix(core): [description of bug fix]`

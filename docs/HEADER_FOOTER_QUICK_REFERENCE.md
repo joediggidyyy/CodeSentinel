@@ -95,7 +95,7 @@ codesentinel update docs
 When you run a template command, CodeSentinel shows:
 
 ```text
-📦 Detected Project: codesentinel
+ Detected Project: codesentinel
    Description: A Polymath Project | Created by joediggidyyy
    Repository: https://github.com/joediggidyyy/CodeSentinel.git
 ```

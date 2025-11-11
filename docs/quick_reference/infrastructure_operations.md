@@ -11,10 +11,10 @@
 | **Plan IaC Change** | L2 (Agent) | L3 (Senior Dev) | 🟢 |
 | **Apply Staging IaC** | L2 (Agent) | L3 (Senior Dev) | 🟢 |
 | **Apply Production IaC** | L3 (Senior Dev) | L4 (Architect) | 🟡 |
-| **Manage Terraform State** | L3 (Senior Dev) | L4 (Architect) | 🔴 |
+| **Manage Terraform State** | L3 (Senior Dev) | L4 (Architect) |  |
 | **Run Security Scans** | L1 (Junior Dev) | None | 🟢 |
 
-*🟢 = Standard Op | 🟡 = Requires Review | 🔴 = High-Risk*
+*🟢 = Standard Op | 🟡 = Requires Review |  = High-Risk*
 
 ---
 
@@ -87,7 +87,7 @@ graph TD
 
 ---
 
-## 🚨 Emergency / Key Contacts
+##  Emergency / Key Contacts
 
 - **Incident Lead**: On-call DevOps Engineer
 - **System Architect**: `@architect`

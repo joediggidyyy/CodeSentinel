@@ -59,7 +59,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 
 **Steps**:
 
-1. **Verify Scope**: Clarify what the document will cover ✅
+1. **Verify Scope**: Clarify what the document will cover 
 
 2. **Choose Location**:
    - Guides: `docs/guides/[topic]/`
@@ -96,11 +96,11 @@ The `docs/` directory contains CodeSentinel documentation including:
    - Not needed for new Tier 2 docs
 
 7. **Validation**:
-   - Document is clear and complete ✅
-   - Links to related docs work ✅
-   - Code examples are correct ✅
-   - No formatting issues ✅
-   - Professional standards met ✅
+   - Document is clear and complete 
+   - Links to related docs work 
+   - Code examples are correct 
+   - No formatting issues 
+   - Professional standards met 
 
 8. **Commit**:
    - Message: `docs: add [document name] guide/documentation`
@@ -115,7 +115,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 
 **Steps**:
 
-1. **Verify Authority**: Get user approval before creating Tier 1 docs ✅
+1. **Verify Authority**: Get user approval before creating Tier 1 docs 
 
 2. **Choose Location**:
    - Policies: `docs/architecture/POLICY.md` or new policy file
@@ -155,11 +155,11 @@ The `docs/` directory contains CodeSentinel documentation including:
    - Backup location configured
 
 7. **Validation**:
-   - Document is complete and authoritative ✅
-   - Classification tier is correct (T1) ✅
-   - Metadata is accurate ✅
-   - Links to related docs verified ✅
-   - Authority statement clear ✅
+   - Document is complete and authoritative 
+   - Classification tier is correct (T1) 
+   - Metadata is accurate 
+   - Links to related docs verified 
+   - Authority statement clear 
 
 8. **Commit**:
    - Message: `docs(T1): add [document name] - [purpose]`
@@ -199,7 +199,7 @@ The `docs/` directory contains CodeSentinel documentation including:
    - Commit with detailed message
 
 4. **For Major Updates** (Tier 1 docs):
-   - Get user verification for major changes ✅
+   - Get user verification for major changes 
    - Consider if this warrants new version
    - Create v2 directory in archive if new version
    - Update version number
@@ -208,11 +208,11 @@ The `docs/` directory contains CodeSentinel documentation including:
    - Update "Last Updated" date
 
 5. **Validation**:
-   - All links verified ✅
-   - Code examples tested ✅
-   - No formatting broken ✅
-   - Professional standards maintained ✅
-   - If Tier 1: Change documented in history ✅
+   - All links verified 
+   - Code examples tested 
+   - No formatting broken 
+   - Professional standards maintained 
+   - If Tier 1: Change documented in history 
 
 6. **Commit**:
    - Message: `docs: [update description]`
@@ -227,7 +227,7 @@ The `docs/` directory contains CodeSentinel documentation including:
 
 **Steps**:
 
-1. **Verify Deletion Authority**: Check if user approval needed ✅
+1. **Verify Deletion Authority**: Check if user approval needed 
    - Tier 1 docs: YES (explicit instruction required)
    - Tier 2 docs: YES (user approval)
    - Tier 3 docs: NO (agent discretion)
@@ -271,11 +271,11 @@ The `docs/` directory contains CodeSentinel documentation including:
    - Add note to CHANGELOG.md if relevant
 
 7. **Validation**:
-   - Archive copy complete ✅
-   - Metadata accurate ✅
-   - Original removed from main location ✅
-   - All references updated ✅
-   - Replacement document (if any) available ✅
+   - Archive copy complete 
+   - Metadata accurate 
+   - Original removed from main location 
+   - All references updated 
+   - Replacement document (if any) available 
 
 8. **Commit**:
    - Message: `docs: archive [document name]`
@@ -447,32 +447,32 @@ The `docs/` directory contains CodeSentinel documentation including:
 
 ```
 docs/
-├── architecture/          # Tier 1: Policies, classification, strategy
-│   ├── POLICY.md
-│   ├── DOCUMENT_CLASSIFICATION.md
-│   └── AGENT_INSTRUCTION_STRATEGY.md
-│
-├── guides/               # Tier 2: User guides and tutorials
-│   ├── getting_started.md
-│   ├── installation.md
-│   └── [topic]/
-│
-├── api/                  # Tier 2: API documentation
-│   ├── cli.md
-│   ├── core.md
-│   └── utils.md
-│
-├── features/             # Tier 2: Feature descriptions
-│   └── [feature_name].md
-│
-├── procedures/           # Tier 1: Infrastructure procedures
-│   ├── deployment.md
-│   └── maintenance.md
-│
-├── reports/              # Tier 1: Audit and compliance reports
-│   └── [audit_name]_[DATE].md
-│
-└── README.md            # High-level overview (Tier 2)
+ architecture/          # Tier 1: Policies, classification, strategy
+    POLICY.md
+    DOCUMENT_CLASSIFICATION.md
+    AGENT_INSTRUCTION_STRATEGY.md
+
+ guides/               # Tier 2: User guides and tutorials
+    getting_started.md
+    installation.md
+    [topic]/
+
+ api/                  # Tier 2: API documentation
+    cli.md
+    core.md
+    utils.md
+
+ features/             # Tier 2: Feature descriptions
+    [feature_name].md
+
+ procedures/           # Tier 1: Infrastructure procedures
+    deployment.md
+    maintenance.md
+
+ reports/              # Tier 1: Audit and compliance reports
+    [audit_name]_[DATE].md
+
+ README.md            # High-level overview (Tier 2)
 ```
 
 ---

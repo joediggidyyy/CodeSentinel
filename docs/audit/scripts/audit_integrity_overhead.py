@@ -251,9 +251,9 @@ def main():
     elif gen_time < 10.0 and verify_time < 5.0:
         print("  ✓ GOOD - Acceptable overhead for regular checks")
     elif gen_time < 30.0 and verify_time < 10.0:
-        print("  ⚠ MODERATE - Consider optimizing for large workspaces")
+        print("   MODERATE - Consider optimizing for large workspaces")
     else:
-        print("  ⚠ HIGH - Optimization recommended for production use")
+        print("   HIGH - Optimization recommended for production use")
     
     # Save detailed results
     output_file = workspace_root / "audit_integrity_overhead_results.json"

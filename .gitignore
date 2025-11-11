@@ -29,3 +29,6 @@ htmlcov/
 # Security
 codesentinel.json
 *.log
+
+# Archive
+quarantine_legacy_archive/

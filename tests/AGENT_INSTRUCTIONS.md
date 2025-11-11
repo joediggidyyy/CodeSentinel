@@ -58,7 +58,7 @@ The `tests/` directory contains all test code for CodeSentinel including:
 
 **Steps**:
 
-1. **Verify Coverage Plan**: Ensure the code being tested is new/untested ✅
+1. **Verify Coverage Plan**: Ensure the code being tested is new/untested 
 
 2. **Identify Test Cases**:
    - Success case (normal operation)
@@ -93,10 +93,10 @@ The `tests/` directory contains all test code for CodeSentinel including:
    - Target: 100% coverage for new code
 
 7. **Validation**:
-   - All tests pass ✅
-   - Coverage is 100% for new code ✅
-   - No external dependencies without mocking ✅
-   - Test runs in < 1 second (unless integration) ✅
+   - All tests pass 
+   - Coverage is 100% for new code 
+   - No external dependencies without mocking 
+   - Test runs in < 1 second (unless integration) 
 
 8. **Commit**:
    - Message: `test: add unit tests for [module/function]`
@@ -140,10 +140,10 @@ The `tests/` directory contains all test code for CodeSentinel including:
    - Test boundary values
 
 6. **Validation**:
-   - New test passes ✅
-   - All existing tests still pass ✅
-   - Coverage increased or maintained ✅
-   - No performance regression ✅
+   - New test passes 
+   - All existing tests still pass 
+   - Coverage increased or maintained 
+   - No performance regression 
 
 7. **Commit**:
    - Message: `test: add regression test for [issue]`
@@ -192,10 +192,10 @@ The `tests/` directory contains all test code for CodeSentinel including:
    - Memory usage acceptable?
 
 7. **Validation**:
-   - Integration test passes ✅
-   - All unit tests still pass ✅
-   - Coverage not decreased ✅
-   - Test is maintainable and clear ✅
+   - Integration test passes 
+   - All unit tests still pass 
+   - Coverage not decreased 
+   - Test is maintainable and clear 
 
 8. **Commit**:
    - Message: `test: add integration test for [feature]`
@@ -239,10 +239,10 @@ The `tests/` directory contains all test code for CodeSentinel including:
    - Link to tests using it
 
 6. **Validation**:
-   - Tests using fixture pass ✅
-   - Fixture properly cleans up ✅
-   - Fixture is reusable across tests ✅
-   - No test interdependencies created ✅
+   - Tests using fixture pass 
+   - Fixture properly cleans up 
+   - Fixture is reusable across tests 
+   - No test interdependencies created 
 
 7. **Commit**:
    - Message: `test: add [fixture name] fixture`

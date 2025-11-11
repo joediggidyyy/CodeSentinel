@@ -89,12 +89,12 @@ This directory contains comprehensive guides for publishing, deploying, and main
 | Item | Status |
 |------|--------|
 | Version | 1.0.3.beta (normalized to 1.0.3b0) |
-| Tests | ✅ 22/22 passing |
-| CLI | ✅ All commands functional |
-| GUI | ✅ Wizard operational |
-| Distributions | ✅ Built (sdist + wheel) |
-| Documentation | ✅ Current |
-| Ready for Publication | ✅ Yes |
+| Tests |  22/22 passing |
+| CLI |  All commands functional |
+| GUI |  Wizard operational |
+| Distributions |  Built (sdist + wheel) |
+| Documentation |  Current |
+| Ready for Publication |  Yes |
 
 ## Next Steps
 

@@ -11,10 +11,10 @@
 | **Create/Update PR** | L2 (Agent) | L3 (Maintainer) | 🟢 |
 | **Merge PR** | L3 (Maintainer) | L3 (Maintainer) | 🟡 |
 | **Manage Actions** | L2 (Agent) | L3 (DevOps) | 🟡 |
-| **Create Release** | L3 (Maintainer) | L4 (Release Manager) | 🔴 |
-| **Edit Branch Rules** | L4 (Admin) | L4 (Admin) | 🔴 |
+| **Create Release** | L3 (Maintainer) | L4 (Release Manager) |  |
+| **Edit Branch Rules** | L4 (Admin) | L4 (Admin) |  |
 
-*🟢 = Standard Op | 🟡 = Requires Review | 🔴 = High-Risk*
+*🟢 = Standard Op | 🟡 = Requires Review |  = High-Risk*
 
 ---
 
@@ -88,7 +88,7 @@ graph TD
 
 ---
 
-## 🚨 Emergency / Key Contacts
+##  Emergency / Key Contacts
 
 - **Incident Lead**: On-call DevOps Engineer
 - **Security Issue**: `@security-team`

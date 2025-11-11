@@ -10,11 +10,11 @@
 | :--- | :--- | :--- | :--- |
 | **Deploy to Staging** | L2 (Agent) | L3 (Maintainer) | 🟢 |
 | **Deploy to Production** | L3 (Maintainer) | L4 (Release Manager) | 🟡 |
-| **Execute Rollback** | L2 (Agent) | L3 (Incident Lead) | 🔴 |
+| **Execute Rollback** | L2 (Agent) | L3 (Incident Lead) |  |
 | **Create Pipeline** | L2 (Agent) | L3 (DevOps) | 🟡 |
-| **Manage Secrets** | L3 (DevOps) | L4 (Security) | 🔴 |
+| **Manage Secrets** | L3 (DevOps) | L4 (Security) |  |
 
-*🟢 = Standard Op | 🟡 = Requires Review | 🔴 = High-Risk*
+*🟢 = Standard Op | 🟡 = Requires Review |  = High-Risk*
 
 ---
 
@@ -88,7 +88,7 @@ graph TD
 
 ---
 
-## 🚨 Emergency / Key Contacts
+##  Emergency / Key Contacts
 
 - **Incident Commander**: On-call DevOps Engineer
 - **Release Manager**: `@release-manager`

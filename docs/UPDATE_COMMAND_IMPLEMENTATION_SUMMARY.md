@@ -1,4 +1,4 @@
-﻿# Update Command Implementation Summary
+# Update Command Implementation Summary
 
 **Feature**: Repository Documentation Management Automation
 **Date**: 2025-11-10

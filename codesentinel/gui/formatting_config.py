@@ -1,4 +1,4 @@
-﻿# Document Formatting Configuration
+# Document Formatting Configuration
 from codesentinel.utils.document_formatter import FormattingScheme
 import tkinter as tk
 from tkinter import ttk
@@ -11,11 +11,11 @@ class FormattingSchemeSelector(tk.Frame):
         self.current_scheme = tk.StringVar(value='black')
         
         schemes = [
-            ('🐍 Black', 'black', 'Python - Uncompromising formatter'),
-            ('🔧 AutoPEP8', 'autopep8', 'Python - PEP8 compliant'),
-            ('⚡ Ruff', 'ruff', 'Python - Fast modern linter'),
+            (' Black', 'black', 'Python - Uncompromising formatter'),
+            (' AutoPEP8', 'autopep8', 'Python - PEP8 compliant'),
+            (' Ruff', 'ruff', 'Python - Fast modern linter'),
             ('++ C++', 'cpp', 'Google C++ style guide'),
-            ('📘 Google', 'google', 'General documentation style'),
+            (' Google', 'google', 'General documentation style'),
             ('⚙️ Custom', 'custom', 'Define your own rules')
         ]
         
@@ -90,7 +90,7 @@ class FormattingCustomizationPanel(tk.Frame):
         ttk.Label(f5, text="spaces", font=('Arial', 8), foreground='gray').pack(side=tk.LEFT)
         
         # Right: Advanced Settings
-        adv_frame = ttk.LabelFrame(right, text="🎯 Advanced Settings", padding=10)
+        adv_frame = ttk.LabelFrame(right, text=" Advanced Settings", padding=10)
         adv_frame.pack(fill=tk.BOTH, expand=True)
         
         # Operator spacing
@@ -143,7 +143,7 @@ class FormattingCustomizationPanel(tk.Frame):
                 self._enable_children(widget)
         else:
             self.custom_locked = True
-            self.lock_label.config(text="ℹ️ Custom options locked - Select 'Custom' scheme to modify")
+            self.lock_label.config(text="ℹ Custom options locked - Select 'Custom' scheme to modify")
             # Disable all widgets except lock label
             for widget in self.winfo_children():
                 if widget != self.lock_label:

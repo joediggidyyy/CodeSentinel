@@ -355,7 +355,7 @@ class WizardApp:
                  font=('Courier New', 8), justify="left", foreground="#424242").pack(anchor="w")
         
         # What CodeSentinel Provides
-        provides_frame = ttk.LabelFrame(left_column, text="🛡️ What CodeSentinel Provides", padding=10)
+        provides_frame = ttk.LabelFrame(left_column, text=" What CodeSentinel Provides", padding=10)
         provides_frame.pack(fill="both", expand=True, pady=(6, 0))
         
         features_text = "• Automated security monitoring\n• Multi-channel alert system\n• GitHub & Copilot AI integration\n• IDE integration support\n• Intelligent audit with '!!!!' command\n• Non-destructive automation"
@@ -367,7 +367,7 @@ class WizardApp:
         right_column.pack(side="left", fill="both", expand=True, padx=(6, 0))
         
         # Environment Information
-        env_frame = ttk.LabelFrame(right_column, text="📂 Environment Information", padding=10)
+        env_frame = ttk.LabelFrame(right_column, text=" Environment Information", padding=10)
         env_frame.pack(fill="both", expand=True, pady=(0, 6))
         
         current_dir = Path.cwd()
@@ -393,7 +393,7 @@ class WizardApp:
                      foreground=color, wraplength=350).pack(side="left", anchor="w", fill="x", expand=True)
         
         # Getting Started
-        start_frame = ttk.LabelFrame(right_column, text="🚀 Getting Started", padding=10)
+        start_frame = ttk.LabelFrame(right_column, text=" Getting Started", padding=10)
         start_frame.pack(fill="both", expand=True, pady=(6, 0))
         
         start_text = "This wizard will help you configure:\n\n1. Project location and GitHub setup\n2. Alert channel preferences\n3. IDE integration options\n4. GitHub Copilot integration\n5. Optional automation features\n\nClick 'Next' to begin configuration."
@@ -425,7 +425,7 @@ class WizardApp:
         left_column = ttk.Frame(columns_container)
         left_column.pack(side="left", fill="both", expand=True, padx=(0, 6))
         
-        location_frame = ttk.LabelFrame(left_column, text="📂 Installation Location", padding=10)
+        location_frame = ttk.LabelFrame(left_column, text=" Installation Location", padding=10)
         location_frame.pack(fill="both", expand=True)
         
         self.loc_var = tk.StringVar(value=self.data["install_location"])
@@ -457,7 +457,7 @@ class WizardApp:
         right_column = ttk.Frame(columns_container)
         right_column.pack(side="left", fill="both", expand=True, padx=(6, 0))
         
-        github_frame = ttk.LabelFrame(right_column, text="🔗 GitHub Integration", padding=10)
+        github_frame = ttk.LabelFrame(right_column, text=" GitHub Integration", padding=10)
         github_frame.pack(fill="both", expand=True)
         
         # Enable GitHub checkbox
@@ -476,9 +476,9 @@ class WizardApp:
         
         self.gh_mode = tk.StringVar(value=self.data["github"].get("mode", "connect"))
         modes = [
-            ("initialize", "📝 Initialize New Repository"),
-            ("clone", "📥 Clone Existing Repository"),
-            ("connect", "🔗 Connect to Existing Remote")
+            ("initialize", " Initialize New Repository"),
+            ("clone", " Clone Existing Repository"),
+            ("connect", " Connect to Existing Remote")
         ]
         
         for value, label in modes:
@@ -528,7 +528,7 @@ class WizardApp:
         alerts = self.data["alerts"]
 
         # Alert Channels - Horizontal Layout
-        channels = ttk.LabelFrame(f, text="📢 Alert Channels", padding=12)
+        channels = ttk.LabelFrame(f, text=" Alert Channels", padding=12)
         channels.pack(fill="x", pady=(0, 12))
         
         self.console_var = tk.BooleanVar(value=alerts["console"]["enabled"]) 
@@ -539,11 +539,11 @@ class WizardApp:
         # Arrange checkboxes in a 2x2 grid
         ttk.Checkbutton(channels, text="✓ Console Output", variable=self.console_var).grid(
             row=0, column=0, sticky="w", padx=(0, 30), pady=4)
-        ttk.Checkbutton(channels, text="📁 File Logging", variable=self.file_var).grid(
+        ttk.Checkbutton(channels, text=" File Logging", variable=self.file_var).grid(
             row=0, column=1, sticky="w", padx=(0, 30), pady=4)
-        ttk.Checkbutton(channels, text="📧 Email Alerts", variable=self.email_var, 
+        ttk.Checkbutton(channels, text=" Email Alerts", variable=self.email_var, 
                        command=self._on_email_toggle).grid(row=1, column=0, sticky="w", padx=(0, 30), pady=4)
-        ttk.Checkbutton(channels, text="💬 Slack Integration", variable=self.slack_var, 
+        ttk.Checkbutton(channels, text=" Slack Integration", variable=self.slack_var, 
                        command=self._on_slack_toggle).grid(row=1, column=1, sticky="w", pady=4)
 
         # Two-column layout for configurations
@@ -555,14 +555,14 @@ class WizardApp:
         left_column.pack(side="left", fill="both", expand=True, padx=(0, 6))
         
         # File Logging Configuration
-        filebox = ttk.LabelFrame(left_column, text="📁 File Logging Configuration", padding=12)
+        filebox = ttk.LabelFrame(left_column, text=" File Logging Configuration", padding=12)
         filebox.pack(fill="x", pady=(0, 12))
         self.log_file_var = tk.StringVar(value=alerts["file"]["log_file"]) 
         ttk.Label(filebox, text="Log file path:", font=('Arial', 9)).pack(anchor="w", pady=(0, 4))
         ttk.Entry(filebox, textvariable=self.log_file_var, font=('Arial', 9)).pack(fill="x")
         
         # Email Configuration
-        email = ttk.LabelFrame(left_column, text="📧 Email Alert Configuration", padding=12)
+        email = ttk.LabelFrame(left_column, text=" Email Alert Configuration", padding=12)
         email.pack(fill="both", expand=True)
         
         self.smtp_server_var = tk.StringVar(value=alerts["email"].get("smtp_server", "smtp.gmail.com"))
@@ -601,7 +601,7 @@ class WizardApp:
         right_column.pack(side="left", fill="both", expand=True, padx=(6, 0))
         
         # Slack Configuration
-        slack = ttk.LabelFrame(right_column, text="💬 Slack Integration Configuration", padding=12)
+        slack = ttk.LabelFrame(right_column, text=" Slack Integration Configuration", padding=12)
         slack.pack(fill="x")
         
         self.slack_url_var = tk.StringVar(value=alerts["slack"].get("webhook_url", ""))
@@ -878,7 +878,7 @@ class WizardApp:
                     'C:\\Program Files\\Microsoft VS Code\\Code.exe',
                     'C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe'
                 ],
-                'icon': '📝',
+                'icon': '',
                 'url': 'https://code.visualstudio.com/'
             },
             {
@@ -891,7 +891,7 @@ class WizardApp:
                     'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\*\\Common7\\IDE\\devenv.exe',
                     'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\*\\Common7\\IDE\\devenv.exe'
                 ],
-                'icon': '🏢',
+                'icon': '',
                 'url': 'https://visualstudio.microsoft.com/'
             },
             {
@@ -905,7 +905,7 @@ class WizardApp:
                     'C:\\Users\\{username}\\AppData\\Local\\JetBrains\\PyCharm*\\bin\\pycharm64.exe',
                     'C:\\Program Files\\JetBrains\\PyCharm*\\bin\\pycharm.exe'
                 ],
-                'icon': '🐍',
+                'icon': '',
                 'url': 'https://www.jetbrains.com/pycharm/'
             },
             {
@@ -917,7 +917,7 @@ class WizardApp:
                     'C:\\Users\\{username}\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\*\\bin\\idea64.exe',
                     'C:\\Program Files\\JetBrains\\IntelliJ IDEA*\\bin\\idea64.exe'
                 ],
-                'icon': '☕',
+                'icon': '',
                 'url': 'https://www.jetbrains.com/idea/'
             },
             {
@@ -930,7 +930,7 @@ class WizardApp:
                     'C:\\Program Files\\RStudio\\bin\\rstudio.exe',
                     'C:\\Users\\{username}\\AppData\\Local\\RStudio\\rstudio.exe'
                 ],
-                'icon': '📊',
+                'icon': '',
                 'url': 'https://posit.co/download/rstudio-desktop/'
             },
             {
@@ -953,7 +953,7 @@ class WizardApp:
                 'paths': [
                     'C:\\Users\\{username}\\AppData\\Local\\atom\\atom.exe'
                 ],
-                'icon': '⚛️',
+                'icon': '',
                 'url': 'https://atom.io/'
             },
             {
@@ -965,7 +965,7 @@ class WizardApp:
                     'C:\\Program Files\\Notepad++\\notepad++.exe',
                     'C:\\Program Files (x86)\\Notepad++\\notepad++.exe'
                 ],
-                'icon': '📋',
+                'icon': '',
                 'url': 'https://notepad-plus-plus.org/'
             },
             {
@@ -977,7 +977,7 @@ class WizardApp:
                     'C:\\eclipse\\eclipse.exe',
                     'C:\\Program Files\\Eclipse\\*\\eclipse.exe'
                 ],
-                'icon': '🌙',
+                'icon': '',
                 'url': 'https://www.eclipse.org/'
             }
         ]
@@ -1074,7 +1074,7 @@ class WizardApp:
         note_frame.pack(fill="x", pady=(8, 0))
         ttk.Label(
             note_frame,
-            text="ℹ️ IDE integration files will be created during final installation.",
+            text="ℹ IDE integration files will be created during final installation.",
             font=('Arial', 8),
             foreground='gray'
         ).pack(anchor="w")
@@ -1108,7 +1108,7 @@ class WizardApp:
             ttk.Label(detection_frame, text="✓ VS Code detected - Copilot integration available", 
                      font=('Arial', 9), foreground=self.colors['success']).pack(anchor="w")
         else:
-            ttk.Label(detection_frame, text="⚠ VS Code not detected - Install for full integration", 
+            ttk.Label(detection_frame, text=" VS Code not detected - Install for full integration", 
                      font=('Arial', 9), foreground=self.colors['warning']).pack(anchor="w")
         
         # Integration options
@@ -1128,11 +1128,11 @@ class WizardApp:
         self.copilot_sub_frame = ttk.Frame(options_frame)
         self.copilot_sub_frame.pack(fill="x", padx=(20, 0))
         
-        ttk.Checkbutton(self.copilot_sub_frame, text="📦 Install VS Code Extension",
+        ttk.Checkbutton(self.copilot_sub_frame, text=" Install VS Code Extension",
                        variable=self.copilot_vscode_ext, 
                        state="normal" if self.copilot_enabled.get() else "disabled").pack(anchor="w", pady=2)
         
-        ttk.Checkbutton(self.copilot_sub_frame, text="📝 Generate Copilot Instructions",
+        ttk.Checkbutton(self.copilot_sub_frame, text=" Generate Copilot Instructions",
                        variable=self.copilot_instructions,
                        state="normal" if self.copilot_enabled.get() else "disabled").pack(anchor="w", pady=2)
         
@@ -1151,10 +1151,10 @@ class WizardApp:
         benefits = [
             "🔍 AI-powered code review",
             "🤖 Intelligent audit remediation",
-            "📝 Context-aware code generation",
-            "🛡️ Security-first automation",
-            "📊 Smart analysis with remediation",
-            "🎯 Automated cleanup"
+            " Context-aware code generation",
+            " Security-first automation",
+            " Smart analysis with remediation",
+            " Automated cleanup"
         ]
         
         for benefit in benefits:
@@ -1162,7 +1162,7 @@ class WizardApp:
                      foreground="#424242").pack(anchor="w", pady=2)
         
         # Installation notes
-        note_frame = ttk.LabelFrame(right_column, text="ℹ️ Installation Notes", padding=10)
+        note_frame = ttk.LabelFrame(right_column, text="ℹ Installation Notes", padding=10)
         note_frame.pack(fill="x")
         
         notes = [
@@ -1208,7 +1208,7 @@ class WizardApp:
         self.opt_ci = tk.BooleanVar(value=self.data["optional"]["ci"])
         
         # Features frame
-        features_frame = ttk.LabelFrame(f, text="🚀 Automation & Integration Features", padding=10)
+        features_frame = ttk.LabelFrame(f, text=" Automation & Integration Features", padding=10)
         features_frame.pack(fill="both", expand=True, pady=(0, 8))
         
         # Feature 1: Scheduled Maintenance
@@ -1260,7 +1260,7 @@ class WizardApp:
         )
         
         # Recommendations section
-        recommendations_frame = ttk.LabelFrame(f, text="💡 Smart Recommendations", padding=10)
+        recommendations_frame = ttk.LabelFrame(f, text=" Smart Recommendations", padding=10)
         recommendations_frame.pack(fill="x")
         
         # Generate context-aware recommendations
@@ -1311,10 +1311,10 @@ class WizardApp:
                             'Intermediate': self.colors['warning'], 
                             'Advanced': self.colors['error']}
         
-        ttk.Label(badge_frame, text=f"📊 {complexity}", font=('Arial', 8), 
+        ttk.Label(badge_frame, text=f" {complexity}", font=('Arial', 8), 
                  foreground=complexity_colors.get(complexity, 'black')).pack(side="right", padx=(8, 0))
         
-        ttk.Label(badge_frame, text=f"🎯 {impact}", font=('Arial', 8), 
+        ttk.Label(badge_frame, text=f" {impact}", font=('Arial', 8), 
                  foreground="#424242").pack(side="right", padx=(8, 0))
         
         # Subtitle
@@ -1333,12 +1333,12 @@ class WizardApp:
             desc_var.set(not desc_var.get())
             if desc_var.get():
                 desc_label.pack(fill="x", pady=(3, 3))
-                toggle_btn.config(text="ℹ️ Hide Details")
+                toggle_btn.config(text="ℹ Hide Details")
             else:
                 desc_label.pack_forget()
-                toggle_btn.config(text="ℹ️ Show Details")
+                toggle_btn.config(text="ℹ Show Details")
         
-        toggle_btn = ttk.Button(desc_frame, text="ℹ️ Show Details", command=toggle_description)
+        toggle_btn = ttk.Button(desc_frame, text="ℹ Show Details", command=toggle_description)
         toggle_btn.pack(anchor="w", pady=(0, 3))
         
         # Separator
@@ -1505,22 +1505,22 @@ class WizardApp:
                 
                 # Build readable summary
                 summary = []
-                summary.append("╔" + "═" * 58 + "╗")
-                summary.append("║" + "  CODESENTINEL CONFIGURATION SUMMARY".center(58) + "║")
-                summary.append("╚" + "═" * 58 + "╝")
+                summary.append("" + "" * 58 + "")
+                summary.append("" + "  CODESENTINEL CONFIGURATION SUMMARY".center(58) + "")
+                summary.append("" + "" * 58 + "")
                 summary.append("")
                 
                 # Installation Location
-                summary.append("📁 INSTALLATION")
-                summary.append("   ─────────────────────────────────────────────")
+                summary.append(" INSTALLATION")
+                summary.append("   ")
                 summary.append(f"   Location: {self.data.get('install_location', 'Not set')}")
                 github_data = self.data.get('github', {})
                 summary.append(f"   Mode:     {github_data.get('mode', 'Not set').upper()}")
                 summary.append("")
                 
                 # GitHub Integration
-                summary.append("🔗 GITHUB INTEGRATION")
-                summary.append("   ─────────────────────────────────────────────")
+                summary.append(" GITHUB INTEGRATION")
+                summary.append("   ")
                 repo_url = github_data.get('repo_url', '')
                 if repo_url:
                     summary.append("   Status:   ✓ CONFIGURED")
@@ -1528,12 +1528,12 @@ class WizardApp:
                     if github_data.get('create'):
                         summary.append("   Action: Create new repository")
                 else:
-                    summary.append("   Status:   ✗ Not configured")
+                    summary.append("   Status:    Not configured")
                 summary.append("")
                 
                 # Alerts
-                summary.append("🔔 ALERT CONFIGURATION")
-                summary.append("   ─────────────────────────────────────────────")
+                summary.append(" ALERT CONFIGURATION")
+                summary.append("   ")
                 
                 # File Logging
                 alerts = self.data.get('alerts', {})
@@ -1542,7 +1542,7 @@ class WizardApp:
                     summary.append("   File Logging: ✓ ENABLED")
                     summary.append(f"      • Path:  {file_alerts.get('log_file', 'codesentinel.log')}")
                 else:
-                    summary.append("   File Logging: ✗ Disabled")
+                    summary.append("   File Logging:  Disabled")
                 
                 # Email
                 email_alerts = alerts.get('email', {})
@@ -1552,7 +1552,7 @@ class WizardApp:
                     summary.append(f"      • To:   {', '.join(to_emails) if to_emails else 'Not set'}")
                     summary.append(f"      • SMTP: {email_alerts.get('smtp_server', '')}:{email_alerts.get('smtp_port', 587)}")
                 else:
-                    summary.append("   Email Alerts: ✗ Disabled")
+                    summary.append("   Email Alerts:  Disabled")
                 
                 # Slack
                 slack_alerts = alerts.get('slack', {})
@@ -1560,12 +1560,12 @@ class WizardApp:
                     summary.append("   Slack Alerts: ✓ ENABLED")
                     summary.append(f"      • Channel: {slack_alerts.get('channel', '#maintenance-alerts')}")
                 else:
-                    summary.append("   Slack Alerts: ✗ Disabled")
+                    summary.append("   Slack Alerts:  Disabled")
                 summary.append("")
                 
                 # IDE Integration
-                summary.append("💻 IDE INTEGRATION")
-                summary.append("   ─────────────────────────────────────────────")
+                summary.append(" IDE INTEGRATION")
+                summary.append("   ")
                 ide_data = self.data.get('ide', {})
                 enabled_ides = []
                 for ide, data in ide_data.items():
@@ -1585,7 +1585,7 @@ class WizardApp:
                 
                 # Copilot Integration
                 summary.append("🤖 GITHUB COPILOT")
-                summary.append("   ─────────────────────────────────────────────")
+                summary.append("   ")
                 copilot_data = self.data.get('copilot', {})
                 if copilot_data.get('enabled'):
                     summary.append("   Status: ✓ ENABLED")
@@ -1597,12 +1597,12 @@ class WizardApp:
                     if copilot_data.get('enable_agent_mode'):
                         summary.append("      ✓ Agent Mode Enabled")
                 else:
-                    summary.append("   Status: ✗ Disabled")
+                    summary.append("   Status:  Disabled")
                 summary.append("")
                 
                 # Optional Features
                 summary.append("⚙️ OPTIONAL FEATURES")
-                summary.append("   ─────────────────────────────────────────────")
+                summary.append("   ")
                 optional_data = self.data.get('optional', {})
                 optional_enabled = []
                 if optional_data.get('scheduler'):
@@ -1618,9 +1618,9 @@ class WizardApp:
                     summary.append("   No optional features selected")
                 summary.append("")
                 
-                summary.append("─" * 60)
+                summary.append("" * 60)
                 summary.append("✓ Configuration complete - Click 'Finish' to save and exit")
-                summary.append("─" * 60)
+                summary.append("" * 60)
                 
                 self.summary_text.insert("1.0", "\n".join(summary))
                 self.summary_text.config(state="disabled")  # Make read-only
@@ -1720,7 +1720,7 @@ class WizardApp:
                 self._generate_copilot_instructions(install_path)
                 results.append("✓ Generated .github/copilot-instructions.md")
             except Exception as e:
-                results.append(f"✗ Failed to generate instructions: {e}")
+                results.append(f" Failed to generate instructions: {e}")
         
         # Install VS Code extension
         if config.get("install_vscode_extension", False):
@@ -1758,9 +1758,9 @@ class WizardApp:
                     
                     results.append("✓ Created .vscode/settings.json with CodeSentinel config")
                 else:
-                    results.append("✗ VS Code 'code' command not found")
+                    results.append(" VS Code 'code' command not found")
             except Exception as e:
-                results.append(f"✗ Failed to configure VS Code: {e}")
+                results.append(f" Failed to configure VS Code: {e}")
         
         # Show results if any
         if results:

@@ -250,9 +250,9 @@ def main():
     elif total_time < 3000 and total_mem < 100:
         print("  ✓ GOOD - Acceptable overhead for regular use")
     elif total_time < 5000 and total_mem < 200:
-        print("  ⚠ MODERATE - Consider optimization for high-frequency use")
+        print("   MODERATE - Consider optimization for high-frequency use")
     else:
-        print("  ⚠ HIGH - Optimization recommended")
+        print("   HIGH - Optimization recommended")
     
     # Identify heaviest components
     if results['components']:

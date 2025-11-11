@@ -190,7 +190,7 @@ def main():
     if versions_match and not verifier.errors:
         canonical_version = verifier.get_canonical_version()
         if canonical_version and not args.quiet:
-            print("✅ SUCCESS: All version declarations are consistent")
+            print(" SUCCESS: All version declarations are consistent")
             print(f"   Canonical version: {canonical_version}")
             sources = verifier.versions_found[canonical_version]
             print(f"   Found in {len(sources)} sources: {', '.join(sources)}")
@@ -198,7 +198,7 @@ def main():
     else:
         if args.strict:
             if not args.quiet:
-                print("💥 STRICT MODE: Exiting with error code due to version inconsistencies")
+                print(" STRICT MODE: Exiting with error code due to version inconsistencies")
             return 1
         else:
             if not args.quiet:

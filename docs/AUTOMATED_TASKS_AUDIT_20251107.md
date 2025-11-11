@@ -117,12 +117,12 @@ Identified scheduled tasks:
 
 - Commit message formatting checks: Partially automated
 - Related policy update verification: Manual (requires agent decision)
-- **Status**: ⚠ PARTIALLY AUTOMATED (acceptable)
+- **Status**:  PARTIALLY AUTOMATED (acceptable)
 
 **Task Closure Validation** (Required)
 
 - Manual verification required before final commit
-- **Status**: ⚠ REQUIRES AGENT DECISION (by design)
+- **Status**:  REQUIRES AGENT DECISION (by design)
 
 **Overall Assessment**: ✓ Validation framework properly integrated, manual gates preserved for policy decisions
 
@@ -204,7 +204,7 @@ Identified scheduled tasks:
 - ✓ No security vulnerabilities detected
 - ✓ Credential exposure checks negative
 - ✓ File permissions verified correct
-- ⚠ One scan logged warning about legacy credential format (already remediated)
+-  One scan logged warning about legacy credential format (already remediated)
 
 **Potential Issues**: None outstanding  
 **Recommended Actions**: Continue scheduled execution
@@ -255,7 +255,7 @@ Identified scheduled tasks:
 - ✓ Checksums verified accurate
 - ✓ Manifest files properly formatted
 - ✓ Tier 0 not backed up (correct per policy)
-- ⚠ Backup timing: Could be more predictable with fixed schedule
+-  Backup timing: Could be more predictable with fixed schedule
 
 **Identified Enhancement**:
 
@@ -345,12 +345,12 @@ Identified scheduled tasks:
 
 | Task | Destructive | Verification | Status |
 |---|---|---|---|
-| Daily maintenance | ✗ NO | N/A - Read only | ✓ SAFE |
-| Security scan | ✗ NO | N/A - Read only | ✓ SAFE |
-| Dependency updates | ✗ NO | User decision required | ✓ SAFE |
-| Backup creation | ✗ NO | Automated verification | ✓ SAFE |
-| Config validation | ✗ NO | Reports on errors | ✓ SAFE |
-| Metadata tracking | ✗ NO | Audit trail recorded | ✓ SAFE |
+| Daily maintenance |  NO | N/A - Read only | ✓ SAFE |
+| Security scan |  NO | N/A - Read only | ✓ SAFE |
+| Dependency updates |  NO | User decision required | ✓ SAFE |
+| Backup creation |  NO | Automated verification | ✓ SAFE |
+| Config validation |  NO | Reports on errors | ✓ SAFE |
+| Metadata tracking |  NO | Audit trail recorded | ✓ SAFE |
 
 **Overall**: ✓ All scheduler tasks respect non-destructive operations policy
 

@@ -23,7 +23,7 @@ Author: joediggidyyy
 License: MIT
 """
 
-__version__ = "1.0.3"
+__version__ = "1.1.0-beta.1"
 __author__ = "joediggidyyy"
 __license__ = "MIT"
 

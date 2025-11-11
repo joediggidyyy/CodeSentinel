@@ -1,4 +1,9 @@
-# CI/CD & Deployment Agent Instructions
+# [AGENT-USE] Deployment Satellite Instructions
+
+> **Purpose:** Agent-intended operational instructions for deployment satellite domain.
+> This file provides domain-specific guidance for agent remediation and deployment operations.
+
+# Deployment Satellite Instructions
 
 **Classification**: T4b - Infrastructure & Procedural Agent Documentation  
 **Scope**: Deployment automation, CI/CD pipeline management, release procedures, rollback operations  
@@ -99,11 +104,11 @@ This is the **critical path for code reaching production**. Reliability, safety,
 **Steps**:
 
 1. **Pre-Deployment Checklist**:
-   - All tests passing ✅
-   - Code review completed ✅
-   - No security issues identified ✅
-   - Deployment documentation reviewed ✅
-   - Team notified of upcoming deployment ✅
+   - All tests passing 
+   - Code review completed 
+   - No security issues identified 
+   - Deployment documentation reviewed 
+   - Team notified of upcoming deployment 
 
 2. **Build Preparation**:
    - Verify artifact is built correctly
@@ -125,11 +130,11 @@ This is the **critical path for code reaching production**. Reliability, safety,
    - Validate database connectivity
 
 5. **Validation**:
-   - All smoke tests passed ✅
-   - Error logs clean ✅
-   - Performance baseline established ✅
-   - No security issues ✅
-   - Ready for production ✅
+   - All smoke tests passed 
+   - Error logs clean 
+   - Performance baseline established 
+   - No security issues 
+   - Ready for production 
 
 6. **Approval**:
    - Get sign-off from QA if needed
@@ -518,4 +523,4 @@ This is the **critical path for code reaching production**. Reliability, safety,
 
 ---
 
-# CI/CD & Deployment Satellite Complete ✅
+# CI/CD & Deployment Satellite Complete 

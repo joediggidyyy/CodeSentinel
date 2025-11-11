@@ -14,7 +14,16 @@ from pathlib import Path
 from typing import Optional
 import signal
 import threading
+from typing import Dict, Any
 
+from .agent_utils import AgentContext, RemediationOpportunity
+from .alert_utils import handle_alert_config, handle_alert_send
+from .command_utils import run_agent_enabled_command
+from .dev_audit_remediation import apply_safe_fixes
+from .dev_audit_utils import configure_workspace_tools, run_tool_audit
+from .scan_utils import handle_scan_command
+from .test_utils import handle_test_command
+from .update_utils import perform_update
 from ..core import CodeSentinel
 from ..utils.process_monitor import start_monitor, stop_monitor
 
@@ -538,7 +547,7 @@ def show_template_options(template_type: str = 'both') -> None:
     print("="*70 + "\n")
 
 
-def set_header_for_file(file_path: Path, template_name: str = None, custom_header: str = None) -> tuple[bool, str]:
+def set_header_for_file(file_path: Path, template_name: Optional[str] = None, custom_header: Optional[str] = None) -> tuple[bool, str]:
     """
     Set header for a documentation file.
     
@@ -590,7 +599,7 @@ def set_header_for_file(file_path: Path, template_name: str = None, custom_heade
         return False, f"Could not write file: {e}"
 
 
-def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom_footer: str = None) -> tuple[bool, str]:
+def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom_footer: Optional[str] = None) -> tuple[bool, str]:
     """
     Set footer for a documentation file.
     
@@ -641,7 +650,7 @@ def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom
         return False, f"Could not write file: {e}"
 
 
-def edit_headers_interactive(doc_files: list[Path] = None) -> None:
+def edit_headers_interactive(doc_files: Optional[list[Path]] = None) -> None:
     """
     Interactive mode to edit headers for multiple documentation files.
     
@@ -677,8 +686,8 @@ def edit_headers_interactive(doc_files: list[Path] = None) -> None:
             print(f"\nSuggested template:\n")
             print(template_info['template'][:200])
             
-            choice = input("Use suggested template? (y/n/custom): ").strip().lower()
-            
+            choice = input("Use suggested template? (y/n/custom): ")
+
             if choice == 'y':
                 success, msg = set_header_for_file(file_path, file_path.name)
                 print(f"✓ {msg}" if success else f"❌ {msg}")
@@ -701,7 +710,7 @@ def edit_headers_interactive(doc_files: list[Path] = None) -> None:
     print("\n" + "="*70 + "\n")
 
 
-def edit_footers_interactive(doc_files: list[Path] = None) -> None:
+def edit_footers_interactive(doc_files: Optional[list[Path]] = None) -> None:
     """
     Interactive mode to edit footers for multiple documentation files.
     
@@ -759,6 +768,91 @@ def edit_footers_interactive(doc_files: list[Path] = None) -> None:
 
 
 
+def _build_dev_audit_context(results: dict[str, Any]) -> AgentContext:
+    """Build an AgentContext from the results of a development audit."""
+    context = AgentContext(command="dev-audit", analysis_results=results)
+
+    # Helper to create opportunities from hints
+    def create_opp_from_hint(hint: dict, opp_type: str) -> RemediationOpportunity:
+        # If agent_decision_required is not set, default based on safe_to_automate
+        safe_to_automate = hint.get("safe_to_automate", False)
+        agent_decision_required = hint.get("agent_decision_required", not safe_to_automate)
+        
+        return RemediationOpportunity(
+            id=f"{opp_type}-{hint.get('file', 'general')}-{hint.get('priority', 'medium')}",
+            type=opp_type,
+            priority=hint.get("priority", "medium"),
+            title=hint.get("issue", "Untitled Issue"),
+            description=hint.get("suggestion", hint.get("violation", "No description.")),
+            current_state={"details": hint},
+            proposed_action="Review and apply suggested actions.",
+            agent_decision_required=agent_decision_required,
+            safe_to_automate=safe_to_automate,
+            suggested_actions=hint.get("suggested_actions", []),
+        )
+
+    # Process hints from each category
+    remediation_hints = results.get("remediation_context", {})
+    for hint in remediation_hints.get("security_issues", []):
+        context.add_opportunity(create_opp_from_hint(hint, "security"))
+
+    for hint in remediation_hints.get("efficiency_issues", []):
+        context.add_opportunity(create_opp_from_hint(hint, "efficiency"))
+
+    for hint in remediation_hints.get("minimalism_issues", []):
+        context.add_opportunity(create_opp_from_hint(hint, "minimalism"))
+
+    return context
+
+
+def _build_scan_context(results: dict[str, Any]) -> AgentContext:
+    """Build an AgentContext from the results of scan operations."""
+    context = AgentContext(command="scan", analysis_results=results)
+    
+    # Extract bloat audit results if present
+    bloat_audit = results.get('bloat_audit', {})
+    if bloat_audit and 'summary' in bloat_audit:
+        summary = bloat_audit['summary']
+        priority_actions = summary.get('priority_actions', [])
+        
+        # Create opportunities from priority actions
+        for i, action in enumerate(priority_actions):
+            opportunity = RemediationOpportunity(
+                id=f"bloat-{i}",
+                type="bloat_audit",
+                priority="high" if i == 0 else "medium",
+                title=f"Repository bloat: {action}",
+                description=f"Priority action detected during bloat audit: {action}",
+                current_state={"action": action},
+                proposed_action=action,
+                agent_decision_required=False,
+                safe_to_automate=False,  # Bloat audit items require review
+                suggested_actions=[action],
+            )
+            context.add_opportunity(opportunity)
+    
+    # Extract security scan results if present
+    security_results = results.get('security', {})
+    if security_results and 'vulnerabilities' in security_results:
+        vulns = security_results.get('vulnerabilities', [])
+        for vuln in vulns:
+            opportunity = RemediationOpportunity(
+                id=f"security-{vuln.get('id', 'unknown')}",
+                type="security_vulnerability",
+                priority=vuln.get('severity', 'medium'),
+                title=f"Security: {vuln.get('name', 'Unknown vulnerability')}",
+                description=vuln.get('description', 'No description available'),
+                current_state={"vulnerability": vuln},
+                proposed_action="Review and remediate vulnerability",
+                agent_decision_required=True,
+                safe_to_automate=False,
+                suggested_actions=vuln.get('remediation_steps', []),
+            )
+            context.add_opportunity(opportunity)
+    
+    return context
+
+
 def main():
     """Main CLI entry point."""
     # Start low-cost process monitor daemon (checks every 60 seconds)
@@ -810,22 +904,15 @@ Examples:
   codesentinel alert "Test message"             # Send test alert
   codesentinel schedule start                   # Start maintenance scheduler
   codesentinel schedule stop                    # Stop maintenance scheduler
-  codesentinel clean                            # Clean all (cache + temp + logs)
-  codesentinel clean --root                     # Clean root directory clutter
-  codesentinel clean --build --test             # Clean build and test artifacts
-  codesentinel clean --emojis --dry-run         # Preview policy-violating emoji removal (smart detection)
-  codesentinel clean --emojis --include-gui     # Include GUI files in emoji scan
-  codesentinel clean --dry-run                  # Preview what would be deleted
+  codesentinel clean --all                      # Clean everything (cache, temp, logs, etc.)
+  codesentinel clean --root                     # Clean root directory violations
+  codesentinel clean --emojis --dry-run         # Preview emoji removal (supports --include-gui)
   codesentinel update docs                      # Update repository documentation
   codesentinel update changelog --version 1.2.3 # Update CHANGELOG.md
-  codesentinel update version patch             # Bump patch version
   codesentinel integrate --new                  # Integrate new CLI commands into workflows
   codesentinel integrate --all --dry-run        # Preview all integration opportunities
-  codesentinel integrate --workflow ci-cd       # Integrate into CI/CD workflows
   codesentinel dev-audit                        # Run interactive development audit
-  codesentinel !!!!                             # Quick trigger for dev-audit
-  codesentinel !!!! scheduler                   # Focus audit on scheduler subsystem
-  codesentinel !!!! "new feature"               # Focus audit on new feature development
+  codesentinel dev-audit --agent                # Run with AI-assisted remediation
         """
     )
 
@@ -847,11 +934,46 @@ Examples:
     subparsers.add_parser('status', help='Show CodeSentinel status')
 
     # Scan command
-    scan_parser = subparsers.add_parser('scan', help='Run security scan')
+    scan_parser = subparsers.add_parser('scan', help='Run security and bloat audits')
     scan_parser.add_argument(
         '--output', '-o',
         type=str,
         help='Output file for scan results'
+    )
+    scan_parser.add_argument(
+        '--security',
+        action='store_true',
+        help='Run security vulnerability scan'
+    )
+    scan_parser.add_argument(
+        '--bloat-audit',
+        action='store_true',
+        help='Run repository bloat audit'
+    )
+    scan_parser.add_argument(
+        '--all',
+        action='store_true',
+        help='Run all scans (security + bloat audit)'
+    )
+    scan_parser.add_argument(
+        '--json',
+        action='store_true',
+        help='Output results in JSON format'
+    )
+    scan_parser.add_argument(
+        '--agent',
+        action='store_true',
+        help='Export scan context for AI agent remediation'
+    )
+    scan_parser.add_argument(
+        '--export',
+        type=str,
+        help='Export agent context to specified file'
+    )
+    scan_parser.add_argument(
+        '--verbose',
+        action='store_true',
+        help='Verbose output'
     )
 
     # Maintenance command
@@ -867,27 +989,77 @@ Examples:
         help='Show what would be done without executing'
     )
 
-    # Alert command
-    alert_parser = subparsers.add_parser('alert', help='Send alert')
-    alert_parser.add_argument(
+    # Alert command with subcommands for config and send
+    alert_parser = subparsers.add_parser('alert', help='Alert configuration and sending')
+    alert_subparsers = alert_parser.add_subparsers(dest='alert_action', help='Alert actions')
+    
+    # Alert send subcommand
+    send_parser = alert_subparsers.add_parser('send', help='Send alert message')
+    send_parser.add_argument(
         'message',
         help='Alert message'
     )
-    alert_parser.add_argument(
+    send_parser.add_argument(
         '--title',
         default='Manual Alert',
         help='Alert title'
     )
-    alert_parser.add_argument(
+    send_parser.add_argument(
         '--severity',
         choices=['info', 'warning', 'error', 'critical'],
         default='info',
         help='Alert severity'
     )
-    alert_parser.add_argument(
+    send_parser.add_argument(
         '--channels',
         nargs='+',
         help='Channels to send alert to'
+    )
+    
+    # Alert config subcommand
+    config_parser = alert_subparsers.add_parser('config', help='Configure alert settings')
+    config_parser.add_argument(
+        '--show',
+        action='store_true',
+        help='Show current alert configuration'
+    )
+    config_parser.add_argument(
+        '--enable-channel',
+        type=str,
+        choices=['console', 'file', 'email', 'slack'],
+        help='Enable an alert channel'
+    )
+    config_parser.add_argument(
+        '--disable-channel',
+        type=str,
+        choices=['console', 'file', 'email', 'slack'],
+        help='Disable an alert channel'
+    )
+    config_parser.add_argument(
+        '--set-email',
+        type=str,
+        help='Set email address for email alerts'
+    )
+    config_parser.add_argument(
+        '--set-smtp-server',
+        type=str,
+        help='Set SMTP server for email alerts'
+    )
+    config_parser.add_argument(
+        '--set-smtp-port',
+        type=int,
+        help='Set SMTP port for email alerts'
+    )
+    config_parser.add_argument(
+        '--set-slack-webhook',
+        type=str,
+        help='Set Slack webhook URL for Slack alerts'
+    )
+    config_parser.add_argument(
+        '--set-severity-filter',
+        type=str,
+        choices=['info', 'warning', 'error', 'critical'],
+        help='Set minimum severity level for alerts'
     )
 
     # Schedule command
@@ -900,12 +1072,17 @@ Examples:
 
     # Update command
     update_parser = subparsers.add_parser('update', help='Update repository files and documentation')
-    update_subparsers = update_parser.add_subparsers(dest='update_action', help='Update actions')
+    update_subparsers = update_parser.add_subparsers(dest='update_action', help='Update actions', required=True)
     
     # Update docs
     docs_parser = update_subparsers.add_parser('docs', help='Update repository documentation')
     docs_parser.add_argument(
         '--dry-run', action='store_true', help='Show what would be updated without making changes')
+    docs_parser.add_argument(
+        '--verbose', action='store_true', help='Verbose output')
+    docs_parser.add_argument(
+        '--validate', action='store_true', help='Perform deep content validation (placeholders, links)')
+
     
     # Update changelog
     changelog_parser = update_subparsers.add_parser('changelog', help='Update CHANGELOG.md with recent commits')
@@ -915,11 +1092,17 @@ Examples:
         '--draft', action='store_true', help='Generate draft changelog without committing')
     changelog_parser.add_argument(
         '--since', type=str, help='Git tag or commit to start from (default: last release tag)')
+    changelog_parser.add_argument(
+        '--verbose', action='store_true', help='Verbose output')
     
     # Update readme
     readme_parser = update_subparsers.add_parser('readme', help='Update README.md with current features')
     readme_parser.add_argument(
         '--dry-run', action='store_true', help='Show what would be updated without making changes')
+    readme_parser.add_argument(
+        '--verbose', action='store_true', help='Verbose output')
+    readme_parser.add_argument(
+        '--validate', action='store_true', help='Run comprehensive README validation (branding, formatting, links)')
     
     # Update version
     version_parser = update_subparsers.add_parser('version', help='Bump version numbers across project files')
@@ -930,6 +1113,8 @@ Examples:
     )
     version_parser.add_argument(
         '--dry-run', action='store_true', help='Show what would be updated without making changes')
+    version_parser.add_argument(
+        '--verbose', action='store_true', help='Verbose output')
     
     # Update dependencies
     deps_parser = update_subparsers.add_parser('dependencies', help='Update dependency files')
@@ -956,6 +1141,8 @@ Examples:
         '--template', type=str, help='Template name to use')
     headers_parser.add_argument(
         '--custom', type=str, help='Custom header text')
+    headers_parser.add_argument(
+        '--verbose', action='store_true', help='Verbose output')
     
     # Update footers
     footers_parser = update_subparsers.add_parser('footers', help='Manage documentation file footers')
@@ -968,6 +1155,17 @@ Examples:
         '--template', type=str, default='standard', help='Template name to use (default: standard)')
     footers_parser.add_argument(
         '--custom', type=str, help='Custom footer text')
+    footers_parser.add_argument(
+        '--verbose', action='store_true', help='Verbose output')
+
+    # Update help-files
+    help_files_parser = update_subparsers.add_parser('help-files', help='Update CLI help text files for documentation')
+    help_files_parser.add_argument(
+        '--export', type=str, metavar='DIR', default='docs/cli',
+        help='Export directory for help files (default: docs/cli)')
+    help_files_parser.add_argument(
+        '--format', choices=['txt', 'md', 'both'], default='both',
+        help='Output format: txt, md (markdown), or both (default: both)')
 
     # Clean command
     clean_parser = subparsers.add_parser('clean', help='Clean repository artifacts and temporary files')
@@ -1025,6 +1223,23 @@ Examples:
         '--backup', action='store_true',
         help='Create backup before integration')
 
+    # Test command - Beta testing workflow
+    test_parser = subparsers.add_parser('test', help='Run beta testing workflow')
+    test_parser.add_argument(
+        '--version',
+        type=str,
+        default='v1.1.0-beta.1',
+        help='Version to test (default: v1.1.0-beta.1)')
+    test_parser.add_argument(
+        '--interactive',
+        action='store_true',
+        default=True,
+        help='Run in interactive mode (default)')
+    test_parser.add_argument(
+        '--automated',
+        action='store_true',
+        help='Run in automated mode without user prompts')
+
     # Setup command
     setup_parser = subparsers.add_parser('setup', help='Run setup wizard')
     setup_parser.add_argument(
@@ -1049,6 +1264,15 @@ Examples:
     dev_audit_parser.add_argument(
         '--focus', type=str, metavar='AREA', 
         help='Focus audit analysis on specific area (e.g., "scheduler", "new feature", "duplication detection"). Only available with Copilot integration.')
+    dev_audit_parser.add_argument(
+        '--tools', action='store_true', 
+        help='Run tool and environment configuration audit (checks VS Code MCP server setup)')
+    dev_audit_parser.add_argument(
+        '--configure', action='store_true',
+        help='Interactively configure workspace tool settings (use with --tools)')
+    dev_audit_parser.add_argument(
+        '--review', action='store_true',
+        help='Interactive review mode for manual-review issues detected by agent analysis')
     # File integrity command - robust management interface
     integrity_parser = subparsers.add_parser(
         'integrity',
@@ -1157,6 +1381,37 @@ Examples:
         '--show', action='store_true', help='Show current critical files'
     )
 
+    # Memory command - Session memory management
+    memory_parser = subparsers.add_parser('memory', help='Manage session memory and task context')
+    memory_subparsers = memory_parser.add_subparsers(dest='memory_action', help='Memory actions')
+    
+    # Memory -> Show
+    show_parser = memory_subparsers.add_parser(
+        'show',
+        help='Display current session memory state'
+    )
+    
+    # Memory -> Stats
+    stats_parser = memory_subparsers.add_parser(
+        'stats',
+        help='Show detailed cache usage statistics'
+    )
+    
+    # Memory -> Clear
+    clear_parser = memory_subparsers.add_parser(
+        'clear',
+        help='Clear session memory cache'
+    )
+    clear_parser.add_argument(
+        '--force', action='store_true', help='Clear without confirmation'
+    )
+    
+    # Memory -> Tasks
+    tasks_parser = memory_subparsers.add_parser(
+        'tasks',
+        help='Display tracked tasks'
+    )
+
     args = parser.parse_args()
 
     if not args.command:
@@ -1178,16 +1433,53 @@ Examples:
             print(f"  Scheduler Active: {status['scheduler_active']}")
 
         elif args.command == 'scan':
-            print("Running security scan...")
-            results = codesentinel.run_security_scan()
-
-            if args.output:
-                import json
-                with open(args.output, 'w') as f:
-                    json.dump(results, f, indent=2)
-                print(f"Scan results saved to {args.output}")
+            # Check if this is agent mode
+            agent_mode = getattr(args, 'agent', False)
+            
+            if agent_mode:
+                # Agent mode: use the centralized command runner
+                def get_scan_results() -> dict[str, Any]:
+                    """Get scan results for agent analysis."""
+                    from .scan_utils import run_bloat_audit
+                    from pathlib import Path
+                    
+                    results = {}
+                    workspace_root = Path.cwd()
+                    
+                    # Determine which scans to run
+                    run_security = args.security or args.all or (not args.bloat_audit and not args.all)
+                    run_bloat = args.bloat_audit or args.all
+                    
+                    if run_security:
+                        try:
+                            security_results = codesentinel.run_security_scan()
+                            results['security'] = security_results
+                        except Exception as e:
+                            results['security'] = {'error': str(e)}
+                    
+                    if run_bloat:
+                        try:
+                            bloat_results = run_bloat_audit(workspace_root)
+                            results['bloat_audit'] = bloat_results
+                        except Exception as e:
+                            results['bloat_audit'] = {'error': str(e)}
+                    
+                    return results
+                
+                # Run the command using the centralized utility
+                run_agent_enabled_command(
+                    command_name="scan",
+                    args=args,
+                    analysis_fn=get_scan_results,
+                    standard_handler=lambda results: None,  # No standard handler in agent mode
+                    context_builder=_build_scan_context,
+                    apply_safe_fn=None,  # No automated fixes for scan results yet
+                )
             else:
-                print(f"Scan completed. Found {results['summary']['total_vulnerabilities']} vulnerabilities.")
+                # Standard mode: delegate to scan_utils
+                exit_code = handle_scan_command(args, codesentinel)
+                if exit_code != 0:
+                    sys.exit(exit_code)
 
         elif args.command == 'maintenance':
             if args.dry_run:
@@ -1198,25 +1490,15 @@ Examples:
                 print(f"Executed {len(results.get('tasks_executed', []))} tasks")
 
         elif args.command == 'alert':
-            print(f"Sending alert: {args.title}")
-            channels = args.channels
-            try:
-                result = codesentinel.alert_manager.send_alert(
-                    title=args.title,
-                    message=args.message,
-                    severity=args.severity,
-                    channels=channels
-                )
-                # Summarize results
-                succeeded = [k for k, v in (result or {}).items() if v]
-                failed = [k for k, v in (result or {}).items() if not v]
-                if succeeded:
-                    print(f"Alert sent via: {', '.join(succeeded)}")
-                if failed:
-                    print(f"Channels failed: {', '.join(failed)}")
-            except Exception as _e:
-                print(f"Alert failed: {_e}", file=sys.stderr)
-                sys.exit(1)
+            # Delegate to alert_utils for config and send actions
+            if args.alert_action == 'config':
+                handle_alert_config(args, codesentinel.config_manager)
+            elif args.alert_action == 'send':
+                handle_alert_send(args, codesentinel.config_manager)
+            else:
+                # Default behavior if no subcommand (backward compatibility)
+                parser.error("Please specify 'config' or 'send' subcommand")
+
 
         elif args.command == 'schedule':
             if args.action == 'start':
@@ -1334,309 +1616,8 @@ except KeyboardInterrupt:
                 # print(json.dumps(status, indent=2))
 
         elif args.command == 'update':
-            """Handle update command for repository files and documentation."""
-            from pathlib import Path
-            import subprocess
-            import json
-            
-            if args.update_action == 'docs':
-                """Update repository documentation files with branding + header/footer verification."""
-                dry_run = getattr(args, 'dry_run', False)
-                verbose = getattr(args, 'verbose', False)
-                
-                print("Analyzing repository documentation...")
-                print("Verifying SEAM Protection™ branding + header/footer compliance...\n")
-                
-                # Files to verify and update
-                docs_to_verify = [
-                    Path.cwd() / "CHANGELOG.md",
-                    Path.cwd() / "README.md",
-                    Path.cwd() / "SECURITY.md",
-                    Path.cwd() / ".github" / "copilot-instructions.md",
-                    Path.cwd() / "codesentinel" / "__init__.py",
-                ]
-                
-                branding_issues = []
-                header_footer_issues = []
-                fixed_files = []
-                verified_files = []
-                
-                for doc_file in docs_to_verify:
-                    if not doc_file.exists():
-                        continue
-                    
-                    # Verify branding compliance
-                    is_branding_compliant, branding_issues_list = verify_documentation_branding(doc_file)
-                    
-                    # Verify headers/footers (markdown only)
-                    is_hf_compliant = True
-                    hf_issues_list = []
-                    if doc_file.suffix == '.md':
-                        is_hf_compliant, hf_issues_list, metadata = verify_documentation_headers_footers(doc_file)
-                    
-                    # Track issues
-                    if not is_branding_compliant:
-                        branding_issues.extend(branding_issues_list)
-                    if not is_hf_compliant:
-                        header_footer_issues.extend(hf_issues_list)
-                    
-                    # Check if all compliant
-                    if is_branding_compliant and is_hf_compliant:
-                        verified_files.append(doc_file.name)
-                        if verbose:
-                            print(f"  ✓ Full compliance: {doc_file.name}")
-                    else:
-                        # Apply automatic fixes
-                        if not dry_run:
-                            fixes_applied = False
-                            
-                            if not is_branding_compliant:
-                                success, message = apply_branding_fixes(doc_file, verbose)
-                                if success:
-                                    fixes_applied = True
-                                    if verbose:
-                                        print(f"  Fixed (branding): {doc_file.name}")
-                            
-                            if not is_hf_compliant:
-                                success, message = apply_header_footer_fixes(doc_file, verbose)
-                                if success:
-                                    fixes_applied = True
-                                    if verbose:
-                                        print(f"  Fixed (header/footer): {doc_file.name}")
-                            
-                            if fixes_applied:
-                                fixed_files.append(doc_file.name)
-                        else:
-                            print(f"  [DRY-RUN] Would fix: {doc_file.name}")
-                
-                # Summary
-                print("\nDocumentation Verification Summary:")
-                print(f"  ✓ Full compliance: {len(verified_files)} files")
-                
-                if fixed_files:
-                    print(f"  Fixed: {len(fixed_files)} files")
-                    for fname in fixed_files:
-                        print(f"    - {fname}")
-                
-                if branding_issues:
-                    print(f"\nBranding Issues Fixed: {len(branding_issues)}")
-                    for issue in branding_issues:
-                        print(f"  ⚠ {issue}")
-                
-                if header_footer_issues:
-                    print(f"\nHeader/Footer Issues Fixed: {len(header_footer_issues)}")
-                    for issue in header_footer_issues:
-                        print(f"  ⚠ {issue}")
-                
-                if dry_run:
-                    print("\nDry run complete. No files modified.")
-                else:
-                    if fixed_files or verified_files:
-                        print("\nDocumentation verification complete.")
-                        print("All files comply with SEAM Protection™ branding and header/footer policy.")
-                    
-            elif args.update_action == 'changelog':
-                """Update CHANGELOG.md with recent git commits."""
-                dry_run = getattr(args, 'draft', False) or getattr(args, 'dry_run', False)
-                version = getattr(args, 'version', None)
-                since = getattr(args, 'since', None)
-                
-                print("Updating CHANGELOG.md...")
-                
-                # Get recent commits
-                try:
-                    if since:
-                        cmd = ['git', 'log', f'{since}..HEAD', '--oneline', '--no-merges']
-                    else:
-                        # Try to find last release tag
-                        try:
-                            last_tag = subprocess.check_output(
-                                ['git', 'describe', '--tags', '--abbrev=0'],
-                                stderr=subprocess.DEVNULL, text=True
-                            ).strip()
-                            cmd = ['git', 'log', f'{last_tag}..HEAD', '--oneline', '--no-merges']
-                        except:
-                            # No tags, get last 10 commits
-                            cmd = ['git', 'log', '-10', '--oneline', '--no-merges']
-                    
-                    commits = subprocess.check_output(cmd, text=True).strip()
-                    
-                    if commits:
-                        print(f"\n  Found {len(commits.splitlines())} commits:\n")
-                        print(commits)
-                        
-                        if dry_run:
-                            print("\nDraft mode. CHANGELOG.md not modified.")
-                        else:
-                            print("\nUse --draft to preview without modifying CHANGELOG.md")
-                    else:
-                        print("  No new commits found.")
-                        
-                except subprocess.CalledProcessError as e:
-                    print(f"  ❌ Error running git command: {e}")
-                except Exception as e:
-                    print(f"  ❌ Error: {e}")
-                    
-            elif args.update_action == 'readme':
-                """Update README.md with current features."""
-                dry_run = getattr(args, 'dry_run', False)
-                
-                print("Updating README.md...")
-                readme_path = Path.cwd() / "README.md"
-                
-                if readme_path.exists():
-                    if dry_run:
-                        print("  [DRY-RUN] Would update feature list and version badges")
-                    else:
-                        print("  ✓ README.md checked")
-                        print("\nTip: Update version badges, feature lists, and examples manually")
-                        print("         or integrate with documentation generator")
-                else:
-                    print("  ❌ README.md not found")
-                    
-            elif args.update_action == 'version':
-                """Bump version numbers across project files."""
-                bump_type = args.bump_type
-                dry_run = getattr(args, 'dry_run', False)
-                
-                print(f"Bumping version ({bump_type})...")
-                
-                # Files to update
-                version_files = [
-                    Path.cwd() / "pyproject.toml",
-                    Path.cwd() / "setup.py",
-                    Path.cwd() / "codesentinel" / "__init__.py"
-                ]
-                
-                for vf in version_files:
-                    if vf.exists():
-                        if dry_run:
-                            print(f"  [DRY-RUN] Would update: {vf.name}")
-                        else:
-                            print(f"  ✓ Would update: {vf.name}")
-                    else:
-                        print(f"  ⚠️  Not found: {vf.name}")
-                
-                if dry_run:
-                    print("\nDry run complete. No files modified.")
-                else:
-                    print("\nVersion update requires manual editing or integration with bump2version")
-                    print("Consider: pip install bump2version && bump2version " + bump_type)
-                    
-            elif args.update_action == 'dependencies':
-                """Update dependency files."""
-                check_only = getattr(args, 'check_only', False)
-                upgrade = getattr(args, 'upgrade', False)
-                
-                print("Checking dependencies...")
-                
-                try:
-                    if check_only:
-                        # Check for outdated packages
-                        print("  Running: pip list --outdated")
-                        subprocess.run(['pip', 'list', '--outdated'], check=False)
-                    elif upgrade:
-                        print("  Upgrading dependencies requires pip-tools or manual update")
-                        print("Consider: pip install pip-tools && pip-compile --upgrade")
-                    else:
-                        print("  ✓ requirements.txt and pyproject.toml checked")
-                        print("\n  Options:")
-                        print("    --check-only : Check for outdated dependencies")
-                        print("    --upgrade    : Upgrade to latest compatible versions")
-                except Exception as e:
-                    print(f"  ❌ Error: {e}")
-                    
-            elif args.update_action == 'api-docs':
-                """Regenerate API documentation from docstrings."""
-                fmt = args.format
-                output = getattr(args, 'output', None) or 'docs/api'
-                
-                print(f"📚 Generating API documentation ({fmt})...")
-                
-                output_path = Path.cwd() / output
-                if not output_path.exists():
-                    output_path.mkdir(parents=True, exist_ok=True)
-                    print(f"  Created: {output}")
-                
-                print(f"  API doc generation requires sphinx or pdoc")
-                print("Consider: pip install pdoc3 && pdoc --html --output-dir " + output + " codesentinel")
-                
-            elif args.update_action == 'headers':
-                """Manage documentation headers."""
-                action = args.action
-                file_arg = getattr(args, 'file', None)
-                template_arg = getattr(args, 'template', None)
-                custom_arg = getattr(args, 'custom', None)
-                
-                if action == 'templates':
-                    show_template_options('header')
-                elif action == 'show':
-                    print("\nAvailable Header Templates:")
-                    print("="*70)
-                    headers = get_header_templates()
-                    for file_name, info in headers.items():
-                        marker = "⭐" if info.get('project_specific') else "  "
-                        print(f"\n{marker} 📄 {file_name}: {info['description']}")
-                        print(f"   Preview:\n   {info['template'][:100]}...")
-                elif action == 'set':
-                    if not file_arg:
-                        print("❌ --file required for set action")
-                    else:
-                        file_path = Path.cwd() / file_arg
-                        if file_path.exists():
-                            if custom_arg:
-                                success, msg = set_header_for_file(file_path, custom_header=custom_arg)
-                            else:
-                                success, msg = set_header_for_file(file_path, template_name=template_arg or file_path.name)
-                            print(f"{'✓' if success else '❌'} {msg}")
-                        else:
-                            print(f"❌ File not found: {file_arg}")
-                elif action == 'edit':
-                    if file_arg:
-                        file_path = Path.cwd() / file_arg
-                        edit_headers_interactive([file_path])
-                    else:
-                        edit_headers_interactive()
-            
-            elif args.update_action == 'footers':
-                """Manage documentation footers."""
-                action = args.action
-                file_arg = getattr(args, 'file', None)
-                template_arg = getattr(args, 'template', 'standard')
-                custom_arg = getattr(args, 'custom', None)
-                
-                if action == 'templates':
-                    show_template_options('footer')
-                elif action == 'show':
-                    print("\nAvailable Footer Templates:")
-                    print("="*70)
-                    footers = get_footer_templates()
-                    for template_name, info in footers.items():
-                        marker = "⭐" if info.get('project_specific') else "  "
-                        print(f"\n{marker} 🔖 {template_name.upper()}: {info['description']}")
-                        print(f"   Preview:\n   {info['template'][:100]}...")
-                elif action == 'set':
-                    if not file_arg:
-                        print("❌ --file required for set action")
-                    else:
-                        file_path = Path.cwd() / file_arg
-                        if file_path.exists():
-                            if custom_arg:
-                                success, msg = set_footer_for_file(file_path, custom_footer=custom_arg)
-                            else:
-                                success, msg = set_footer_for_file(file_path, template_name=template_arg)
-                            print(f"{'✓' if success else '❌'} {msg}")
-                        else:
-                            print(f"❌ File not found: {file_arg}")
-                elif action == 'edit':
-                    if file_arg:
-                        file_path = Path.cwd() / file_arg
-                        edit_footers_interactive([file_path])
-                    else:
-                        edit_footers_interactive()
-                
-            else:
-                print("❌ Unknown update action. Use 'codesentinel update --help'")
+            # Delegate to update_utils for comprehensive update handling
+            perform_update(args)
 
         elif args.command == 'clean':
             """Handle clean command for repository cleanup."""
@@ -1830,7 +1811,7 @@ except KeyboardInterrupt:
                             # Check if file is allowed
                             if item.name not in ALLOWED_ROOT_FILES:
                                 reason = 'unauthorized file'
-                                target_location = 'quarantine_legacy_archive/'
+                                target_location = 'quarantine_legacy_archive'
                                 
                                 # Assess file type and suggest proper action
                                 if item.name.startswith('test_') or item.name.endswith('_test.py'):
@@ -1874,7 +1855,6 @@ except KeyboardInterrupt:
                             # Archive all violations (non-destructive)
                             archive_dir = workspace_root / 'quarantine_legacy_archive'
                             archive_dir.mkdir(parents=True, exist_ok=True)
-                            
                             archived_count = 0
                             for violation in policy_violations:
                                 try:
@@ -2056,9 +2036,9 @@ except KeyboardInterrupt:
                         print("  [DRY-RUN] Would run: git gc --auto")
                 return
             
-            # Confirm deletion
+            # Confirm archival (using archive-first NON-DESTRUCTIVE policy)
             if dry_run:
-                print("\n[DRY-RUN] Would delete:")
+                print("\n[DRY-RUN] Would archive:")
                 for item_type, path, size in items_to_delete[:10]:  # Show first 10
                     print(f"  {item_type:4s} {path.relative_to(workspace_root)} ({size / 1024:.1f} KB)")
                 if len(items_to_delete) > 10:
@@ -2076,25 +2056,42 @@ except KeyboardInterrupt:
             
             if not force:
                 total_changes = len(items_to_delete) + len(files_with_emoji_changes)
-                response = input(f"\nDelete {len(items_to_delete)} items and clean {len(files_with_emoji_changes)} files? (y/N): ")
+                response = input(f"\nArchive {len(items_to_delete)} items and clean {len(files_with_emoji_changes)} files? (y/N): ")
                 if response.lower() != 'y':
                     print("❌ Cleanup cancelled.")
                     return
             
-            # Perform deletion
+            # Perform archival (NON-DESTRUCTIVE per SEAM Protection™)
             print("\nCleaning...")
-            deleted_count = 0
+            archived_count = 0
             errors = []
+            
+            # Create archive directory
+            from datetime import datetime
+            archive_base = workspace_root / 'quarantine_legacy_archive'
+            archive_base.mkdir(parents=True, exist_ok=True)
+            archive_session = archive_base / f"cleanup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
             for item_type, path, size in items_to_delete:
                 try:
-                    if item_type == 'dir':
-                        shutil.rmtree(path)
-                    else:
-                        path.unlink()
-                    deleted_count += 1
+                    # Create timestamped archive path
+                    archive_path = archive_session / path.relative_to(workspace_root).name
+                    archive_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    # Handle name collisions
+                    if archive_path.exists():
+                        base_name = archive_path.stem
+                        suffix = archive_path.suffix
+                        counter = 1
+                        while archive_path.exists():
+                            archive_path = archive_path.parent / f"{base_name}_{counter}{suffix}"
+                            counter += 1
+                    
+                    # Archive instead of delete (NON-DESTRUCTIVE)
+                    shutil.move(str(path), str(archive_path))
+                    archived_count += 1
                     if verbose:
-                        print(f"  ✓ Deleted: {path.relative_to(workspace_root)}")
+                        print(f"  ✓ Archived: {path.relative_to(workspace_root)} → cleanup session")
                 except Exception as e:
                     errors.append((path, str(e)))
                     if verbose:
@@ -2134,15 +2131,16 @@ except KeyboardInterrupt:
             # Final summary
             print(f"\n✨ Cleanup complete!")
             if items_to_delete:
-                print(f"  Deleted: {deleted_count}/{len(items_to_delete)} items")
+                print(f"  Archived: {archived_count}/{len(items_to_delete)} items")
                 print(f"  Space reclaimed: {total_size / 1024 / 1024:.2f} MB")
+                print(f"  Archive location: CodeSentinel/{archive_session.relative_to(workspace_root)}")
             if files_with_emoji_changes:
                 print(f"  Files cleaned: {emoji_cleaned_count}/{len(files_with_emoji_changes)}")
                 total_emojis_removed = sum(f['emoji_count'] for f in files_with_emoji_changes[:emoji_cleaned_count])
                 print(f"  Emojis removed: {total_emojis_removed}")
             
             if errors:
-                print(f"\n⚠️  Encountered {len(errors)} deletion errors:")
+                print(f"\n⚠️  Encountered {len(errors)} archival errors:")
                 for path, error in errors[:5]:
                     print(f"  {path.name}: {error}")
                 if len(errors) > 5:
@@ -2160,6 +2158,8 @@ except KeyboardInterrupt:
             from pathlib import Path
             import subprocess
             import os
+            import ast
+            import re
             from datetime import datetime
             
             dry_run = args.dry_run
@@ -2177,6 +2177,153 @@ except KeyboardInterrupt:
             
             # Get repository root
             repo_root = Path.cwd()
+            
+            # Step 1: Detect orphaned modules
+            print("\n🔍 Detecting orphaned modules...")
+            orphaned_modules = []
+            
+            def _add_module_variants(imports_set: set[str], module_name: str) -> None:
+                """Add all relevant variants of a module path to the imports set."""
+                if not module_name:
+                    return
+                parts = module_name.split('.')
+                for i in range(1, len(parts) + 1):
+                    # Add progressively longer prefixes (e.g., codesentinel.utils)
+                    imports_set.add('.'.join(parts[:i]))
+                # Also add the final module/component name (e.g., root_policy)
+                imports_set.add(parts[-1])
+
+            def find_imports_in_file(file_path):
+                """Extract all imports from a Python file."""
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        tree = ast.parse(f.read(), filename=str(file_path))
+                    
+                    imports: set[str] = set()
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.Import):
+                            for alias in node.names:
+                                _add_module_variants(imports, alias.name)
+                        elif isinstance(node, ast.ImportFrom):
+                            # Handle absolute and relative imports
+                            module_path = node.module or ""
+                            if node.level:
+                                # Represent relative imports with leading dots preserved for clarity
+                                module_path = ("." * node.level) + module_path
+                            _add_module_variants(imports, module_path.strip('.'))
+                            for alias in node.names:
+                                full_path = f"{module_path}.{alias.name}".strip('.')
+                                _add_module_variants(imports, full_path)
+                    return imports
+                except Exception:
+                    return set()
+            
+            # Check CLI utility modules
+            cli_dir = repo_root / "codesentinel" / "cli"
+            if cli_dir.exists():
+                cli_init = cli_dir / "__init__.py"
+                if cli_init.exists():
+                    # Get all imports from __init__.py
+                    init_content = cli_init.read_text(encoding='utf-8')
+                    init_imports = find_imports_in_file(cli_init)
+                    
+                    # Find all *_utils.py files
+                    for util_file in cli_dir.glob("*_utils.py"):
+                        module_name = util_file.stem  # e.g., "memory_utils"
+                        
+                        # Check if imported in __init__.py
+                        is_imported = (
+                            module_name in init_imports or
+                            f"from .{module_name}" in init_content or
+                            f"from codesentinel.cli.{module_name}" in init_content or
+                            f"import {module_name}" in init_content
+                        )
+                        
+                        # Check if there's a corresponding command parser
+                        has_parser = f"{module_name.replace('_utils', '')}_parser" in init_content
+                        has_subparser = f"'{module_name.replace('_utils', '')}'" in init_content
+                        has_command_check = f"args.command == '{module_name.replace('_utils', '')}'" in init_content
+                        
+                        if not (is_imported or has_parser or has_subparser or has_command_check):
+                            # This is an orphaned module
+                            orphaned_modules.append({
+                                'path': util_file,
+                                'type': 'CLI utility module',
+                                'module_name': module_name,
+                                'command_name': module_name.replace('_utils', '')
+                            })
+            
+            # Check utils modules
+            utils_dir = repo_root / "codesentinel" / "utils"
+            if utils_dir.exists():
+                core_init = repo_root / "codesentinel" / "core" / "__init__.py"
+                cli_init = repo_root / "codesentinel" / "cli" / "__init__.py"
+                
+                # Collect all imports across main entry points
+                all_imports = set()
+                for init_file in [core_init, cli_init]:
+                    if init_file.exists():
+                        all_imports.update(find_imports_in_file(init_file))
+                
+                # Also check for inline imports in __init__.py (like "from ..utils.session_memory")
+                if cli_init.exists():
+                    cli_content = cli_init.read_text(encoding='utf-8')
+                    import re
+                    # Find all "from ..utils.X" or "from codesentinel.utils.X" patterns
+                    inline_utils = re.findall(r'from \.\.utils\.(\w+)', cli_content)
+                    inline_utils.extend(re.findall(r'from codesentinel\.utils\.(\w+)', cli_content))
+                    all_imports.update(inline_utils)
+                
+                # Also check all CLI helper files and tools directory
+                cli_dir = repo_root / "codesentinel" / "cli"
+                tools_dir = repo_root / "tools"
+                for check_dir in [cli_dir, tools_dir]:
+                    if check_dir.exists():
+                        for py_file in check_dir.rglob("*.py"):
+                            all_imports.update(find_imports_in_file(py_file))
+                
+                # Check each utils module
+                for util_file in utils_dir.glob("*.py"):
+                    if util_file.name == "__init__.py":
+                        continue
+                    
+                    module_name = util_file.stem
+                    
+                    # Skip known permanent modules
+                    permanent_modules = {'alerts', 'config', 'scheduler', 'path_resolver', 
+                                       'process_monitor', 'file_integrity'}
+                    if module_name in permanent_modules:
+                        continue
+                    
+                    # Check if imported anywhere
+                    is_imported = module_name in all_imports
+                    
+                    if not is_imported:
+                        # Check if it's imported in CLI files
+                        cli_files_import = False
+                        for cli_file in cli_dir.glob("*.py"):
+                            if module_name in find_imports_in_file(cli_file):
+                                cli_files_import = True
+                                break
+                        
+                        if not cli_files_import:
+                            orphaned_modules.append({
+                                'path': util_file,
+                                'type': 'Utils module',
+                                'module_name': module_name,
+                                'command_name': None
+                            })
+            
+            if orphaned_modules:
+                print(f"\n⚠️  Found {len(orphaned_modules)} orphaned module(s):")
+                for item in orphaned_modules:
+                    print(f"  • {item['type']}: {item['module_name']} ({item['path'].name})")
+                    if item['command_name']:
+                        print(f"    → Suggested command: 'codesentinel {item['command_name']}'")
+                print("\n💡 These modules are implemented but not integrated into the CLI.")
+                print("   Run with --force to see integration suggestions.")
+            else:
+                print("  ✓ No orphaned modules detected")
             
             # Create backup if requested
             if backup and not dry_run:
@@ -2486,7 +2633,202 @@ except KeyboardInterrupt:
                     os.chdir(original_cwd)
             
             else:
-                print("\n✨ No integration opportunities found. All commands are already integrated!")
+                # No scheduler workflow integration opportunities
+                if orphaned_modules:
+                    print(f"\n⚠️  No scheduler workflow integrations needed, but {len(orphaned_modules)} orphaned module(s) detected.")
+                else:
+                    print("\n✅ No integration issues found. All commands and modules are properly integrated!")
+            
+            # Interactive resolution for orphaned modules
+            if orphaned_modules and not dry_run:
+                print("\n" + "=" * 70)
+                print("ORPHANED MODULE RESOLUTION")
+                print("=" * 70)
+                print(f"\nFound {len(orphaned_modules)} module(s) that are implemented but not integrated.")
+                print("\nWhat would you like to do?")
+                print("  [1] Review each module interactively")
+                print("  [2] Archive all orphaned modules to quarantine_legacy_archive/")
+                print("  [3] Generate integration report (save to file)")
+                print("  [4] Skip (leave as-is)")
+                print("=" * 70)
+                
+                try:
+                    choice = input("\nYour choice (1-4): ").strip()
+                    
+                    if choice == '1':
+                        # Interactive review
+                        print("\n" + "=" * 70)
+                        print("INTERACTIVE MODULE REVIEW")
+                        print("=" * 70)
+                        
+                        for idx, item in enumerate(orphaned_modules, 1):
+                            print(f"\n[{idx}/{len(orphaned_modules)}] Module: {item['module_name']}")
+                            print(f"Type: {item['type']}")
+                            print(f"Path: {item['path']}")
+                            
+                            # Try to read module docstring
+                            try:
+                                module_content = item['path'].read_text(encoding='utf-8')
+                                lines = module_content.split('\n')
+                                
+                                # Find docstring
+                                in_docstring = False
+                                docstring_lines = []
+                                for line in lines[:30]:  # Check first 30 lines
+                                    if '"""' in line or "'''" in line:
+                                        if in_docstring:
+                                            docstring_lines.append(line.replace('"""', '').replace("'''", ''))
+                                            break
+                                        else:
+                                            in_docstring = True
+                                            docstring_lines.append(line.replace('"""', '').replace("'''", ''))
+                                    elif in_docstring:
+                                        docstring_lines.append(line)
+                                
+                                if docstring_lines:
+                                    print("\nDocumentation:")
+                                    for line in docstring_lines[:5]:  # First 5 lines
+                                        print(f"  {line.strip()}")
+                                    if len(docstring_lines) > 5:
+                                        print("  ...")
+                            except Exception:
+                                pass
+                            
+                            print("\nOptions:")
+                            print("  [k] Keep (mark as internal utility, exclude from future checks)")
+                            print("  [a] Archive to quarantine_legacy_archive/")
+                            print("  [i] Integrate (you'll need to wire it up manually)")
+                            print("  [g] Agent integration (prepare agent context for wiring)")
+                            print("  [d] Delete permanently (dangerous!)")
+                            print("  [s] Skip this module")
+                            
+                            action = input(f"\nAction for {item['module_name']} (k/a/i/g/d/s): ").strip().lower()
+                            
+                            if action == 'a':
+                                # Archive module
+                                archive_dir = repo_root / "quarantine_legacy_archive" / "orphaned_modules"
+                                archive_dir.mkdir(parents=True, exist_ok=True)
+                                
+                                import shutil
+                                archive_path = archive_dir / item['path'].name
+                                shutil.move(str(item['path']), str(archive_path))
+                                print(f"  ✓ Archived to: {archive_path}")
+                            
+                            elif action == 'k':
+                                # Mark as internal (would need configuration file)
+                                print(f"  ℹ️  {item['module_name']} will be excluded from future orphan checks.")
+                                print(f"  Note: Add to permanent_modules list in integrate command.")
+                            
+                            elif action == 'i':
+                                print(f"  💡 To integrate {item['module_name']}:")
+                                if item['command_name']:
+                                    print(f"     1. Add subparser in __init__.py: {item['command_name']}_parser")
+                                    print(f"     2. Add handler: elif args.command == '{item['command_name']}':")
+                                    print(f"     3. Import from: from .{item['module_name']} import ...")
+                                else:
+                                    print(f"     1. Import in appropriate module")
+                                    print(f"     2. Use utility functions where needed")
+                            
+                            elif action == 'g':
+                                # Prepare agent integration task context
+                                task_dir = repo_root / "agent_integration_requests"
+                                task_dir.mkdir(parents=True, exist_ok=True)
+                                task_file = task_dir / "orphaned_modules.json"
+
+                                import json
+                                from datetime import datetime
+
+                                existing_tasks = []
+                                if task_file.exists():
+                                    try:
+                                        existing_tasks = json.loads(task_file.read_text(encoding='utf-8'))
+                                        if not isinstance(existing_tasks, list):
+                                            existing_tasks = []
+                                    except json.JSONDecodeError:
+                                        existing_tasks = []
+
+                                try:
+                                    relative_path = item['path'].relative_to(repo_root)
+                                except ValueError:
+                                    relative_path = item['path']
+                                repo_name = repo_root.name
+
+                                task_entry = {
+                                    "module_name": item['module_name'],
+                                    "type": item['type'],
+                                    "path": str(relative_path).replace('\\', '/'),
+                                    "suggested_command": item.get('command_name'),
+                                    "requested_at": datetime.utcnow().isoformat() + 'Z'
+                                }
+
+                                # Avoid duplicates by module path
+                                existing_paths = {task.get('path') for task in existing_tasks}
+                                if task_entry['path'] not in existing_paths:
+                                    existing_tasks.append(task_entry)
+                                    task_file.write_text(json.dumps(existing_tasks, indent=2), encoding='utf-8')
+                                    display_path = f"{repo_name}/agent_integration_requests/{task_file.name}"
+                                    print(f"  ✓ Agent integration task recorded → {display_path}")
+                                else:
+                                    print("  ℹ️  Agent integration task already recorded for this module")
+
+                            elif action == 'd':
+                                confirm = input(f"  ⚠️  DELETE {item['module_name']} permanently? (type 'DELETE' to confirm): ")
+                                if confirm == 'DELETE':
+                                    item['path'].unlink()
+                                    print(f"  ✓ Deleted {item['path']}")
+                                else:
+                                    print("  Deletion cancelled")
+                            
+                            else:
+                                print(f"  Skipped {item['module_name']}")
+                    
+                    elif choice == '2':
+                        # Archive all
+                        print("\n📦 Archiving all orphaned modules...")
+                        archive_dir = repo_root / "quarantine_legacy_archive" / "orphaned_modules"
+                        archive_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        import shutil
+                        archived_count = 0
+                        for item in orphaned_modules:
+                            archive_path = archive_dir / item['path'].name
+                            shutil.move(str(item['path']), str(archive_path))
+                            print(f"  ✓ Archived: {item['module_name']} → {archive_path}")
+                            archived_count += 1
+                        
+                        print(f"\n✨ Archived {archived_count} module(s) to quarantine_legacy_archive/orphaned_modules/")
+                    
+                    elif choice == '3':
+                        # Generate report
+                        report_path = repo_root / "orphaned_modules_report.md"
+                        
+                        report_content = "# Orphaned Modules Report\n\n"
+                        report_content += f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                        report_content += f"**Total Orphaned Modules**: {len(orphaned_modules)}\n\n"
+                        report_content += "## Modules\n\n"
+                        
+                        for idx, item in enumerate(orphaned_modules, 1):
+                            report_content += f"### {idx}. {item['module_name']}\n\n"
+                            report_content += f"- **Type**: {item['type']}\n"
+                            report_content += f"- **Path**: `{item['path']}`\n"
+                            if item['command_name']:
+                                report_content += f"- **Suggested Command**: `codesentinel {item['command_name']}`\n"
+                            report_content += "\n"
+                        
+                        report_path.write_text(report_content, encoding='utf-8')
+                        print(f"\n✓ Report saved to: {report_path}")
+                    
+                    else:
+                        print("\nSkipped orphaned module resolution.")
+                
+                except (KeyboardInterrupt, EOFError):
+                    print("\n\nInterrupted by user.")
+                except Exception as e:
+                    print(f"\n❌ Error during interactive resolution: {e}")
+            
+            elif orphaned_modules and dry_run:
+                print("\n💡 Run without --dry-run to interactively resolve orphaned modules.")
+
             
             def integrate_into_daily_tasks(command, force=False):
                 """Integrate command into daily tasks."""
@@ -2520,7 +2862,6 @@ except KeyboardInterrupt:
         try:
             # Run {command} command
             result = subprocess.run([
-                sys.executable, '-m', 'codesentinel.cli', '{command}'
             ], capture_output=True, text=True, timeout=300)
 
             if result.returncode == 0:
@@ -2612,6 +2953,41 @@ except KeyboardInterrupt:
                     print(f"  ❌ Integration failed: {e}")
                     return False
 
+        elif args.command == 'memory':
+            """Handle memory command for session memory management."""
+            from ..utils.session_memory import SessionMemory
+            from .memory_utils import (
+                handle_memory_show,
+                handle_memory_stats,
+                handle_memory_clear,
+                handle_memory_tasks
+            )
+            
+            # Initialize session memory
+            session_memory = SessionMemory()
+            
+            # Route to appropriate handler
+            memory_action = getattr(args, 'memory_action', None)
+            
+            if memory_action == 'show':
+                handle_memory_show(args, session_memory)
+            elif memory_action == 'stats':
+                handle_memory_stats(args, session_memory)
+            elif memory_action == 'clear':
+                handle_memory_clear(args, session_memory)
+            elif memory_action == 'tasks':
+                handle_memory_tasks(args, session_memory)
+            else:
+                # Default to show if no action specified
+                handle_memory_show(args, session_memory)
+            
+            return
+
+        elif args.command == 'test':
+            # Delegate to test_utils handler
+            handle_test_command(args, codesentinel)
+            return
+
         elif args.command == 'setup':
             print("Launching setup wizard...")
             if args.gui or args.non_interactive is False:
@@ -2649,103 +3025,73 @@ except KeyboardInterrupt:
                 print("=" * 60)
 
         elif args.command == 'dev-audit':
-            interactive = not getattr(args, 'silent', False)
-            agent_mode = getattr(args, 'agent', False)
-            export_path = getattr(args, 'export', None)
-            focus_area = getattr(args, 'focus', None)
-            
-            if agent_mode:
-                # Export comprehensive context for AI agent
-                print("Generating audit context for AI agent...")
-                if focus_area:
-                    print(f"Focus area: {focus_area}")
-                agent_context = codesentinel.dev_audit.get_agent_context()
-                
-                # Add focus area to agent context if specified
-                if focus_area:
-                    agent_context['focus_area'] = focus_area
-                    agent_context['agent_guidance'] = f"""
-FOCUSED AUDIT ANALYSIS
-
-Focus Area: {focus_area}
-
-You have been requested to perform a targeted analysis on: "{focus_area}"
-
-While the full audit context is provided below, you should:
-1. Prioritize issues and opportunities related to {focus_area}
-2. Consider how changes in this area affect the broader system
-3. Ensure all remediation respects SEAM Protection (Security, Efficiency, And Minimalism)
-4. Maintain non-destructive, feature-preserving principles
-
-{agent_context.get('agent_guidance', '')}
-"""
-                if export_path:
-                    import json as _json
-                    with open(export_path, 'w') as f:
-                        _json.dump(agent_context, f, indent=2)
-                    print(f"Agent context exported to: {export_path}")
-                else:
-                    # Print guidance for agent
-                    print("\n" + "=" * 60)
-                    print(agent_context['agent_guidance'])
-                    print("\n" + "=" * 60)
-                    print("\nAudit Results Summary:")
-                    import json as _json
-                    print(_json.dumps(agent_context['remediation_context']['summary'], indent=2))
-                    
-                    print("\n" + "=" * 60)
-                    print("AGENT REMEDIATION MODE")
-                    if focus_area:
-                        print(f"FOCUS: {focus_area}")
-                    print("=" * 60)
-                    print("\nThis audit has detected issues that require intelligent remediation.")
-                    print("An AI agent (GitHub Copilot) can now analyze these findings and build")
-                    print("a remediation pipeline while respecting all persistent policies.\n")
-                    
-                    if focus_area:
-                        print(f"\n🎯 Analysis will prioritize: {focus_area}")
-                        print("   (while maintaining awareness of system-wide impact)\n")
-                    
-                    # Output structured data for agent to consume
-                    print("\n@agent Here is the comprehensive audit context:")
-                    print(_json.dumps(agent_context, indent=2))
-                    
-                    print("\n\nPlease analyze the audit findings and propose a remediation plan.")
-                    if focus_area:
-                        print(f"Focus your analysis on: {focus_area}")
-                    print("Remember: All actions must be non-destructive and preserve features.")
-                
+            # Check for workspace tool configuration mode
+            if getattr(args, 'configure', False):
+                configure_workspace_tools()
                 return
             
-            # Non-agent mode with focus
-            if focus_area:
-                print(f"\n🎯 Focus Area: {focus_area}")
-                print("Note: Focus parameter is most effective with --agent mode for Copilot integration.\n")
+            # Check for tool audit mode
+            if getattr(args, 'tools', False):
+                run_tool_audit()
+                return
             
-            results = codesentinel.run_dev_audit(interactive=interactive)
-            if interactive:
-                # Check if there are issues and offer agent mode
-                total_issues = results.get('summary', {}).get('total_issues', 0)
-                if total_issues > 0:
-                    print("\n" + "=" * 60)
-                    print(f"🤖 AGENT REMEDIATION AVAILABLE")
-                    print("=" * 60)
-                    print(f"\nThe audit detected {total_issues} issues.")
-                    print("\nIf you have GitHub Copilot integrated, you can run:")
-                    print("  codesentinel !!!! --agent")
-                    if focus_area:
-                        print(f"  codesentinel !!!! {focus_area} --agent  (focused analysis)")
-                    else:
-                        print("  codesentinel !!!! scheduler --agent       (focus on specific area)")
-                    print("\nThis will provide comprehensive context for the AI agent to")
-                    print("intelligently build a remediation pipeline while maintaining")
-                    print("SEAM Protection (Security, Efficiency, And Minimalism).")
+            # Check for review mode
+            review_mode = getattr(args, 'review', False)
+            if review_mode:
+                # Interactive review mode for manual issues
+                from .dev_audit_review import run_interactive_review
                 
-                print("\nInteractive dev audit completed.")
-                print("A brief audit is running in the background; results will arrive via alerts.")
+                # Build agent context first
+                results = codesentinel.dev_audit.get_agent_context()
+                context = _build_dev_audit_context(results)
+                
+                run_interactive_review(context)
+                return
+            
+            # Check if this is agent mode
+            agent_mode = getattr(args, 'agent', False)
+            
+            if agent_mode:
+                # Agent mode: use the centralized command runner
+                analysis_fn = codesentinel.dev_audit.get_agent_context
+
+                # Define safe action applier - agent mode applies fixes automatically
+                def apply_safe_actions(context: AgentContext, results: dict[str, Any], args: Any) -> dict[str, Any]:
+                    """Apply safe automated fixes in agent mode."""
+                    # Agent mode always applies fixes (dry_run=False)
+                    return apply_safe_fixes(context.to_dict(), dry_run=False)
+
+                # Run the command using the centralized utility
+                run_agent_enabled_command(
+                    command_name="dev-audit",
+                    args=args,
+                    analysis_fn=analysis_fn,
+                    standard_handler=lambda results: None,  # No standard handler in agent mode
+                    context_builder=_build_dev_audit_context,
+                    apply_safe_fn=apply_safe_actions,
+                )
             else:
-                import json as _json
-                print(_json.dumps(results.get('summary', {}), indent=2))
+                # Standard mode: run the interactive/silent audit directly
+                interactive = not getattr(args, 'silent', False)
+                results = codesentinel.run_dev_audit(interactive=interactive)
+                
+                if interactive:
+                    # Check if there are issues and offer agent mode
+                    total_issues = results.get('summary', {}).get('total_issues', 0)
+                    if total_issues > 0:
+                        print("\n" + "=" * 60)
+                        print(f"AGENT REMEDIATION AVAILABLE")
+                        print("=" * 60)
+                        print(f"\nThe audit detected {total_issues} issues.")
+                        print("\nFor AI-assisted remediation, run:")
+                        print("  codesentinel !!!! --agent")
+                        print("\nThis will provide comprehensive context for the AI agent to")
+                        print("intelligently build a remediation pipeline while maintaining")
+                        print("SEAM Protection (Security, Efficiency, And Minimalism).")
+                else:
+                    import json as _json
+                    print(_json.dumps(results.get('summary', {}), indent=2))
+            
             return
 
         elif args.command == 'integrity':

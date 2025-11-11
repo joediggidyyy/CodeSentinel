@@ -326,7 +326,7 @@ class FormattingCLI:
 
         formatter = DocumentFormatter()
         for rule_name, rule_config in formatter.STYLE_RULES.items():
-            status = "✓ Enabled" if rule_config.get('enabled') else "✗ Disabled"
+            status = "✓ Enabled" if rule_config.get('enabled') else " Disabled"
             severity = rule_config.get('severity', 'N/A')
             desc = rule_config['description']
 

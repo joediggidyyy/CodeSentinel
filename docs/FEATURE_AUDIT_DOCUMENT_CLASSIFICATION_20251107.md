@@ -60,17 +60,17 @@ Comprehensive audit of CodeSentinel's new 5-tier document classification system 
 
 ```yaml
 archive/
-├── active/
-│   ├── tier1_critical/
-│   ├── tier2_informative/
-│   ├── tier3_temporary/
-│   └── tier4_agent/
-├── inactive/
-│   └── [archived inactive documents]
-└── metadata/
-    ├── archive_index.json
-    ├── classification_audit.log
-    └── backup_manifest.json
+ active/
+    tier1_critical/
+    tier2_informative/
+    tier3_temporary/
+    tier4_agent/
+ inactive/
+    [archived inactive documents]
+ metadata/
+     archive_index.json
+     classification_audit.log
+     backup_manifest.json
 ```
 
 **Audit Results**:
@@ -101,9 +101,9 @@ archive/
 
 ```
 archive/active/tier1_critical/[doc_type]/[doc_name]/
-├── v1/
-├── v2/
-└── metadata.json
+ v1/
+ v2/
+ metadata.json
 ```
 
 ✓ All versions retained in same directory  

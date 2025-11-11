@@ -32,9 +32,9 @@ The archive preserves:
 
 **Current Verification Status (v1.0.3):**
 
-- ✅ Core CLI functionality - Feature complete
-- ✅ Configuration management - Enhanced and stable
-- ✅ Maintenance automation - Improved in tools/
+-  Core CLI functionality - Feature complete
+-  Configuration management - Enhanced and stable
+-  Maintenance automation - Improved in tools/
 - ⏳ GUI features - Under evaluation (gui_wizard_v2.py in main codebase)
 - ⏳ User feedback period - Ongoing
 

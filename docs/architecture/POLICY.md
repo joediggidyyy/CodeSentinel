@@ -81,7 +81,7 @@ This policy is persistent and loaded on every run, guaranteeing that `!!!!` neve
 4. **Character Encoding Requirements**
    - All documentation in UTF-8 encoding (no BOM)
    - No corrupted or garbled characters
-   - Tree structures rendered as clean ASCII (├──, └──, │) not Unicode box-drawing
+   - Tree structures rendered as clean ASCII (, , ) not Unicode box-drawing
    - All non-ASCII characters must be intentional and serve a purpose
 
 ### Standards Enforcement
@@ -126,18 +126,18 @@ CodeSentinel implements a 5-tier document classification system determining docu
 
 ```yaml
 archive/
-├── active/
-│   ├── tier0_secret/
-│   ├── tier1_critical/
-│   ├── tier2_informative/
-│   ├── tier3_temporary/
-│   └── tier4_agent/
-├── inactive/
-│   └── [archived inactive documents]
-└── metadata/
-    ├── archive_index.json
-    ├── classification_audit.log
-    └── backup_manifest.json
+ active/
+    tier0_secret/
+    tier1_critical/
+    tier2_informative/
+    tier3_temporary/
+    tier4_agent/
+ inactive/
+    [archived inactive documents]
+ metadata/
+     archive_index.json
+     classification_audit.log
+     backup_manifest.json
 ```
 
 ### Backup Locations
