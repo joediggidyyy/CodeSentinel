@@ -210,7 +210,7 @@ def main():
     verifier = VersionVerifier(project_root)
 
     if not args.quiet:
-        print("🔍 CodeSentinel Version Verification")
+        print("[VERIFY] CodeSentinel Version Verification")
         print("=" * 40)
 
     # Perform verification
@@ -219,20 +219,20 @@ def main():
     # Report results
     if verifier.errors:
         if not args.quiet:
-            print("❌ ERRORS:")
+            print("[FAIL] ERRORS:")
         for error in verifier.errors:
             print(f"   {error}")
 
     if verifier.warnings:
         if not args.quiet:
-            print("⚠️  WARNINGS:")
+            print("[WARN] WARNINGS:")
         for warning in verifier.warnings:
             print(f"   {warning}")
 
     if versions_match and not verifier.errors:
         canonical_version = verifier.get_canonical_version()
         if canonical_version and not args.quiet:
-            print(" SUCCESS: All version declarations are consistent")
+            print("[OK] SUCCESS: All version declarations are consistent")
             print(f"   Canonical version: {canonical_version}")
             sources = verifier.versions_found[canonical_version]
             print(f"   Found in {len(sources)} sources: {', '.join(sources)}")
@@ -240,11 +240,11 @@ def main():
     else:
         if args.strict:
             if not args.quiet:
-                print(" STRICT MODE: Exiting with error code due to version inconsistencies")
+                print("[STRICT] STRICT MODE: Exiting with error code due to version inconsistencies")
             return 1
         else:
             if not args.quiet:
-                print("⚠️  NON-STRICT MODE: Version issues found but continuing")
+                print("[WARN] NON-STRICT MODE: Version issues found but continuing")
             return 0
 
 
