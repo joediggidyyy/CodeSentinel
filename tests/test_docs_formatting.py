@@ -4,10 +4,10 @@ from pathlib import Path
 import pytest
 
 from codesentinel.cli import (
-    _normalize_markdown_whitespace,
     set_header_for_file,
     set_footer_for_file,
 )
+from codesentinel.cli.doc_utils import _normalize_markdown_whitespace
 
 
 def test_normalize_markdown_whitespace_collapses_excess_blanks():
@@ -38,7 +38,7 @@ Another paragraph
 
 def test_set_header_and_footer_roundtrip(tmp_path: Path):
     # Create a sample doc with an old header/footer and content
-    doc = tmp_path / "SAMPLE.md"
+    doc = tmp_path / "README.md"
     doc.write_text("""# Old Title
 
 Old subtitle
@@ -50,8 +50,8 @@ Content section
 Old Footer
 """)
 
-    # Apply header with default 'standard' (function will use templates from repo)
-    ok, msg = set_header_for_file(doc, template_name="standard")
+    # Apply header (function will use template based on filename)
+    ok, msg = set_header_for_file(doc)
     assert ok, msg
 
     # After header set, apply footer

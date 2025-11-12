@@ -38,7 +38,7 @@ def test_environment(tmp_path_factory):
     
     # Create subdirectories
     (base_path / ".github").mkdir()
-    (base_path / "tools/instruction_schemas").mkdir()
+    (base_path / "tools/instruction_schemas").mkdir(parents=True)
     (base_path / ".agent_sessions/context_tier").mkdir(parents=True, exist_ok=True)
     
     yield base_path
@@ -137,8 +137,8 @@ def test_session_promotion_to_context(mock_add_summary, test_environment):
     session = SessionMemory(workspace_root=test_environment)
     
     # Simulate adding data that makes the session eligible for promotion
-    session.add_decision("Test Decision", "Test Rationale")
-    session.add_decision("Another Decision", "More Rationale")
+    session.log_decision("Test Decision", "Test Rationale")
+    session.log_decision("Another Decision", "More Rationale")
     session.save_task_state([{'id': 1, 'title': 'Test', 'status': 'completed'}])
 
     # This inner function mimics the logic inside the thread from the real method
@@ -172,8 +172,10 @@ def test_context_log_pruning(mock_datetime, test_environment):
     old_log_path = context_dir / "2025-11-01.jsonl"
     old_log_path.touch()
     
-    # Mock datetime.now() to be Nov 11, 2025
-    mock_datetime.now.return_value = datetime(2025, 11, 11)
+    # Mock datetime.now() to return Nov 11, 2025 and make datetime.datetime work normally
+    from datetime import datetime as real_datetime
+    mock_datetime.now.return_value = real_datetime(2025, 11, 11)
+    mock_datetime.side_effect = lambda *args, **kwargs: real_datetime(*args, **kwargs)
     
     prune_old_context_logs(test_environment)
     

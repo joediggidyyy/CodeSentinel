@@ -8,6 +8,8 @@ This file is auto-organized by the instruction defragmentation utility.
 Last organized: 2025-11-11 13:59:19
 -->
 
+CANONICAL_PROJECT_VERSION: "1.1.1.b1"
+
 ````instructions
 # CodeSentinel AI Agent Instructions
 

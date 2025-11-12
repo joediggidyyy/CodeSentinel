@@ -259,7 +259,9 @@ class TestMaintenanceScheduler:
             "query_performance_monitoring",
             "cache_freshness_management",
             "index_integrity_check",
-            "decision_context_extraction"
+            "decision_context_extraction",
+            "tier2_log_pruning",
+            "tier2_to_tier3_promotion"
         }
         
         assert set(scheduler.TASK_DEFINITIONS.keys()) == expected_tasks

@@ -5,9 +5,16 @@ All notable changes to CodeSentinel will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1.b1] - 2025-11-11
+
+### Changes
+
+- Release: Bump version to 1.1.1.b1; consolidate documentation and ORACL integration.
+
 ## [Unreleased]
 
 ### Changes
+
 - Implement quarantine_legacy_archive compression with security scanning (7b564b1)
 - docs: Add header/footer quick reference card (2007027)
 - docs: Add comprehensive header/footer management guide (0cd45fb)
@@ -81,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - security: Add credential hashing audit - identifies gap between claims and implementation (91ad1a5)
 - security: Add comprehensive credentials security audit and configuration guide (3b86968)
 - security: Add .pypirc token security documentation and .gitignore protection (41e04fe)
-- docs: Record v1.0.3 successful PyPI publication - live at https://pypi.org/project/codesentinel/1.0.3/ (ec6160e)
+- docs: Record v1.0.3 successful PyPI publication - live at <https://pypi.org/project/codesentinel/1.0.3/> (ec6160e)
 - chore: Update version to 1.0.3 production release - ready for PyPI publication (9659b4b)
 - docs: Add low-level situational awareness directive - permanent memory for build/distribution state management (fa4f813)
 - docs: Add low-level distribution strategy directive - PyPI credentials and tracking workflow (725ee3e)
@@ -248,7 +255,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Black code formatting
 - pytest testing framework
 - Comprehensive error handling and logging
-
 
 ---
 

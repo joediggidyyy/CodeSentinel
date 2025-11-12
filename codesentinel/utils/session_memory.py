@@ -129,7 +129,12 @@ class SessionMemory:
 
         # Run promotion in a non-daemon thread to ensure it completes on exit
         promo_thread = threading.Thread(target=promotion_task, daemon=False)
-        promo_thread.start()
+
+        # Test doubles may execute the promotion_task immediately and return None.
+        if hasattr(promo_thread, "start"):
+            promo_thread.start()
+        else:  # pragma: no cover - defensive path for patched thread factories
+            logger.debug("Promotion thread factory executed synchronously; no thread started.")
 
     def _init_cache_dir(self) -> None:
         """Create cache directory if it doesn't exist."""
@@ -206,10 +211,10 @@ class SessionMemory:
             
             for task in tasks:
                 status_symbol = {
-                    'completed': '✅',
-                    'in-progress': '🔄',
-                    'not-started': '⏳'
-                }.get(task.get('status', 'not-started'), '?')
+                    'completed': '[OK]',
+                    'in-progress': '[RUN]',
+                    'not-started': '[WAIT]'
+                }.get(task.get('status', 'not-started'), '[UNKNOWN]')
                 
                 content += f"## {status_symbol} {task.get('title', 'Untitled')}\n"
                 content += f"- **Status**: {task.get('status', 'unknown')}\n"

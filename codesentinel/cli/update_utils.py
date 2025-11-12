@@ -7,6 +7,7 @@ including docs, changelogs, READMEs, version numbers, and dependencies.
 from pathlib import Path
 import subprocess
 from .doc_utils import verify_and_fix_documentation_pipeline
+from ..utils.versioning import set_project_version
 
 # Import template functions - these need to be imported after __init__ is loaded
 # to avoid circular imports
@@ -169,6 +170,35 @@ def perform_update(args):
     """
     # Get template functions (lazy import to avoid circular dependency)
     tmpl = _get_template_functions()
+
+    if args.update_action == 'version':
+        """Set the project version across all specified files."""
+        new_version = getattr(args, 'set_version', None)
+        if not new_version:
+            print("❌ Error: --set-version requires a version string (e.g., 1.2.3).")
+            return
+
+        dry_run = getattr(args, 'dry_run', False)
+        
+        if dry_run:
+            print(f"[DRY-RUN] Would attempt to set project version to: {new_version}")
+            # In a dry run, we can still list the files that would be affected
+            print("Files that would be checked for update:")
+            print("  - pyproject.toml")
+            print("  - setup.py")
+            print("  - codesentinel/__init__.py")
+            print("  - .github/copilot-instructions.md")
+            print("  - CHANGELOG.md")
+        else:
+            print(f"Setting project version to: {new_version}")
+            updated_files = set_project_version(Path.cwd(), new_version)
+            if updated_files:
+                print("\n✅ Version updated successfully in the following files:")
+                for f in updated_files:
+                    print(f"  - {Path(f).relative_to(Path.cwd())}")
+            else:
+                print("\n⚠️  No files were updated. Check if version strings are present and match expected patterns.")
+        return
     
     if args.update_action == 'docs':
         """Update repository documentation files with branding + header/footer verification."""
@@ -537,7 +567,7 @@ def perform_update(args):
                     print("\\nREADME.md verification complete.")
                     print("All issues have been detected and remediated.")
             
-    elif args.update_action == 'version':
+    elif args.update_action == 'version-old':
         """Bump version numbers across project files + verify updates."""
         bump_type = args.bump_type
         dry_run = getattr(args, 'dry_run', False)

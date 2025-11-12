@@ -28,6 +28,10 @@ from typing import List, Dict, Any
 # Initialize logger
 logger = logging.getLogger(__name__)
 
+# Preserve a handle to the real datetime class for operations that need
+# deterministic behavior even when tests patch the module-level symbol.
+REAL_DATETIME = datetime
+
 # --- Constants ---
 CONTEXT_TIER_DIR_NAME = ".agent_sessions/context_tier"
 CONTEXT_TIER_LIFETIME_DAYS = 7
@@ -110,7 +114,7 @@ def prune_old_context_logs(workspace_root: Path) -> None:
     for log_file in context_dir.glob("*.jsonl"):
         try:
             file_date_str = log_file.stem
-            file_date = datetime.strptime(file_date_str, '%Y-%m-%d')
+            file_date = REAL_DATETIME.strptime(file_date_str, '%Y-%m-%d')
             if file_date < cutoff_date:
                 log_file.unlink()
                 deleted_count += 1

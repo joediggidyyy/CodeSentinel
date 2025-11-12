@@ -6,8 +6,8 @@ CodeSentinel follows a security-first approach. The following versions are curre
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+| 1.1.x   | :white_check_mark: |
+| < 1.1   | :x:                |
 
 ## Security Architecture
 

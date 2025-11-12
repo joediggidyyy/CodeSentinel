@@ -898,21 +898,21 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
       epilog="""
 Examples:
-  codesentinel status                           # Show current status
-  codesentinel scan                             # Run security scan
-  codesentinel maintenance daily                # Run daily maintenance
-  codesentinel alert "Test message"             # Send test alert
-  codesentinel schedule start                   # Start maintenance scheduler
-  codesentinel schedule stop                    # Stop maintenance scheduler
-  codesentinel clean --all                      # Clean everything (cache, temp, logs, etc.)
-  codesentinel clean --root                     # Clean root directory violations
-  codesentinel clean --emojis --dry-run         # Preview emoji removal (supports --include-gui)
-  codesentinel update docs                      # Update repository documentation
-  codesentinel update changelog --version 1.2.3 # Update CHANGELOG.md
-  codesentinel integrate --new                  # Integrate new CLI commands into workflows
-  codesentinel integrate --all --dry-run        # Preview all integration opportunities
-  codesentinel dev-audit                        # Run interactive development audit
-  codesentinel dev-audit --agent                # Run with AI-assisted remediation
+  codesentinel status                                       # Show current status
+  codesentinel scan                                         # Run security scan
+  codesentinel maintenance daily                            # Run daily maintenance
+  codesentinel alert "Test message"                         # Send test alert
+  codesentinel schedule start                               # Start maintenance scheduler
+  codesentinel schedule stop                                # Stop maintenance scheduler
+  codesentinel clean --all                                  # Clean everything (cache, temp, logs, etc.)
+  codesentinel clean --root                                 # Clean root directory violations
+  codesentinel clean --emojis --dry-run                     # Preview emoji removal (supports --include-gui)
+  codesentinel update docs                                  # Update repository documentation
+  codesentinel update changelog                             # Update CHANGELOG.md with recent commits
+  codesentinel update version --set-version 1.1.1.b1        # Set project version across all files
+  codesentinel integrate --new                              # Integrate new CLI commands into workflows
+  codesentinel integrate --all --dry-run                    # Preview all integration opportunities
+  codesentinel dev-audit                                    # Run interactive development audit
         """
     )
 
@@ -1071,139 +1071,25 @@ Examples:
     )
 
     # Update command
-    update_parser = subparsers.add_parser('update', help='Update repository files and documentation')
-    update_subparsers = update_parser.add_subparsers(dest='update_action', help='Update actions', required=True)
-    
-    # Update docs
-    docs_parser = update_subparsers.add_parser('docs', help='Update repository documentation')
-    docs_parser.add_argument(
-        '--dry-run', action='store_true', help='Show what would be updated without making changes')
-    docs_parser.add_argument(
-        '--verbose', action='store_true', help='Verbose output')
-    docs_parser.add_argument(
-        '--validate', action='store_true', help='Perform deep content validation (placeholders, links)')
-
-    
-    # Update changelog
-    changelog_parser = update_subparsers.add_parser('changelog', help='Update CHANGELOG.md with recent commits')
-    changelog_parser.add_argument(
-        '--version', type=str, help='Version number for changelog section')
-    changelog_parser.add_argument(
-        '--draft', action='store_true', help='Generate draft changelog without committing')
-    changelog_parser.add_argument(
-        '--since', type=str, help='Git tag or commit to start from (default: last release tag)')
-    changelog_parser.add_argument(
-        '--verbose', action='store_true', help='Verbose output')
-    
-    # Update readme
-    readme_parser = update_subparsers.add_parser('readme', help='Update README.md with current features')
-    readme_parser.add_argument(
-        '--dry-run', action='store_true', help='Show what would be updated without making changes')
-    readme_parser.add_argument(
-        '--verbose', action='store_true', help='Verbose output')
-    readme_parser.add_argument(
-        '--validate', action='store_true', help='Run comprehensive README validation (branding, formatting, links)')
-    
-    # Update version
-    version_parser = update_subparsers.add_parser('version', help='Bump version numbers across project files')
-    version_parser.add_argument(
-        'bump_type',
-        choices=['major', 'minor', 'patch'],
-        help='Type of version bump (major.minor.patch)'
+    update_parser = subparsers.add_parser('update', help='Update repository documentation, changelog, version, etc.')
+    update_parser.add_argument(
+        'update_action',
+        choices=['docs', 'changelog', 'readme-rebuild', 'version'],
+        help='Action to perform'
     )
-    version_parser.add_argument(
-        '--dry-run', action='store_true', help='Show what would be updated without making changes')
-    version_parser.add_argument(
-        '--verbose', action='store_true', help='Verbose output')
-    
-    # Update dependencies
-    deps_parser = update_subparsers.add_parser('dependencies', help='Update dependency files')
-    deps_parser.add_argument(
-        '--check-only', action='store_true', help='Check for outdated dependencies without updating')
-    deps_parser.add_argument(
-        '--upgrade', action='store_true', help='Upgrade dependencies to latest compatible versions')
-    
-    # Update API documentation
-    api_docs_parser = update_subparsers.add_parser('api-docs', help='Regenerate API documentation from docstrings')
-    api_docs_parser.add_argument(
-        '--format', choices=['markdown', 'html'], default='markdown', help='Documentation format')
-    api_docs_parser.add_argument(
-        '--output', type=str, help='Output directory for API docs (default: docs/api)')
-    
-    # Update headers
-    headers_parser = update_subparsers.add_parser('headers', help='Manage documentation file headers')
-    headers_parser.add_argument(
-        'action', choices=['set', 'show', 'edit', 'templates'],
-        help='Action to perform')
-    headers_parser.add_argument(
-        '--file', type=str, help='Specific file to edit (e.g., README.md)')
-    headers_parser.add_argument(
-        '--template', type=str, help='Template name to use')
-    headers_parser.add_argument(
-        '--custom', type=str, help='Custom header text')
-    headers_parser.add_argument(
-        '--verbose', action='store_true', help='Verbose output')
-    
-    # Update footers
-    footers_parser = update_subparsers.add_parser('footers', help='Manage documentation file footers')
-    footers_parser.add_argument(
-        'action', choices=['set', 'show', 'edit', 'templates'],
-        help='Action to perform')
-    footers_parser.add_argument(
-        '--file', type=str, help='Specific file to edit (e.g., README.md)')
-    footers_parser.add_argument(
-        '--template', type=str, default='standard', help='Template name to use (default: standard)')
-    footers_parser.add_argument(
-        '--custom', type=str, help='Custom footer text')
-    footers_parser.add_argument(
-        '--verbose', action='store_true', help='Verbose output')
-
-    # Update help-files
-    help_files_parser = update_subparsers.add_parser('help-files', help='Update CLI help text files for documentation')
-    help_files_parser.add_argument(
-        '--export', type=str, metavar='DIR', default='docs/cli',
-        help='Export directory for help files (default: docs/cli)')
-    help_files_parser.add_argument(
-        '--format', choices=['txt', 'md', 'both'], default='both',
-        help='Output format: txt, md (markdown), or both (default: both)')
-
-    # Clean command
-    clean_parser = subparsers.add_parser('clean', help='Clean repository artifacts and temporary files')
-    clean_parser.add_argument(
-        '--all', action='store_true', default=False,
-        help='Clean all safe targets (cache + temp + logs) - this is the default if no options specified')
-    clean_parser.add_argument(
-        '--root', action='store_true', help='Clean root directory clutter (__pycache__, .pyc files). Use --full for policy compliance')
-    clean_parser.add_argument(
-        '--full', action='store_true', help='When used with --root, also enforce policy compliance (remove unauthorized files/dirs)')
-    clean_parser.add_argument(
-        '--cache', action='store_true', help='Clean Python cache files (__pycache__, *.pyc, *.pyo)')
-    clean_parser.add_argument(
-        '--temp', action='store_true', help='Clean temporary files (*.tmp, .cache directories)')
-    clean_parser.add_argument(
-        '--logs', action='store_true', help='Clean old log files (*.log)')
-    clean_parser.add_argument(
-        '--build', action='store_true', help='Clean build artifacts (dist/, build/, *.egg-info)')
-    clean_parser.add_argument(
-        '--test', action='store_true', help='Clean test artifacts (.pytest_cache, .coverage, htmlcov/)')
-    clean_parser.add_argument(
-        '--git', action='store_true', help='Optimize git repository (gc, prune)')
-    clean_parser.add_argument(
-        '--emojis', action='store_true', help='Remove excessive emojis from code and documentation (policy violation)')
-    clean_parser.add_argument(
-        '--include-gui', action='store_true', help='Include GUI files in emoji scanning (default: excluded)')
-    clean_parser.add_argument(
-        '--dry-run', action='store_true', help='Show what would be deleted without deleting')
-    clean_parser.add_argument(
-        '--force', action='store_true', help='Skip confirmation prompts')
-    clean_parser.add_argument(
-        '--verbose', action='store_true', help='Show detailed output')
-    clean_parser.add_argument(
-        '--older-than', type=int, metavar='DAYS', 
-        help='Only clean files older than N days (applies to logs and temp files)')
+    update_parser.add_argument(
+        '--set-version',
+        type=str,
+        help='Set project version across all files (e.g., 1.2.3-beta.1)'
+    )
+    update_parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Show what would be done without executing'
+    )
 
     # Integrate command
-    integrate_parser = subparsers.add_parser('integrate', help='Integrate new CLI commands into existing workflows')
+    integrate_parser = subparsers.add_parser('integrate', help='Integrate new commands into CI/CD and dev workflows')
     integrate_parser.add_argument(
         '--new', action='store_true', default=True,
         help='Integrate newly added commands into workflows (default)')
@@ -2089,6 +1975,7 @@ except KeyboardInterrupt:
             """Handle integrate command for automated workflow integration."""
             from pathlib import Path
             import subprocess
+           
             import os
             import ast
             import re
@@ -2433,7 +2320,7 @@ except KeyboardInterrupt:
                                                         insert_index = k
                                                         break
                                                 break
-                                    break
+                                        break
                                 
                                 if insert_index > 0:
                                     # Create the integration code
@@ -2628,6 +2515,120 @@ except KeyboardInterrupt:
                             
                             print("\nOptions:")
                             print("  [k] Keep (mark as internal utility, exclude from future checks)")
+                            print("  [a] Archive to quarantine_legacy_archive/")
+                            print("  [i] Integrate (you'll need to wire it up manually)")
+                            print("  [g] Agent integration (prepare agent context for wiring)")
+                            print("  [d] Delete permanently (dangerous!)")
+                            print("  [s] Skip this module")
+                            
+                            action = input(f"\nAction for {item['module_name']} (k/a/i/g/d/s): ").strip().lower()
+                            
+                            if action == 'a':
+                                # Archive module
+                                archive_dir = repo_root / "quarantine_legacy_archive" / "orphaned_modules"
+                                archive_dir.mkdir(parents=True, exist_ok=True)
+                                
+                                import shutil
+                                archive_path = archive_dir / item['path'].name
+                                shutil.move(str(item['path']), str(archive_path))
+                                print(f"  ✓ Archived to: {archive_path}")
+                            
+                            elif action == 'k':
+                                # Mark as internal (would need configuration file)
+                                print(f"  ℹ️  {item['module_name']} will be excluded from future orphan checks.")
+                                print(f"  Note: Add to permanent_modules list in integrate command.")
+                            
+                            elif action == 'i':
+                                print(f"  💡 To integrate {item['module_name']}:")
+                                if item['command_name']:
+                                    print(f"     1. Add subparser in __init__.py: {item['command_name']}_parser")
+                                    print(f"     2. Add handler: elif args.command == '{item['command_name']}':")
+                                    print(f"     3. Import from: from .{item['module_name']} import ...")
+                                else:
+                                    print(f"     1. Import in appropriate module")
+                                    print(f"     2. Use utility functions where needed")
+                            
+                            elif action == 'g':
+                                # Prepare agent integration task context
+                                task_dir = repo_root / "agent_integration_requests"
+                                task_dir.mkdir(parents=True, exist_ok=True)
+                                task_file = task_dir / "orphaned_modules.json"
+
+                                import json
+                                from datetime import datetime
+
+                                existing_tasks = []
+                                if task_file.exists():
+                                    try:
+                                        existing_tasks = json.loads(task_file.read_text(encoding='utf-8'))
+                                        if not isinstance(existing_tasks, list):
+                                            existing_tasks = []
+                                    except json.JSONDecodeError:
+                                        existing_tasks = []
+
+                                try:
+                                    relative_path = item['path'].relative_to(repo_root)
+                                except ValueError:
+                                    relative_path = item['path']
+                                repo_name = repo_root.name
+
+                                task_entry = {
+                                    "module_name": item['module_name'],
+                                    "type": item['type'],
+                                    "path": str(relative_path).replace('\\', '/'),
+                                    "suggested_command": item.get('command_name'),
+                                    "requested_at": datetime.utcnow().isoformat() + 'Z'
+                                }
+
+                                # Avoid duplicates by module path
+                                existing_paths = {task.get('path') for task in existing_tasks}
+                                if task_entry['path'] not in existing_paths:
+                                    existing_tasks.append(task_entry)
+                                    task_file.write_text(json.dumps(existing_tasks, indent=2), encoding='utf-8')
+                                    display_path = f"{repo_name}/agent_integration_requests/{task_file.name}"
+                                    print(f"  ✓ Agent integration task recorded → {display_path}")
+                                else:
+                                    print("  ℹ️  Agent integration task already recorded for this module")
+
+                            elif action == 'd':
+                                confirm = input(f"  ⚠️  DELETE {item['module_name']} permanently? (type 'DELETE' to confirm): ")
+                                if confirm == 'DELETE':
+                                    item['path'].unlink()
+                                    print(f"  ✓ Deleted {item['path']}")
+                                else:
+                                    print("  Deletion cancelled")
+                            
+                            else:
+                                print(f"  Skipped {item['module_name']}")
+                    
+                    elif choice == '2':
+                        # Archive all
+                        print("\n📦 Archiving all orphaned modules...")
+                        archive_dir = repo_root / "quarantine_legacy_archive" / "orphaned_modules"
+                        archive_dir.mkdir(parents=True, exist_ok=True)
+                        
+                        import shutil
+                        archived_count = 0
+                        for item in orphaned_modules:
+                            archive_path = archive_dir / item['path'].name
+                            shutil.move(str(item['path']), str(archive_path))
+                            print(f"  ✓ Archived: {item['module_name']} → {archive_path}")
+                            archived_count += 1
+                        
+                        print(f"\n✨ Archived {archived_count} module(s) to quarantine_legacy_archive/orphaned_modules/")
+                    
+                    elif choice == '3':
+                        # Generate report
+                        report_path = repo_root / "orphaned_modules_report.md"
+                        
+                        report_content = "# Orphaned Modules Report\n\n"
+                        report_content += f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                        report_content += f"**Total Orphaned Modules**: {len(orphaned_modules)}\n\n"
+                        report_content += "## Modules\n\n"
+                        
+                        for idx, item in enumerate(orphaned_modules, 1):
+                            report_content += f"### {idx}. {item['module_name']}\n\n"
+                            report_content += f"- **Type**: {item['type']}\n"
                             print("  [a] Archive to quarantine_legacy_archive/")
                             print("  [i] Integrate (you'll need to wire it up manually)")
                             print("  [g] Agent integration (prepare agent context for wiring)")
