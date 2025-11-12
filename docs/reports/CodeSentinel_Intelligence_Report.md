@@ -221,8 +221,8 @@ The analytics below will seed the post-release addendum scheduled for finalizati
 | :--- | :--- | :--- | :--- | :--- |
 | Manual regression suite | Full `pytest` execution (58 tests) validating mock fixes | Local runner (`python -m pytest`), ORACL session logs | ✓ Completed (Nov 11, 2025) | QA Engineering |
 | Post-repack regression run | Full-suite validation after official `v1.1.1` build | Local + CI runners, PyPI install smoke checks | ✓ Completed (Nov 11, 2025 - 58/58 passing) | QA Engineering |
-| PyPI Publication | Official v1.1.1 release to Python Package Index | `publish_to_pypi.py`, twine upload | In Progress (Nov 11, 2025) | Release Engineering |gineering |
-| Post-repack regression run | Full-suite validation after official `v1.1.1` build | Local + CI runners, PyPI install smoke checks | Scheduled (post-repack) | QA Engineering |
+| PyPI Publication | Official v1.1.1 release to Python Package Index | `publish_to_pypi.py`, twine upload | ✓ Completed (Nov 11, 2025) | Release Engineering |
+| Packaging metadata guard | Editable install check enforcing Python 3.8+ compatibility policy | GitHub Actions CI, `tests/test_python_compatibility.py` | ✓ Completed (Nov 11, 2025) | Release Engineering |
 | Token utilization deltas | Real-world token savings vs. benchmark projections over first 48 hours | ORACL telemetry exporter, Context Tier summaries | Pending (requires production workload) | AI Platform Ops |
 | Cross-platform packaging verification | Wheel + sdist installation on macOS and Linux with smoke command capture | Maintainer device matrix, GitHub Actions artifacts | In progress | Packaging Guild |
 | Security & dependency rescan | Post-release vulnerability sweep and credential lint | `pip-audit`, secret scanners | Scheduled | Security Office |
@@ -230,4 +230,4 @@ The analytics below will seed the post-release addendum scheduled for finalizati
 
 The table will be expanded with quantitative metrics (success percentages, token counts, CVE tallies) once the PyPI release cycle is complete.
 
-**A Polymath Project** | Created by [joediggidyyy]([https://github.com/joediggidyyy/CodeSentinel)
+**A Polymath Project** | Created by [joediggidyyy](https://github.com/joediggidyyy/CodeSentinel)
