@@ -11,10 +11,9 @@ import os
 import subprocess
 import atexit
 from pathlib import Path
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict, Any
 import signal
 import threading
-from typing import Dict, Any
 
 from .agent_utils import AgentContext, RemediationOpportunity
 from .alert_utils import handle_alert_config, handle_alert_send

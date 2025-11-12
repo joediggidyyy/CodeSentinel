@@ -26,6 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-cov mypy
+          pip install -e .
 
       - name: Pre-build version verification
         run: python tools/verify_version.py --strict
