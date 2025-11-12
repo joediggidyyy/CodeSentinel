@@ -11,7 +11,7 @@ CodeSentinel is a cross-platform automated maintenance and security monitoring s
 
 [![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.1.1.b1-green.svg)](https://github.com/joediggidyyy/CodeSentinel)
+[![Version](https://img.shields.io/badge/version-1.1.1-green.svg)](https://github.com/joediggidyyy/CodeSentinel)
 
 ---
 

@@ -5,11 +5,23 @@ All notable changes to CodeSentinel will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.1.b1] - 2025-11-11
+## [1.1.1] - 2025-11-11
 
-### Changes
+### Added
 
-- Release: Bump version to 1.1.1.b1; consolidate documentation and ORACL integration.
+- Added `dist/` directory to ALLOWED_ROOT_DIRS for packaging workflow support
+- Created ORACL™ lesson for version promotion workflow (confidence: 0.95)
+
+### Changed
+
+- Promoted version from 1.1.1.b1 to 1.1.1 (official release)
+- Updated version metadata across `__init__.py`, `setup.py`, and `pyproject.toml`
+- Updated intelligence report with v1.1.1 release status and completion metrics
+
+### Fixed
+
+- Synchronized version metadata across all configuration files
+- Resolved version inconsistency in package builds
 
 ## [Unreleased]
 

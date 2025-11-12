@@ -51,6 +51,7 @@ ALLOWED_ROOT_DIRS = {
     'archive',
     'codesentinel',
     'deployment',
+    'dist',  # Package build artifacts
     'docs',
     'github',
     'infrastructure',
