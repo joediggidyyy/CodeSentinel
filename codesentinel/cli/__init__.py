@@ -11,7 +11,7 @@ import os
 import subprocess
 import atexit
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, List
 import signal
 import threading
 from typing import Dict, Any
@@ -38,7 +38,7 @@ def timeout_handler(signum, frame):
     raise TimeoutError("Operation timed out")
 
 
-def verify_documentation_branding(file_path: Path) -> tuple[bool, list[str]]:
+def verify_documentation_branding(file_path: Path) -> Tuple[bool, List[str]]:
     """
     Verify that documentation files follow SEAM Protection branding policy.
     
@@ -97,7 +97,7 @@ def verify_documentation_branding(file_path: Path) -> tuple[bool, list[str]]:
     return is_compliant, issues
 
 
-def verify_documentation_headers_footers(file_path: Path) -> tuple[bool, list[str], dict]:
+def verify_documentation_headers_footers(file_path: Path) -> Tuple[bool, List[str], dict]:
     """
     Verify that documentation files have proper headers and footers.
     
@@ -166,7 +166,7 @@ def verify_documentation_headers_footers(file_path: Path) -> tuple[bool, list[st
     return is_compliant, issues, metadata
 
 
-def apply_branding_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, str]:
+def apply_branding_fixes(file_path: Path, verbose: bool = False) -> Tuple[bool, str]:
     """
     Apply automatic branding fixes to documentation files.
     
@@ -226,7 +226,7 @@ def apply_branding_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, 
     return True, f"No branding fixes needed for {file_path.name}"
 
 
-def apply_header_footer_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, str]:
+def apply_header_footer_fixes(file_path: Path, verbose: bool = False) -> Tuple[bool, str]:
     """
     Apply automatic header and footer fixes to documentation files.
     
@@ -547,7 +547,7 @@ def show_template_options(template_type: str = 'both') -> None:
     print("="*70 + "\n")
 
 
-def set_header_for_file(file_path: Path, template_name: Optional[str] = None, custom_header: Optional[str] = None) -> tuple[bool, str]:
+def set_header_for_file(file_path: Path, template_name: Optional[str] = None, custom_header: Optional[str] = None) -> Tuple[bool, str]:
     """
     Set header for a documentation file.
     
@@ -599,7 +599,7 @@ def set_header_for_file(file_path: Path, template_name: Optional[str] = None, cu
         return False, f"Could not write file: {e}"
 
 
-def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom_footer: Optional[str] = None) -> tuple[bool, str]:
+def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom_footer: Optional[str] = None) -> Tuple[bool, str]:
     """
     Set footer for a documentation file.
     

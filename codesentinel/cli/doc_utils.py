@@ -169,7 +169,7 @@ def verify_documentation_headers_footers(file_path: Path) -> Tuple[bool, List[st
     return is_compliant, issues, metadata
 
 
-def apply_branding_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, str]:
+def apply_branding_fixes(file_path: Path, verbose: bool = False) -> Tuple[bool, str]:
     """
     Apply automatic branding fixes to documentation files.
     
@@ -227,7 +227,7 @@ def apply_branding_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, 
     return True, f"No branding fixes needed for {file_path.name}"
 
 
-def apply_header_footer_fixes(file_path: Path, verbose: bool = False) -> tuple[bool, str]:
+def apply_header_footer_fixes(file_path: Path, verbose: bool = False) -> Tuple[bool, str]:
     """
     Apply automatic header and footer fixes to documentation files.
     
