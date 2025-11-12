@@ -5,7 +5,7 @@ This module contains shared functions for documentation branding,
 header/footer management, and integrity verification.
 """
 from pathlib import Path
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict, Any
 import re
 
 
@@ -102,7 +102,7 @@ def verify_documentation_branding(file_path: Path) -> Tuple[bool, List[str]]:
     return is_compliant, issues
 
 
-def verify_documentation_headers_footers(file_path: Path) -> Tuple[bool, List[str], dict]:
+def verify_documentation_headers_footers(file_path: Path) -> Tuple[bool, List[str], Dict[str, Any]]:
     """
     Verify that documentation files have proper headers and footers.
     
@@ -275,8 +275,8 @@ def apply_header_footer_fixes(file_path: Path, verbose: bool = False) -> Tuple[b
     return True, f"No header/footer fixes needed for {file_path.name}"
 
 
-def verify_and_fix_documentation_pipeline(file_paths: list[Path], dry_run: bool = False, 
-                                          verbose: bool = False, file_type_label: str = "") -> dict:
+def verify_and_fix_documentation_pipeline(file_paths: List[Path], dry_run: bool = False,
+                                          verbose: bool = False, file_type_label: str = "") -> Dict[str, List[str]]:
     """
     Consolidated documentation verification and fix pipeline.
     
@@ -309,7 +309,7 @@ def verify_and_fix_documentation_pipeline(file_paths: list[Path], dry_run: bool 
             'whitespace_issues': [...]
         }
     """
-    results = {
+    results: Dict[str, List[str]] = {
         'verified': [],
         'fixed': [],
         'errors': [],

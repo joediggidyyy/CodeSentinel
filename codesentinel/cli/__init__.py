@@ -11,7 +11,7 @@ import os
 import subprocess
 import atexit
 from pathlib import Path
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Optional, Tuple, List, Dict, Any, Set
 import signal
 import threading
 
@@ -96,7 +96,7 @@ def verify_documentation_branding(file_path: Path) -> Tuple[bool, List[str]]:
     return is_compliant, issues
 
 
-def verify_documentation_headers_footers(file_path: Path) -> Tuple[bool, List[str], dict]:
+def verify_documentation_headers_footers(file_path: Path) -> Tuple[bool, List[str], Dict[str, Any]]:
     """
     Verify that documentation files have proper headers and footers.
     
@@ -649,7 +649,7 @@ def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom
         return False, f"Could not write file: {e}"
 
 
-def edit_headers_interactive(doc_files: Optional[list[Path]] = None) -> None:
+def edit_headers_interactive(doc_files: Optional[List[Path]] = None) -> None:
     """
     Interactive mode to edit headers for multiple documentation files.
     
@@ -709,7 +709,7 @@ def edit_headers_interactive(doc_files: Optional[list[Path]] = None) -> None:
     print("\n" + "="*70 + "\n")
 
 
-def edit_footers_interactive(doc_files: Optional[list[Path]] = None) -> None:
+def edit_footers_interactive(doc_files: Optional[List[Path]] = None) -> None:
     """
     Interactive mode to edit footers for multiple documentation files.
     
@@ -767,7 +767,7 @@ def edit_footers_interactive(doc_files: Optional[list[Path]] = None) -> None:
 
 
 
-def _build_dev_audit_context(results: dict[str, Any]) -> AgentContext:
+def _build_dev_audit_context(results: Dict[str, Any]) -> AgentContext:
     """Build an AgentContext from the results of a development audit."""
     context = AgentContext(command="dev-audit", analysis_results=results)
 
@@ -804,7 +804,7 @@ def _build_dev_audit_context(results: dict[str, Any]) -> AgentContext:
     return context
 
 
-def _build_scan_context(results: dict[str, Any]) -> AgentContext:
+def _build_scan_context(results: Dict[str, Any]) -> AgentContext:
     """Build an AgentContext from the results of scan operations."""
     context = AgentContext(command="scan", analysis_results=results)
     
@@ -1323,7 +1323,7 @@ Examples:
             
             if agent_mode:
                 # Agent mode: use the centralized command runner
-                def get_scan_results() -> dict[str, Any]:
+                def get_scan_results() -> Dict[str, Any]:
                     """Get scan results for agent analysis."""
                     from .scan_utils import run_bloat_audit
                     from pathlib import Path
@@ -2000,7 +2000,7 @@ except KeyboardInterrupt:
             print("\n🔍 Detecting orphaned modules...")
             orphaned_modules = []
             
-            def _add_module_variants(imports_set: set[str], module_name: str) -> None:
+            def _add_module_variants(imports_set: Set[str], module_name: str) -> None:
                 """Add all relevant variants of a module path to the imports set."""
                 if not module_name:
                     return
@@ -2017,7 +2017,7 @@ except KeyboardInterrupt:
                     with open(file_path, 'r', encoding='utf-8') as f:
                         tree = ast.parse(f.read(), filename=str(file_path))
                     
-                    imports: set[str] = set()
+                    imports: Set[str] = set()
                     for node in ast.walk(tree):
                         if isinstance(node, ast.Import):
                             for alias in node.names:
@@ -2988,7 +2988,7 @@ except KeyboardInterrupt:
                 analysis_fn = codesentinel.dev_audit.get_agent_context
 
                 # Define safe action applier - agent mode applies fixes automatically
-                def apply_safe_actions(context: AgentContext, results: dict[str, Any], args: Any) -> dict[str, Any]:
+                def apply_safe_actions(context: AgentContext, results: Dict[str, Any], args: Any) -> Dict[str, Any]:
                     """Apply safe automated fixes in agent mode."""
                     # Agent mode always applies fixes (dry_run=False)
                     return apply_safe_fixes(context.to_dict(), dry_run=False)
