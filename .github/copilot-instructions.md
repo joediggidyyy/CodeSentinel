@@ -509,6 +509,46 @@ read_file(path, start, end)  # Inspect current state
 replace_string_in_file(...)  # Clean, targeted edit
 ```
 
+### Python 3.8 Type Annotation Compatibility (CRITICAL)
+
+**MANDATORY: All type annotations must use Python 3.8-compatible syntax**
+
+CodeSentinel supports **Python 3.8+** as declared in `pyproject.toml` and `setup.py`. Python 3.8 does NOT support PEP 585 lowercase generic syntax introduced in Python 3.9.
+
+**The Problem:**
+```python
+# ❌ FORBIDDEN - Causes TypeError in Python 3.8
+def func() -> tuple[bool, list[str]]:
+    return True, ["item"]
+```
+
+**The Solution:**
+```python
+# ✅ REQUIRED - Python 3.8 compatible
+from typing import Tuple, List, Dict, Set, Optional
+
+def func() -> Tuple[bool, List[str]]:
+    return True, ["item"]
+```
+
+**Complete Compatibility Table:**
+
+| ❌ Python 3.9+ (FORBIDDEN) | ✅ Python 3.8+ (REQUIRED) |
+|---------------------------|--------------------------|
+| `tuple[...]`              | `Tuple[...]`             |
+| `list[...]`               | `List[...]`              |
+| `dict[...]`               | `Dict[...]`              |
+| `set[...]`                | `Set[...]`               |
+
+**Validation Before Commit:**
+- Search for incompatible patterns: `grep -r "-> tuple\[" codesentinel/`
+- Verify all type annotations use capitalized types from `typing` module
+- CI tests on Python 3.8 will catch violations
+
+**Reference Documentation:** `docs/development/PYTHON_COMPATIBILITY.md`
+
+**Historical Incident:** v1.1.1 release CI failed on Python 3.8 due to lowercase type annotations in `doc_utils.py`, `update_utils.py`, and `__init__.py`. All occurrences fixed in commits `0af3799` and `48b9d28`.
+
 ### ORACL™ Integration
 
 **Lightweight Intelligent Decision Support - Use for high-impact decisions only**
