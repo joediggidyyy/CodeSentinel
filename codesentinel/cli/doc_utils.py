@@ -5,7 +5,7 @@ This module contains shared functions for documentation branding,
 header/footer management, and integrity verification.
 """
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, List
 import re
 
 
@@ -44,7 +44,7 @@ def _normalize_markdown_whitespace(content: str) -> str:
     return content
 
 
-def verify_documentation_branding(file_path: Path) -> tuple[bool, list[str]]:
+def verify_documentation_branding(file_path: Path) -> Tuple[bool, List[str]]:
     """
     Verify that documentation files follow SEAM Protection branding policy.
     
@@ -102,7 +102,7 @@ def verify_documentation_branding(file_path: Path) -> tuple[bool, list[str]]:
     return is_compliant, issues
 
 
-def verify_documentation_headers_footers(file_path: Path) -> tuple[bool, list[str], dict]:
+def verify_documentation_headers_footers(file_path: Path) -> Tuple[bool, List[str], dict]:
     """
     Verify that documentation files have proper headers and footers.
     

@@ -5,6 +5,7 @@ This module contains the logic for updating repository files and documentation,
 including docs, changelogs, READMEs, version numbers, and dependencies.
 """
 from pathlib import Path
+from typing import Tuple, List
 import subprocess
 from .doc_utils import verify_and_fix_documentation_pipeline
 from ..utils.versioning import set_project_version
@@ -32,7 +33,7 @@ def _get_template_functions():
         'edit_footers_interactive': edit_footers_interactive
     }
 
-def _validate_content_placeholders(content: str, file_name: str) -> (list, list):
+def _validate_content_placeholders(content: str, file_name: str) -> Tuple[list, list]:
     """Finds placeholder text like TODO, FIXME, etc."""
     warnings = []
     issues = []
@@ -43,7 +44,7 @@ def _validate_content_placeholders(content: str, file_name: str) -> (list, list)
             warnings.append(f"  - Found placeholder text: '{p}' in {file_name}")
     return issues, warnings
 
-def _validate_content_links(content: str, file_name: str) -> (list, list):
+def _validate_content_links(content: str, file_name: str) -> Tuple[list, list]:
     """Checks for broken links in Markdown files."""
     issues = []
     warnings = []
@@ -65,7 +66,7 @@ def _validate_content_links(content: str, file_name: str) -> (list, list):
     return issues, warnings
 
 
-def _validate_oracl_documentation(content: str, file_name: str) -> tuple[list, list]:
+def _validate_oracl_documentation(content: str, file_name: str) -> Tuple[list, list]:
     """
     Validates ORACL™ Intelligence Ecosystem documentation in README and SECURITY files.
     
@@ -117,7 +118,7 @@ def _validate_oracl_documentation(content: str, file_name: str) -> tuple[list, l
     return issues, warnings
 
 
-def perform_content_validation(file_paths: list[Path], verbose: bool = False):
+def perform_content_validation(file_paths: List[Path], verbose: bool = False):
     """Performs deep content validation on a list of files."""
     print("Performing deep content validation...")
     total_issues = 0
