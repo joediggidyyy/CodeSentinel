@@ -1,25 +1,48 @@
 # CodeSentinel Development Requirements
 # ====================================
+# 
+# These dependencies extend the base requirements.txt with development/testing tools.
+# 
+# Installation: pip install -r requirements.txt -r requirements-dev.txt
+# Or use: pip install .[dev] (if using pyproject.toml setup)
 
-# Testing
-pytest>=6.0.0
-pytest-cov>=2.12.0
-pytest-mock>=3.6.0
+# ========================
+# TESTING & QUALITY ASSURANCE
+# ========================
 
-# Code Quality
-flake8>=3.8.0
-black>=21.0.0
-mypy>=0.800
+# Testing framework and plugins
+pytest>=6.0.0  # Core testing framework for unit and integration tests
+pytest-cov>=2.12.0  # Code coverage measurement for test suites
+pytest-mock>=3.6.0  # Mocking plugin for pytest with fixtures
 
-# Documentation
-sphinx>=4.0.0
-sphinx-rtd-theme>=0.5.0
+# Code quality and linting
+flake8>=3.8.0  # Style guide enforcement (PEP8) and error detection
+black>=21.0.0  # Code formatter for consistent style
+mypy>=0.800  # Static type checker for Python
 
-# Development Tools
-twine>=3.4.0  # For package publishing
-wheel>=0.36.0  # For package building
-setuptools>=60.0.0  # For package configuration
+# ========================
+# DOCUMENTATION
+# ========================
 
-# Optional Dependencies
-schedule>=1.1.0  # For automated scheduling
-requests>=2.25.0  # For HTTP requests and webhooks
+# Sphinx documentation
+sphinx>=4.0.0  # Documentation generator from docstrings
+sphinx-rtd-theme>=0.5.0  # ReadTheDocs theme for Sphinx
+
+# ========================
+# BUILD & PUBLISHING
+# ========================
+
+# Package management and distribution
+twine>=3.4.0  # For publishing packages to PyPI
+wheel>=0.36.0  # For creating wheel distribution format
+setuptools>=60.0.0  # For package configuration and distribution
+
+# ========================
+# NOTE: Production Dependencies
+# ========================
+# 
+# Production-only dependencies are in requirements.txt:
+#   - psutil (process monitoring)
+#   - requests (HTTP/webhooks/email)
+#   - schedule (task scheduling)
+#   - pathlib2 (Python <3.4 compatibility)

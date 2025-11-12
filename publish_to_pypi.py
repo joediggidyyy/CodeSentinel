@@ -26,7 +26,7 @@ def main():
         print(result.stdout)
         print(result.stderr)
         return 1
-    print("✅ Version verification passed")
+    print(" Version verification passed")
 
     use_test = "--test" in sys.argv
     repo = "testpypi" if use_test else "pypi"
@@ -53,7 +53,7 @@ def main():
             print(f"  - {f.name}")
         return 1
 
-    print(f"\n✅ Found {len(dist_files)} distribution files:")
+    print(f"\n Found {len(dist_files)} distribution files:")
     for f in dist_files:
         print(f"  - {f.name}")
 
@@ -74,7 +74,7 @@ def main():
     try:
         result = subprocess.run(cmd, check=True)
         print(f"\n{'='*80}")
-        print("✅ Upload successful!")
+        print(" Upload successful!")
         print(f"{'='*80}")
         
         if use_test:

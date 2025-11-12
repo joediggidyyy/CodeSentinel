@@ -1,0 +1,21 @@
+{
+  "timestamp": "{{ timestamp }}",
+  "scan_type": "{{ scan_type }}",
+  "vulnerabilities_found": {{ vulnerabilities_found }},
+  "credentials_exposed": {{ credentials_exposed }},
+  "policy_violations": {{ policy_violations }},
+  "recommendations": {{ recommendations }},
+  "status": "{{ status }}",
+  "scan_details": {
+    "files_scanned": 0,
+    "directories_scanned": 0,
+    "scan_duration_seconds": 0,
+    "last_scan_date": null
+  },
+  "findings": {
+    "hardcoded_secrets": [],
+    "weak_permissions": [],
+    "outdated_dependencies": [],
+    "configuration_issues": []
+  }
+}

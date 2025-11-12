@@ -24,7 +24,7 @@ def validate_distributions():
     print(f"\nFound {len(distributions)} distributions:")
     for dist in distributions:
         size_kb = dist.stat().st_size / 1024
-        print(f"  ✅ {dist.name} ({size_kb:.1f} KB)")
+        print(f"   {dist.name} ({size_kb:.1f} KB)")
     
     # Validate with twine
     print("\nValidating with twine...")
@@ -35,7 +35,7 @@ def validate_distributions():
             text=True
         )
         if result.returncode == 0:
-            print("✅ All distributions passed validation")
+            print(" All distributions passed validation")
             return True
         else:
             print("❌ Validation failed:")
@@ -115,7 +115,7 @@ def verify_production_upload():
     print("="*80)
     
     print("\nAfter upload completes, verify at:")
-    print("  ✅ https://pypi.org/project/codesentinel/")
+    print("   https://pypi.org/project/codesentinel/")
     print("\nLook for version 1.0.3b0 (marked as pre-release/beta)")
 
 def main():
@@ -134,7 +134,7 @@ def main():
         print("\n❌ Test PyPI upload failed.")
         sys.exit(1)
     
-    print("\n✅ Test PyPI upload successful!")
+    print("\n Test PyPI upload successful!")
     print("Now testing installation from test.pypi.org...")
     
     # Step 3: Production PyPI
@@ -142,13 +142,13 @@ def main():
         print("\n❌ Production PyPI upload failed.")
         sys.exit(1)
     
-    print("\n✅ Production PyPI upload successful!")
+    print("\n Production PyPI upload successful!")
     
     # Step 4: Verify
     verify_production_upload()
     
     print("\n" + "="*80)
-    print("✅ Publication Complete!")
+    print(" Publication Complete!")
     print("="*80)
     print("\nNext steps:")
     print("  1. Create GitHub release: v1.0.3-beta")

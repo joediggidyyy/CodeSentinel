@@ -105,6 +105,17 @@ class VersionVerifier:
             version = version[1:]  # Remove 'v' prefix for consistency
         return version
 
+    def check_security_md(self) -> Optional[str]:
+        """Check supported version in SECURITY.md (major.minor format)."""
+        security_md = self.project_root / "SECURITY.md"
+        patterns = [
+            r'\|\s*([0-9]+\.[0-9]+)\.[xX]\s*\|',  # Table format with .x
+            r'Version\s*([0-9]+\.[0-9]+)',
+        ]
+        version = self.extract_version_from_file(security_md, patterns)
+        # SECURITY.md uses major.minor format, so we'll mark it with .x for comparison
+        return f"{version}.x" if version else None
+
     def verify_all_versions(self) -> bool:
         """Verify all version declarations match."""
         # Check all version sources
@@ -113,7 +124,8 @@ class VersionVerifier:
             'pyproject.toml': self.check_pyproject_toml(),
             'codesentinel/__init__.py': self.check_init_py(),
             'README.md': self.check_readme_md(),
-            'CHANGELOG.md': self.check_changelog_md()
+            'CHANGELOG.md': self.check_changelog_md(),
+            'SECURITY.md': self.check_security_md()
         }
 
         # Collect all found versions
@@ -122,6 +134,35 @@ class VersionVerifier:
                 if version not in self.versions_found:
                     self.versions_found[version] = []
                 self.versions_found[version].append(source)
+
+        # Handle SECURITY.md special case (major.minor.x format)
+        # We need to check if SECURITY.md's major.minor matches the canonical version
+        canonical_version = None
+        security_version = version_sources.get('SECURITY.md')
+        
+        # Find the canonical version (most common full version)
+        full_versions = {v: sources for v, sources in self.versions_found.items() if not v.endswith('.x')}
+        if full_versions:
+            # Get the version with the most sources
+            canonical_version = max(full_versions.items(), key=lambda x: len(x[1]))[0]
+            
+            # Check if SECURITY.md matches canonical version's major.minor
+            if security_version:
+                canonical_major_minor = '.'.join(canonical_version.split('.')[:2])
+                security_major_minor = security_version.replace('.x', '')
+                
+                if canonical_major_minor == security_major_minor:
+                    # SECURITY.md matches, add it to canonical version sources
+                    if canonical_version in self.versions_found:
+                        self.versions_found[canonical_version].append('SECURITY.md (major.minor)')
+                    # Remove the .x version entry
+                    if security_version in self.versions_found:
+                        del self.versions_found[security_version]
+                else:
+                    self.warnings.append(
+                        f"SECURITY.md version {security_major_minor}.x doesn't match "
+                        f"canonical {canonical_major_minor}.x"
+                    )
 
         # Check for consistency
         if len(self.versions_found) > 1:
@@ -137,9 +178,10 @@ class VersionVerifier:
             version = list(self.versions_found.keys())[0]
             sources = self.versions_found[version]
             if len(sources) < len(version_sources):
-                missing_sources = [s for s in version_sources.keys() if s not in sources]
-                self.warnings.append(f"Version {version} found in {len(sources)}/{len(version_sources)} sources")
-                self.warnings.append(f"Missing from: {', '.join(missing_sources)}")
+                missing_sources = [s for s in version_sources.keys() if s not in sources and not s.endswith('(major.minor)')]
+                if missing_sources:
+                    self.warnings.append(f"Version {version} found in {len(sources)}/{len(version_sources)} sources")
+                    self.warnings.append(f"Missing from: {', '.join(missing_sources)}")
             return True
 
     def get_canonical_version(self) -> Optional[str]:
@@ -190,7 +232,7 @@ def main():
     if versions_match and not verifier.errors:
         canonical_version = verifier.get_canonical_version()
         if canonical_version and not args.quiet:
-            print("✅ SUCCESS: All version declarations are consistent")
+            print(" SUCCESS: All version declarations are consistent")
             print(f"   Canonical version: {canonical_version}")
             sources = verifier.versions_found[canonical_version]
             print(f"   Found in {len(sources)} sources: {', '.join(sources)}")
@@ -198,7 +240,7 @@ def main():
     else:
         if args.strict:
             if not args.quiet:
-                print("💥 STRICT MODE: Exiting with error code due to version inconsistencies")
+                print(" STRICT MODE: Exiting with error code due to version inconsistencies")
             return 1
         else:
             if not args.quiet:

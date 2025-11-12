@@ -22,19 +22,19 @@ Each version gets its own versioned subdirectory containing all related publicat
 
 ```
 publication_logs/
-├── README.md (this file)
-├── v1.0.0/
-│   ├── v1.0.0_publication_log.md
-│   ├── TEST_PYPI_VALIDATION_PASSED.md
-│   └── PRODUCTION_PYPI_PUBLISHED.md
-├── v1.0.1/
-│   ├── v1.0.1_publication_log.md
-│   ├── TEST_PYPI_VALIDATION_PASSED.md
-│   └── PRODUCTION_PYPI_PUBLISHED.md
-└── v1.0.3_beta/
-    ├── v1.0.3_beta_publication_log.md
-    ├── TEST_PYPI_VALIDATION_PASSED.md
-    └── PRODUCTION_PYPI_PUBLISHED.md
+ README.md (this file)
+ v1.0.0/
+    v1.0.0_publication_log.md
+    TEST_PYPI_VALIDATION_PASSED.md
+    PRODUCTION_PYPI_PUBLISHED.md
+ v1.0.1/
+    v1.0.1_publication_log.md
+    TEST_PYPI_VALIDATION_PASSED.md
+    PRODUCTION_PYPI_PUBLISHED.md
+ v1.0.3_beta/
+     v1.0.3_beta_publication_log.md
+     TEST_PYPI_VALIDATION_PASSED.md
+     PRODUCTION_PYPI_PUBLISHED.md
 ```
 
 ### Document Types
@@ -81,7 +81,7 @@ publication_logs/
 
 | Version | Date | Status | Test PyPI | Production PyPI | Notes |
 |---------|------|--------|-----------|-----------------|-------|
-| 1.0.3b0 (beta) | 2025-11-06 | ✅ Published | ✅ Passed | ✅ Live | File integrity system, GUI installers |
+| 1.0.3b0 (beta) | 2025-11-06 |  Published |  Passed |  Live | File integrity system, GUI installers |
 | [Future] | [TBD] | [TBD] | [TBD] | [TBD] | [TBD] |
 
 ### Maintenance Policy
@@ -96,8 +96,8 @@ publication_logs/
 
 - ⚠️ **Never commit PyPI tokens** to this directory
 - ⚠️ **Tokens passed via environment variables** during publication
-- ✅ **URLs and validation results** safe to log and version control
-- ✅ **Timestamps and error messages** helpful for debugging
+-  **URLs and validation results** safe to log and version control
+-  **Timestamps and error messages** helpful for debugging
 
 ### Related Policies
 

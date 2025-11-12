@@ -127,11 +127,11 @@ This strategy reduces cognitive overhead while maintaining policy adherence, ena
 
 ```yaml
 docs/
-├── architecture/
-│   ├── POLICY.md                          # Global policy foundation (T4a)
-│   ├── DOCUMENT_CLASSIFICATION.md         # 5-tier system (T4a)
-│   └── AGENT_INSTRUCTION_STRATEGY.md      # This file (T4a)
-└── README.md                              # High-level overview
+ architecture/
+    POLICY.md                          # Global policy foundation (T4a)
+    DOCUMENT_CLASSIFICATION.md         # 5-tier system (T4a)
+    AGENT_INSTRUCTION_STRATEGY.md      # This file (T4a)
+ README.md                              # High-level overview
 ```
 
 **Purpose**: Establish universal principles and requirements  
@@ -142,33 +142,33 @@ docs/
 
 ```yaml
 codesentinel/
-├── AGENT_INSTRUCTIONS.md                 # CLI/core operations (T4b)
-├── __init__.py
-├── cli/
-│   └── AGENT_INSTRUCTIONS.md             # CLI-specific procedures (T4b)
-├── core/
-│   └── AGENT_INSTRUCTIONS.md             # Core functionality procedures (T4b)
-└── utils/
-    └── AGENT_INSTRUCTIONS.md             # Utility operations (T4b)
+ AGENT_INSTRUCTIONS.md                 # CLI/core operations (T4b)
+ __init__.py
+ cli/
+    AGENT_INSTRUCTIONS.md             # CLI-specific procedures (T4b)
+ core/
+    AGENT_INSTRUCTIONS.md             # Core functionality procedures (T4b)
+ utils/
+     AGENT_INSTRUCTIONS.md             # Utility operations (T4b)
 
 tools/
-├── AGENT_INSTRUCTIONS.md                 # Maintenance operations (T4b)
-├── codesentinel/
-│   ├── AGENT_INSTRUCTIONS.md             # Scheduler/monitoring (T4b)
-│   └── scheduler.py
-└── config/
-    └── AGENT_INSTRUCTIONS.md             # Configuration procedures (T4b)
+ AGENT_INSTRUCTIONS.md                 # Maintenance operations (T4b)
+ codesentinel/
+    AGENT_INSTRUCTIONS.md             # Scheduler/monitoring (T4b)
+    scheduler.py
+ config/
+     AGENT_INSTRUCTIONS.md             # Configuration procedures (T4b)
 
 tests/
-├── AGENT_INSTRUCTIONS.md                 # Testing procedures (T4b)
-└── [test files]
+ AGENT_INSTRUCTIONS.md                 # Testing procedures (T4b)
+ [test files]
 
 docs/
-├── AGENT_INSTRUCTIONS.md                 # Documentation operations (T4b)
-├── architecture/
-├── audit/
-├── guides/
-└── installation/
+ AGENT_INSTRUCTIONS.md                 # Documentation operations (T4b)
+ architecture/
+ audit/
+ guides/
+ installation/
 ```
 
 **Purpose**: Provide subtree-specific operational guidance  
@@ -367,31 +367,31 @@ This document operates within CodeSentinel's policy framework:
 
 START: Classifying a new document
 
-├─ Is this secret/encryption keys/vulnerability?
-│  └─ YES → Tier 0 (Secret) → STOP
-│
-├─ Is this infrastructure/policy/compliance?
-│  ├─ YES → Is this versioned? Do we need audit trail?
-│  │  └─ YES → Tier 1 (Critical Infrastructure) → STOP
-│  │  └─ NO → Check criticality...
-│  └─ NO → Continue
-│
-├─ Is this user guide/documentation/guidance?
-│  ├─ YES → Is this major policy or core procedure?
-│  │  └─ YES → Tier 1 (Critical Infrastructure) → STOP
-│  │  └─ NO → Tier 2 (Informative) → STOP
-│  └─ NO → Continue
-│
-├─ Is this temporary/report/job output?
-│  ├─ YES → Can be permanently deleted?
-│  │  └─ YES → Tier 3 (Temporary) → STOP
-│  │  └─ NO → Tier 1 or Tier 2 → Consult global policy
-│  └─ NO → Continue
-│
-└─ Is this agent documentation?
-   ├─ Core procedures? → Tier 4a → STOP
-   ├─ Infrastructure procedures? → Tier 4b → STOP
-   └─ Temporary notes? → Tier 4c → STOP
+ Is this secret/encryption keys/vulnerability?
+   YES → Tier 0 (Secret) → STOP
+
+ Is this infrastructure/policy/compliance?
+   YES → Is this versioned? Do we need audit trail?
+     YES → Tier 1 (Critical Infrastructure) → STOP
+     NO → Check criticality...
+   NO → Continue
+
+ Is this user guide/documentation/guidance?
+   YES → Is this major policy or core procedure?
+     YES → Tier 1 (Critical Infrastructure) → STOP
+     NO → Tier 2 (Informative) → STOP
+   NO → Continue
+
+ Is this temporary/report/job output?
+   YES → Can be permanently deleted?
+     YES → Tier 3 (Temporary) → STOP
+     NO → Tier 1 or Tier 2 → Consult global policy
+   NO → Continue
+
+ Is this agent documentation?
+    Core procedures? → Tier 4a → STOP
+    Infrastructure procedures? → Tier 4b → STOP
+    Temporary notes? → Tier 4c → STOP
 ```
 
 ---
@@ -429,23 +429,23 @@ START: Classifying a new document
 
 ```text
 Task Assignment
-  ├─ Is this first task this session?
-  │  └─ YES → Read POLICY.md + DOCUMENT_CLASSIFICATION.md
-  │  └─ NO → Continue
-  │
-  ├─ Have I worked in this subtree before?
-  │  └─ NO → Read relevant AGENT_INSTRUCTIONS.md
-  │  └─ YES → Continue
-  │
-  ├─ Is this a routine task I've done before?
-  │  └─ NO → Read AGENT_INSTRUCTIONS.md sections
-  │  └─ YES → Consult quick reference section
-  │
-  ├─ Do I need to verify authority or classification?
-  │  └─ YES → Consult authority matrix quick lookup
-  │  └─ NO → Proceed with task
-  │
-  └─ Ready to execute task
+   Is this first task this session?
+     YES → Read POLICY.md + DOCUMENT_CLASSIFICATION.md
+     NO → Continue
+  
+   Have I worked in this subtree before?
+     NO → Read relevant AGENT_INSTRUCTIONS.md
+     YES → Continue
+  
+   Is this a routine task I've done before?
+     NO → Read AGENT_INSTRUCTIONS.md sections
+     YES → Consult quick reference section
+  
+   Do I need to verify authority or classification?
+     YES → Consult authority matrix quick lookup
+     NO → Proceed with task
+  
+   Ready to execute task
 ```
 
 **Apply This Logic**: Only read documentation necessary for the current task. Avoid redundant reading across similar tasks.

@@ -1,0 +1,14 @@
+{
+  "description": "Schema for CodeSentinel core package satellite instructions",
+  "target_file": "codesentinel/AGENT_INSTRUCTIONS.md",
+  "section_order": [
+    "Quick Authority Reference",
+    "Domain Overview",
+    "Development Workflow",
+    "Common Patterns",
+    "Testing Requirements",
+    "Documentation Requirements",
+    "Troubleshooting Guide"
+  ],
+  "merge_sections": {}
+}

@@ -118,14 +118,14 @@ Files: .github/copilot-instructions.md
 
 ## Verification Checklist
 
-- ✅ T0-5 added to PRIORITY_DISTRIBUTION_SYSTEM.md (Tier 0 Policies)
-- ✅ T0-5 documented in .github/copilot-instructions.md (Persistent Policies)
-- ✅ CHANGELOG.md updated with governance change
-- ✅ Policy correctly labeled as Constitutional (T0) tier
-- ✅ Policy includes "release-blocking requirement" language
-- ✅ Git commits document establishment with proper messages
-- ✅ Consistency verified across all governance documents
-- ✅ User directive fully implemented: permanent + required + classified in tier system
+-  T0-5 added to PRIORITY_DISTRIBUTION_SYSTEM.md (Tier 0 Policies)
+-  T0-5 documented in .github/copilot-instructions.md (Persistent Policies)
+-  CHANGELOG.md updated with governance change
+-  Policy correctly labeled as Constitutional (T0) tier
+-  Policy includes "release-blocking requirement" language
+-  Git commits document establishment with proper messages
+-  Consistency verified across all governance documents
+-  User directive fully implemented: permanent + required + classified in tier system
 
 ## Enforcement
 
@@ -152,22 +152,22 @@ Releasing without compliance review:
 
 ## Success Metrics
 
-- ✅ Policy established as irreversible (T0 classification)
-- ✅ Policy enforced in governance documents
-- ✅ Future releases will include mandatory compliance review
-- ✅ v1.0.3.beta2 includes compliance artifacts (proof of concept)
-- ✅ Prevents regression to beta1-style deployments without compliance
+-  Policy established as irreversible (T0 classification)
+-  Policy enforced in governance documents
+-  Future releases will include mandatory compliance review
+-  v1.0.3.beta2 includes compliance artifacts (proof of concept)
+-  Prevents regression to beta1-style deployments without compliance
 
 ## Next Release Requirements
 
 For v1.0.3 (production) or any future releases:
 
-1. ✅ Comprehensive framework compliance review (REQUIRED per T0-5)
-2. ✅ Technical architecture review (REQUIRED per T0-5)
-3. ✅ Complete test report (REQUIRED per T0-5)
-4. ✅ Zero technical debt regression (REQUIRED per T0-5)
-5. ✅ All artifacts archived with distribution (REQUIRED per T0-5)
-6. ✅ Release only proceeds after compliance clearance (REQUIRED per T0-5)
+1.  Comprehensive framework compliance review (REQUIRED per T0-5)
+2.  Technical architecture review (REQUIRED per T0-5)
+3.  Complete test report (REQUIRED per T0-5)
+4.  Zero technical debt regression (REQUIRED per T0-5)
+5.  All artifacts archived with distribution (REQUIRED per T0-5)
+6.  Release only proceeds after compliance clearance (REQUIRED per T0-5)
 
 ---
 

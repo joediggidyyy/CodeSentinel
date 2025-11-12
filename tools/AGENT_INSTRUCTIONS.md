@@ -1,4 +1,9 @@
-# Maintenance Automation & Scheduler Agent Instructions
+# [AGENT-USE] Tools Satellite Instructions
+
+> **Purpose:** Agent-intended operational instructions for tools satellite domain.
+> This file provides domain-specific guidance for agent remediation and maintenance operations.
+
+# Tools Satellite Instructions
 
 **Classification**: T4b - Infrastructure & Procedural Agent Documentation  
 **Scope**: Maintenance automation, scheduler tasks, background jobs in tools/ directory  
@@ -68,7 +73,7 @@ The `tools/` directory contains CodeSentinel automation infrastructure including
 
 **Steps**:
 
-1. **Verify Authority**: Get user approval for new task ✅
+1. **Verify Authority**: Get user approval for new task 
 
 2. **Define Task Requirements**:
    - What should the task do?
@@ -142,11 +147,11 @@ The `tools/` directory contains CodeSentinel automation infrastructure including
    - Adjust if needed
 
 10. **Validation**:
-    - Task executes on schedule ✅
-    - Logging shows all actions ✅
-    - Alerts trigger appropriately ✅
-    - No resource leaks ✅
-    - Complies with policies ✅
+    - Task executes on schedule 
+    - Logging shows all actions 
+    - Alerts trigger appropriately 
+    - No resource leaks 
+    - Complies with policies 
 
 11. **Commit**:
     - Message: `feat(scheduler): add [task name] task`
@@ -162,7 +167,7 @@ The `tools/` directory contains CodeSentinel automation infrastructure including
 
 **Steps**:
 
-1. **Verify Authority**: Get user verification for timing changes ✅
+1. **Verify Authority**: Get user verification for timing changes 
 
 2. **Analyze Current Performance**:
    - How long does task typically take?
@@ -209,11 +214,11 @@ The `tools/` directory contains CodeSentinel automation infrastructure including
    - Add to CHANGELOG
 
 9. **Validation**:
-    - Task runs on new schedule ✅
-    - Completes within timeout ✅
-    - No conflicts with other tasks ✅
-    - Logging accurate ✅
-    - Alerts still working ✅
+    - Task runs on new schedule 
+    - Completes within timeout 
+    - No conflicts with other tasks 
+    - Logging accurate 
+    - Alerts still working 
 
 10. **Commit**:
     - Message: `ops(scheduler): adjust [task] schedule/timeout`
@@ -276,11 +281,11 @@ The `tools/` directory contains CodeSentinel automation infrastructure including
    - Document alert logic
 
 8. **Validation**:
-    - Task completes successfully ✅
-    - Logging shows correct output ✅
-    - No error alerts ✅
-    - Dependencies available ✅
-    - No timeout issues ✅
+    - Task completes successfully 
+    - Logging shows correct output 
+    - No error alerts 
+    - Dependencies available 
+    - No timeout issues 
 
 9. **Commit**:
     - Message: `fix(scheduler): resolve [task] failure`
@@ -296,7 +301,7 @@ The `tools/` directory contains CodeSentinel automation infrastructure including
 
 **Steps**:
 
-1. **Verify Authority**: Get user verification for dependency changes ✅
+1. **Verify Authority**: Get user verification for dependency changes 
 
 2. **Identify Dependencies**:
    - What must run before this task?
@@ -337,11 +342,11 @@ The `tools/` directory contains CodeSentinel automation infrastructure including
    - Add to task documentation
 
 8. **Validation**:
-    - Dependency respected ✅
-    - Correct execution order ✅
-    - Failure handling correct ✅
-    - Logging shows dependencies ✅
-    - No deadlocks ✅
+    - Dependency respected 
+    - Correct execution order 
+    - Failure handling correct 
+    - Logging shows dependencies 
+    - No deadlocks 
 
 9. **Commit**:
     - Message: `ops(scheduler): add dependency for [task]`

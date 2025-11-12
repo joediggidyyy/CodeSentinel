@@ -10,15 +10,15 @@ This guide provides step-by-step instructions for publishing CodeSentinel v1.0.3
 
 ## Pre-Publication Checklist
 
-- ✅ Version updated to 1.0.3.beta in setup.py, pyproject.toml, **init**.py
-- ✅ Distributions built: sdist (91 KB), wheel (77 KB)
-- ✅ All tests passed (22/22)
-- ✅ CLI functional (all commands work)
-- ✅ GUI functional (wizard launches)
-- ✅ File integrity system operational
-- ✅ Performance metrics acceptable (1.2s for baseline)
-- ✅ No breaking changes detected
-- ✅ Documentation current
+-  Version updated to 1.0.3.beta in setup.py, pyproject.toml, **init**.py
+-  Distributions built: sdist (91 KB), wheel (77 KB)
+-  All tests passed (22/22)
+-  CLI functional (all commands work)
+-  GUI functional (wizard launches)
+-  File integrity system operational
+-  Performance metrics acceptable (1.2s for baseline)
+-  No breaking changes detected
+-  Documentation current
 
 ## Step 1: PyPI Test Repository Setup
 
@@ -294,9 +294,9 @@ pip install --no-cache-dir codesentinel==1.0.3b0
 
 ### Immediate (within 24 hours)
 
-1. ✅ Announce on GitHub releases
-2. ✅ Pin release announcement in Issues
-3. ✅ Notify beta testers
+1.  Announce on GitHub releases
+2.  Pin release announcement in Issues
+3.  Notify beta testers
 4. Monitor for bug reports
 
 ### Week 1

@@ -15,7 +15,7 @@ codesentinel --help        # See all commands
 
 ## Full Documentation
 
-- 📖 **[Getting Started Guide](docs/guides/GETTING_STARTED_DETAILED.md)** - Complete walkthrough with examples
-- 📦 **[Installation Guide](docs/installation/)** - Detailed installation for all platforms
-- 🏗️ **[Architecture & Policies](docs/architecture/)** - How CodeSentinel works
-- 📚 **[All Documentation](docs/)** - Complete documentation hub
+-  **[Getting Started Guide](docs/guides/GETTING_STARTED_DETAILED.md)** - Complete walkthrough with examples
+-  **[Installation Guide](docs/installation/)** - Detailed installation for all platforms
+-  **[Architecture & Policies](docs/architecture/)** - How CodeSentinel works
+-  **[All Documentation](docs/)** - Complete documentation hub

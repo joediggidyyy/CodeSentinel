@@ -373,7 +373,7 @@ def main():
     
     print("\nDetailed Results:")
     for result in results:
-        status = "✓ PASS" if result['passed'] else "✗ FAIL"
+        status = "✓ PASS" if result['passed'] else " FAIL"
         print(f"  {status}: {result['test']}")
         print(f"         {result['message']}")
     
@@ -394,9 +394,9 @@ def main():
     if passed == total:
         print("\n✓ ALL FAULT TESTS PASSED - System is robust")
     elif passed / total >= 0.8:
-        print("\n⚠ MOST TESTS PASSED - Review failures")
+        print("\n MOST TESTS PASSED - Review failures")
     else:
-        print("\n✗ MULTIPLE FAILURES - Requires attention")
+        print("\n MULTIPLE FAILURES - Requires attention")
     
     print("=" * 70)
     

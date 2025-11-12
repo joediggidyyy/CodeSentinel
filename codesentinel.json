@@ -78,5 +78,24 @@
     "scheduler": true,
     "git_hooks": true,
     "ci": true
+  },
+  "maintenance": {
+    "enabled": true,
+    "daily": {
+      "enabled": true,
+      "schedule": "09:00"
+    },
+    "weekly": {
+      "enabled": true,
+      "schedule": "Monday 09:00"
+    },
+    "biweekly": {
+      "enabled": true,
+      "schedule": "Friday 17:00"
+    },
+    "monthly": {
+      "enabled": true,
+      "schedule": "last 16:00"
+    }
   }
 }

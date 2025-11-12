@@ -1,0 +1,12 @@
+{
+  "description": "Schema for CodeSentinel maintenance tools satellite instructions",
+  "target_file": "tools/codesentinel/AGENT_INSTRUCTIONS.md",
+  "section_order": [
+    "Core Principles",
+    "Key Utilities",
+    "Development Workflow",
+    "Common Patterns",
+    "Troubleshooting Guide"
+  ],
+  "merge_sections": {}
+}

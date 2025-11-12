@@ -1,0 +1,30 @@
+{
+  "description": "Schema for the main .github/copilot-instructions.md file.",
+  "section_order": [
+    "Core Principles",
+    "CRITICAL: Foundational Policies",
+    "ORACL Intelligence Ecosystem",
+    "Agent Operating Rules",
+    "Agent-Driven Remediation",
+    "Persistent Policies",
+    "Architecture Overview",
+    "Key Commands",
+    "Integration Points",
+    "When Modifying This Codebase",
+    "Safe Actions (can automate)",
+    "Requires Review (agent decision needed)",
+    "Forbidden Actions"
+  ],
+  "merge_sections": {
+    "CRITICAL: Foundational Policies": [
+      "CRITICAL: Policy Violation Prevention Guardrails",
+      "DRY Principle Enforcement (CRITICAL)",
+      "User-Facing Path Display Policy (PERMANENT)",
+      "Pre-Edit File State Validation"
+    ],
+    "ORACL Intelligence Ecosystem": [
+      "ORACL Integration (Omniscient Recommendation Archive Curation Ledger)",
+      "ORACL Memory Ecosystem (3-Tier Architecture)"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "description": "Schema for CodeSentinel testing satellite instructions",
+  "target_file": "tests/AGENT_INSTRUCTIONS.md",
+  "section_order": [
+    "Quick Authority Reference",
+    "Domain Overview",
+    "Testing Standards",
+    "Test Development Workflow",
+    "Common Test Patterns",
+    "Troubleshooting Tests"
+  ],
+  "merge_sections": {}
+}

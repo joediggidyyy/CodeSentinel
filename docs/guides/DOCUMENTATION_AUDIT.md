@@ -8,49 +8,49 @@
 ### Root Folder (8 files)
 
 ```
-├── CHANGELOG.md                    # Release history
-├── COMPLETION_REPORT.md            # Project completion status
-├── CONTRIBUTING.md                 # Contribution guidelines
-├── MERGE_READY.md                  # Merge checklist (REDUNDANT)
-├── QUICK_START.md                  # Quick start guide
-├── README.md                        # Main project documentation
-├── READY_FOR_PUBLICATION.md        # Publication status (REDUNDANT)
-└── SECURITY.md                     # Security policy
+ CHANGELOG.md                    # Release history
+ COMPLETION_REPORT.md            # Project completion status
+ CONTRIBUTING.md                 # Contribution guidelines
+ MERGE_READY.md                  # Merge checklist (REDUNDANT)
+ QUICK_START.md                  # Quick start guide
+ README.md                        # Main project documentation
+ READY_FOR_PUBLICATION.md        # Publication status (REDUNDANT)
+ SECURITY.md                     # Security policy
 ```
 
 ### docs/ Folder (21 files - VERY CROWDED)
 
 ```
-├── COMPLETION_SUMMARY.md           # DUPLICATE of COMPLETION_REPORT.md
-├── INSTALLATION.md                 # Installation instructions
-├── LEGACY_ARCHIVE_STATUS.md        # Legacy code info
-├── LEGACY_FEATURE_MAP.md           # Legacy features
-├── PACKAGING_RATIONALE.md          # Why this packaging structure
-├── POLICY.md                        # Policy documentation
-├── PROCESS_MONITOR.md              # Process monitor details
-├── PUBLICATION_READY.md            # DUPLICATE (also in root)
-├── PYPI_PUBLICATION_GUIDE.md       # PyPI publishing guide
-├── QUICKSTART_LEGACY.md            # DUPLICATE/OLD
-├── QUICK_PUBLISH_REFERENCE.md      # DUPLICATE of QUICK_START.md
-├── README_APPROVAL.md              # Approval checklist
-├── V1_0_3_BETA_PUBLICATION_READY.md   # Version-specific (old)
-├── V1_0_3_BETA_TEST_REPORT.md         # Version-specific (old)
-├── V1_0_3_DISTRIBUTION_REPORT.md      # Version-specific (old)
-├── V1_0_3_FINAL_STATUS.md             # Version-specific (old)
-├── VALIDATION_LOCKS_IMPLEMENTATION.md # Implementation details
-├── publication_logs/
-│   ├── README.md                   # Publication logs index
-│   └── v1.0.3_beta/                # Versioned logs
-└── (+ audit scripts and JSON results)
+ COMPLETION_SUMMARY.md           # DUPLICATE of COMPLETION_REPORT.md
+ INSTALLATION.md                 # Installation instructions
+ LEGACY_ARCHIVE_STATUS.md        # Legacy code info
+ LEGACY_FEATURE_MAP.md           # Legacy features
+ PACKAGING_RATIONALE.md          # Why this packaging structure
+ POLICY.md                        # Policy documentation
+ PROCESS_MONITOR.md              # Process monitor details
+ PUBLICATION_READY.md            # DUPLICATE (also in root)
+ PYPI_PUBLICATION_GUIDE.md       # PyPI publishing guide
+ QUICKSTART_LEGACY.md            # DUPLICATE/OLD
+ QUICK_PUBLISH_REFERENCE.md      # DUPLICATE of QUICK_START.md
+ README_APPROVAL.md              # Approval checklist
+ V1_0_3_BETA_PUBLICATION_READY.md   # Version-specific (old)
+ V1_0_3_BETA_TEST_REPORT.md         # Version-specific (old)
+ V1_0_3_DISTRIBUTION_REPORT.md      # Version-specific (old)
+ V1_0_3_FINAL_STATUS.md             # Version-specific (old)
+ VALIDATION_LOCKS_IMPLEMENTATION.md # Implementation details
+ publication_logs/
+    README.md                   # Publication logs index
+    v1.0.3_beta/                # Versioned logs
+ (+ audit scripts and JSON results)
 ```
 
 ## Identified Issues
 
 ### Duplicates
 
-- ✗ COMPLETION_REPORT.md (root) vs COMPLETION_SUMMARY.md (docs)
-- ✗ READY_FOR_PUBLICATION.md (root) vs PUBLICATION_READY.md (docs)
-- ✗ QUICK_START.md (root) vs QUICK_PUBLISH_REFERENCE.md vs QUICKSTART_LEGACY.md
+-  COMPLETION_REPORT.md (root) vs COMPLETION_SUMMARY.md (docs)
+-  READY_FOR_PUBLICATION.md (root) vs PUBLICATION_READY.md (docs)
+-  QUICK_START.md (root) vs QUICK_PUBLISH_REFERENCE.md vs QUICKSTART_LEGACY.md
 
 ### Overlaps & Clutter
 
@@ -69,54 +69,54 @@
 ### Root Folder (CORE DOCUMENTS - 6 files max)
 
 ```
-├── README.md                 # Main entry point + quick navigation
-├── CHANGELOG.md              # Release history (required for PyPI)
-├── SECURITY.md               # Security policy
-├── CONTRIBUTING.md           # Contribution guidelines  
-├── QUICK_START.md            # Quick start for users
-└── LICENSE                   # License file (existing)
+ README.md                 # Main entry point + quick navigation
+ CHANGELOG.md              # Release history (required for PyPI)
+ SECURITY.md               # Security policy
+ CONTRIBUTING.md           # Contribution guidelines  
+ QUICK_START.md            # Quick start for users
+ LICENSE                   # License file (existing)
 ```
 
 ### docs/ Folder (ORGANIZED SUBSYSTEM)
 
 ```
 docs/
-├── README.md                         # Docs navigation hub
-├── installation/
-│   ├── INSTALLATION.md              # Installation instructions
-│   ├── INSTALL_CODESENTINEL_GUI.py  # (existing)
-│   ├── INSTALL_CODESENTINEL_GUI.bat # (existing)
-│   └── INSTALL_CODESENTINEL_GUI.sh  # (existing)
-├── guides/
-│   ├── PYPI_PUBLICATION_GUIDE.md    # PyPI publishing process
-│   ├── LEGACY_FEATURE_MAP.md        # What moved where
-│   └── CONTRIBUTING_DETAILED.md      # (move from CONTRIBUTING.md detail)
-├── architecture/
-│   ├── ARCHITECTURE.md              # System design
-│   ├── POLICY.md                    # Policies & principles
-│   ├── PACKAGING_RATIONALE.md       # Packaging decisions
-│   ├── PROCESS_MONITOR.md           # Process monitor spec
-│   └── VALIDATION_LOCKS_IMPLEMENTATION.md
-├── legacy/
-│   ├── README.md                    # Why this folder
-│   ├── LEGACY_ARCHIVE_STATUS.md     # What's archived
-│   └── (quarantine_legacy_archive/)  # (existing)
-├── publication_logs/                # (keep as-is)
-│   ├── README.md
-│   └── v1.0.3_beta/
-│       ├── v1.0.3_beta_publication_log.md
-│       ├── TEST_PYPI_VALIDATION_PASSED.md
-│       └── PRODUCTION_PYPI_PUBLISHED.md
-└── audit/                           # New: Audit results
-    ├── README.md
-    ├── scripts/
-    │   ├── audit_global_overhead.py
-    │   ├── audit_integrity_overhead.py
-    │   └── fault_test_integrity.py
-    └── results/
-        ├── audit_global_overhead_results.json
-        ├── audit_integrity_overhead_results.json
-        └── audit_integrity_fault_test_results.json
+ README.md                         # Docs navigation hub
+ installation/
+    INSTALLATION.md              # Installation instructions
+    INSTALL_CODESENTINEL_GUI.py  # (existing)
+    INSTALL_CODESENTINEL_GUI.bat # (existing)
+    INSTALL_CODESENTINEL_GUI.sh  # (existing)
+ guides/
+    PYPI_PUBLICATION_GUIDE.md    # PyPI publishing process
+    LEGACY_FEATURE_MAP.md        # What moved where
+    CONTRIBUTING_DETAILED.md      # (move from CONTRIBUTING.md detail)
+ architecture/
+    ARCHITECTURE.md              # System design
+    POLICY.md                    # Policies & principles
+    PACKAGING_RATIONALE.md       # Packaging decisions
+    PROCESS_MONITOR.md           # Process monitor spec
+    VALIDATION_LOCKS_IMPLEMENTATION.md
+ legacy/
+    README.md                    # Why this folder
+    LEGACY_ARCHIVE_STATUS.md     # What's archived
+    (quarantine_legacy_archive/)  # (existing)
+ publication_logs/                # (keep as-is)
+    README.md
+    v1.0.3_beta/
+        v1.0.3_beta_publication_log.md
+        TEST_PYPI_VALIDATION_PASSED.md
+        PRODUCTION_PYPI_PUBLISHED.md
+ audit/                           # New: Audit results
+     README.md
+     scripts/
+        audit_global_overhead.py
+        audit_integrity_overhead.py
+        fault_test_integrity.py
+     results/
+         audit_global_overhead_results.json
+         audit_integrity_overhead_results.json
+         audit_integrity_fault_test_results.json
 ```
 
 ## Consolidation Actions

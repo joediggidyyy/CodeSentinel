@@ -4,7 +4,8 @@ CodeSentinel - Automated Maintenance & Security Monitoring
 
 A Polymath Project | Created by joediggidyyy
 
-SECURITY > EFFICIENCY > MINIMALISM
+SEAM Protected™ by CodeSentinel
+(Security, Efficiency, And Minimalism)
 
 CodeSentinel provides automated maintenance, security monitoring, and alert systems
 for development projects. It integrates seamlessly with GitHub, IDEs, and various
@@ -22,7 +23,7 @@ Author: joediggidyyy
 License: MIT
 """
 
-__version__ = "1.0.3"
+__version__ = "1.1.1.b1"
 __author__ = "joediggidyyy"
 __license__ = "MIT"
 

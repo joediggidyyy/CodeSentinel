@@ -42,7 +42,7 @@ class DependencyInstallerGUI:
         
         title_label = ttk.Label(
             header_frame, 
-            text="🚀 CodeSentinel Setup",
+            text=" CodeSentinel Setup",
             font=("Segoe UI", 16, "bold")
         )
         title_label.pack()
@@ -148,30 +148,30 @@ class DependencyInstallerGUI:
                 try:
                     if package == "PyYAML":
                         import yaml
-                        self.log_message(f"✅ {package} - already installed")
+                        self.log_message(f" {package} - already installed")
                     elif package == "keyring":
                         import keyring
-                        self.log_message(f"✅ {package} - already installed")
+                        self.log_message(f" {package} - already installed")
                     elif package == "cryptography":
                         import cryptography
-                        self.log_message(f"✅ {package} - already installed")
+                        self.log_message(f" {package} - already installed")
                 except ImportError:
                     missing_packages.append(package)
                     self.log_message(f"❌ {package} - missing")
             
             if not missing_packages:
                 self.update_status("All dependencies already installed!")
-                self.log_message("\n🎉 All dependencies are available!")
+                self.log_message("\n All dependencies are available!")
                 self.installation_complete(success=True)
                 return
             
             # Install missing packages
             self.update_status(f"Installing {len(missing_packages)} missing packages...")
-            self.log_message(f"\n📦 Installing {len(missing_packages)} packages: {', '.join(missing_packages)}")
+            self.log_message(f"\n Installing {len(missing_packages)} packages: {', '.join(missing_packages)}")
             
             for i, package in enumerate(missing_packages, 1):
                 self.update_status(f"Installing {package} ({i}/{len(missing_packages)})...")
-                self.log_message(f"\n🔧 Installing {package}...")
+                self.log_message(f"\n Installing {package}...")
                 
                 # Run pip install
                 result = subprocess.run([
@@ -179,7 +179,7 @@ class DependencyInstallerGUI:
                 ], capture_output=True, text=True)
                 
                 if result.returncode == 0:
-                    self.log_message(f"✅ {package} installed successfully")
+                    self.log_message(f" {package} installed successfully")
                 else:
                     self.log_message(f"❌ Failed to install {package}")
                     self.log_message(f"Error: {result.stderr}")
@@ -199,13 +199,13 @@ class DependencyInstallerGUI:
                         import keyring
                     elif package == "cryptography":
                         import cryptography
-                    self.log_message(f"✅ {package} - verified")
+                    self.log_message(f" {package} - verified")
                 except ImportError:
                     self.log_message(f"❌ {package} - verification failed")
                     all_installed = False
             
             if all_installed:
-                self.log_message("\n🎉 All dependencies installed and verified!")
+                self.log_message("\n All dependencies installed and verified!")
                 self.update_status("Installation complete!")
                 self.installation_complete(success=True)
             else:
@@ -213,7 +213,7 @@ class DependencyInstallerGUI:
                 self.installation_complete(success=False)
                 
         except Exception as e:
-            self.log_message(f"\n💥 Installation error: {e}")
+            self.log_message(f"\n Installation error: {e}")
             self.installation_complete(success=False)
     
     def installation_complete(self, success):
@@ -221,7 +221,7 @@ class DependencyInstallerGUI:
         self.progress_bar.stop()
         
         if success:
-            self.install_button.config(text="✅ Complete", state="disabled")
+            self.install_button.config(text=" Complete", state="disabled")
             self.skip_button.config(text="Launch Wizard", state="normal")
             self.close_button.config(state="normal")
         else:
@@ -267,7 +267,7 @@ class DependencyInstallerGUI:
         
         messagebox.showinfo(
             "Dependencies Installed!", 
-            "✅ All dependencies installed successfully!\n\n"
+            " All dependencies installed successfully!\n\n"
             "Next steps:\n"
             "1. Navigate to your project directory\n"
             "2. Run: codesentinel-setup\n\n"
@@ -286,12 +286,12 @@ def check_and_install_dependencies():
         import cryptography
         
         # All dependencies available, launch wizard directly
-        print("✅ All dependencies available, launching wizard...")
+        print(" All dependencies available, launching wizard...")
         return launch_wizard_directly()
         
     except ImportError:
         # Show dependency installer GUI
-        print("🔧 Missing dependencies detected, launching installer...")
+        print(" Missing dependencies detected, launching installer...")
         app = DependencyInstallerGUI()
         app.root.mainloop()
 
@@ -322,15 +322,15 @@ def launch_wizard_directly():
 
 def main():
     """Main entry point for GUI launcher."""
-    print("🚀 CodeSentinel GUI Dependency Installer")
+    print(" CodeSentinel GUI Dependency Installer")
     print("Created by: joediggidyyy")
     print("Architecture: SECURITY > EFFICIENCY > MINIMALISM")
     print("=" * 50)
     
     # This is a standalone dependency installer
     # It doesn't require being in a CodeSentinel project
-    print("📦 Standalone dependency installer")
-    print("💡 This installer prepares your system for CodeSentinel")
+    print(" Standalone dependency installer")
+    print(" This installer prepares your system for CodeSentinel")
     
     try:
         check_and_install_dependencies()

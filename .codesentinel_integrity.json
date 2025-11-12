@@ -1,967 +1,1107 @@
 {
   "version": "1.0.0",
   "algorithm": "sha256",
-  "generated": "2025-11-06T07:51:42.159108",
+  "generated": "2025-11-10T19:59:47.669455",
   "workspace_root": "C:\\Users\\joedi\\Documents\\CodeSentinel",
   "files": {
-    "CHANGELOG.md": {
-      "hash": "d2754ab28ab9c79ae6d19515fce2afb3dedecacde2ebabd9dc1fb4b09660f3c7",
-      "size": 3784,
-      "modified": "2025-11-06T01:34:36.503325",
+    ".codesentinel_integrity.json": {
+      "hash": "5bb98607faeb41474f2606d7a0df8e20d65c9cdf141bc87e221b4469e82992fc",
+      "size": 38614,
+      "modified": "2025-11-06T17:38:33.820570",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "CODESENTINEL_1_0_3_BETA1_TEST_REPORT.md": {
-      "hash": "eb0686673049b9bed4f4f67fb7d3f16dd235a7d35bdc94379af6e798a9dd2518",
-      "size": 14025,
-      "modified": "2025-11-06T02:40:03.851895",
+    ".test_integrity.json": {
+      "hash": "606ade85a5d70adf4603b8fba8a4ab0954fad27860a6401b7cabd1535b17724a",
+      "size": 25738,
+      "modified": "2025-11-06T17:38:33.828296",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "CHANGELOG.md": {
+      "hash": "a5f395c4cdc00e89ebb305a2ae9ad8a2f9e3c0e6b1dafe32bf977589d8819cdb",
+      "size": 11324,
+      "modified": "2025-11-10T14:28:11.848169",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel.json": {
+      "hash": "03284582a20f4c18e280eb218da28ecff20298b004f63fa78841c3134d11aad7",
+      "size": 1714,
+      "modified": "2025-11-06T17:38:33.845580",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel.log": {
+      "hash": "9ee7665bdc6bd02763915b2ff6409262e0918af8f63f3f494428b5fb2153ad9d",
+      "size": 18824,
+      "modified": "2025-11-10T14:59:47.709555",
       "is_critical": false,
       "is_whitelisted": false
     },
     "CONTRIBUTING.md": {
       "hash": "7b1c1d621f57effce95db843413747430a857c7a6b95b219721c568e1779e942",
       "size": 2440,
-      "modified": "2025-11-02T01:47:24.327130",
+      "modified": "2025-11-06T17:21:54.669436",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "LICENSE": {
+      "hash": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+      "size": 35823,
+      "modified": "2025-11-06T17:21:54.671437",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "MANIFEST.in": {
+      "hash": "912caa36166b4f487f0aab4df4a0a7aecea410fed517b746a267ecdcfb4d3ae9",
+      "size": 756,
+      "modified": "2025-11-06T17:38:33.833326",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "publish_to_pypi.py": {
+      "hash": "d0fd30bdb2041fa2d57a93af850723ba9153ee58245e0ef6eeb246830b11ab2f",
+      "size": 3581,
+      "modified": "2025-11-06T17:38:33.918409",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "pyproject.toml": {
+      "hash": "97dc272a2105f4603d40c91dab9c64ffe16868f05b7da3f8ee13fe115201d18c",
+      "size": 3417,
+      "modified": "2025-11-06T17:38:33.920450",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "pytest.ini": {
+      "hash": "52b2b7204ab8b97f390833b7c7aab9bbb9ceedde89fecdcbc0aac9d7eff7775a",
+      "size": 339,
+      "modified": "2025-11-06T17:21:54.780309",
       "is_critical": false,
       "is_whitelisted": false
     },
     "QUICK_START.md": {
       "hash": "f6da3d4e0c9e8bf568e0a888afbc83cca0d016a6fe0037c34bfb84f3e96b1cd3",
       "size": 732,
-      "modified": "2025-11-06T01:51:19.440550",
+      "modified": "2025-11-06T17:38:33.837491",
       "is_critical": false,
       "is_whitelisted": false
     },
     "README.md": {
-      "hash": "0bae0f7ae91ed758bc0a3a0fa9befdebebdf70ab627ce7a6c4d1c3d1a25bbeb5",
-      "size": 3452,
-      "modified": "2025-11-06T02:07:19.588432",
+      "hash": "702d382dbb1cb99fb3cd940f7c762d62b1fda81ca4daf5fc0aadb9fa51d13dae",
+      "size": 123,
+      "modified": "2025-11-10T14:33:51.587452",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "SECURITY.md": {
-      "hash": "9998cf9652e7e95a15d70473b07f991260d776a8ecd5d81613f5b05f11123823",
-      "size": 8665,
-      "modified": "2025-11-06T01:34:36.522341",
+    "requirements-dev.txt": {
+      "hash": "9a3d940e6e14403aed980ce00c942de3c988bac5ebcf2641621e70f150edf384",
+      "size": 542,
+      "modified": "2025-11-06T17:21:54.781428",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "docs\\INFRASTRUCTURE_HARDENING_REPORT.md": {
-      "hash": "c778ae8adf0726161334fd2f03ac8ed22a4d2a09738d788e502c02050ef8ca6f",
-      "size": 11008,
-      "modified": "2025-11-06T01:55:12.858842",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\README.md": {
-      "hash": "43cbea0fc5cae4a4567821001b5cce51ddf20f58c5cba06608fbf10a617b8fba",
-      "size": 1884,
-      "modified": "2025-11-06T01:50:00.215230",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\UNC_TESTING_GUIDE.md": {
-      "hash": "949441e11b247a0e1e7cc6f938b6416844181b766b43512be7cbe87c0a9c0c07",
-      "size": 12438,
-      "modified": "2025-11-06T02:12:37.521605",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\docs\\CLEANUP_REPORT.md": {
-      "hash": "d34346476f1662bb7d4f0121dc7064e0014cd6f8e00137a3ac404f744d20a340",
-      "size": 6248,
-      "modified": "2025-11-03T15:48:19.960091",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\FUNCTIONALITY_MAPPING.md": {
-      "hash": "66fc5a8d29d96f32c2e6d117e3af50cd7269f88bf2825cfcd41ee1795ef91251",
-      "size": 7839,
-      "modified": "2025-11-02T17:15:25.797455",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\README_V2.md": {
-      "hash": "e03559c81752d43bf69a6b46a7da64aed0a5f904ba4c1d8f7b3a5e6f01cf5399",
-      "size": 6352,
-      "modified": "2025-11-02T17:23:05.880454",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_src\\ARCHITECTURE.md": {
-      "hash": "6fd14b1a505b259f2fc5264c8f2f55194f0d64ac60c1f6655f9a9ff2dcc60c4c",
-      "size": 5019,
-      "modified": "2025-11-02T17:56:13.515180",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\README.md": {
-      "hash": "d1f9ba4bc0f196298b612478fb282072addbf6e20f9d1efc83ce5c66a6823658",
-      "size": 7343,
-      "modified": "2025-11-02T00:25:30.000966",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\README_SETUP_WIZARD.md": {
-      "hash": "561120c2ccdbb86b5a8693809d6fecda167714d6c0788dccbd7936ecdc01174a",
-      "size": 2269,
-      "modified": "2025-11-02T00:46:31.935751",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\SETUP_WIZARDS_README.md": {
-      "hash": "0ae7a1e3d89919403eb35fcc9247bf26f99d14093db37a2a39ef97408d290207",
-      "size": 4317,
-      "modified": "2025-11-02T01:31:11.930563",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\config\\README.md": {
-      "hash": "4f92ff8e102c408fbf32677c14e31877a712cdd25f96f6ca7fc366cc0aa5a3cf",
-      "size": 3162,
-      "modified": "2025-10-30T22:06:11.254975",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\config\\README.md": {
-      "hash": "4f92ff8e102c408fbf32677c14e31877a712cdd25f96f6ca7fc366cc0aa5a3cf",
-      "size": 3162,
-      "modified": "2025-10-30T22:06:11.254975",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\architecture\\PACKAGING_RATIONALE.md": {
-      "hash": "e46d51634a499ab6de31892e02edbd25785fe7d3f36a4b65e1edd9e5870fef93",
-      "size": 1691,
-      "modified": "2025-11-06T01:34:36.536335",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\architecture\\POLICY.md": {
-      "hash": "0aa5e64b473fa48ca85d5fb9cb3faf8940d2457ab9bedf0d84ade0005a5a60e7",
-      "size": 2155,
-      "modified": "2025-11-05T22:49:21.392826",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\architecture\\PRIORITY_DISTRIBUTION_SYSTEM.md": {
-      "hash": "ec7929a197204d7f83a38d2252eaa501e984fde074b3ae9818ddd1625c1af8d6",
-      "size": 12440,
-      "modified": "2025-11-06T01:48:19.277055",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\architecture\\PROCESS_MONITOR.md": {
-      "hash": "71147e867cdf6f1816e3eae26533366b9d17414086a569e24483af14644f063d",
-      "size": 5150,
-      "modified": "2025-11-03T15:48:19.992388",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\architecture\\README.md": {
-      "hash": "2fb738a8544bc78402edd1874807227ccd7447dff6130dd96a9ce43b4fc1bcbc",
-      "size": 1234,
-      "modified": "2025-11-06T01:50:16.682366",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\architecture\\VALIDATION_LOCKS_IMPLEMENTATION.md": {
-      "hash": "f887e18583fbb8fdb1a911e4df39e54346e0cf7198b439d88730e77d3c363e91",
-      "size": 7065,
-      "modified": "2025-11-05T13:35:43.000650",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\audit\\README.md": {
-      "hash": "a26e6d62fec643e7f6e7500537e060b66ba21f9da75798d7b1ebe85535a7f81b",
-      "size": 924,
-      "modified": "2025-11-06T01:50:41.481896",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\guides\\DOCUMENTATION_AUDIT.md": {
-      "hash": "4f50beb8f64c0bbf1eac844cfac1a2ebd4a505972089cae28b238cd30dc9a427",
-      "size": 8383,
-      "modified": "2025-11-06T01:45:19.977050",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\guides\\PYPI_PUBLICATION_GUIDE.md": {
-      "hash": "533a3b584a7070d14b7c5050063b55e32d02ef431330abe96b659936b4f44de2",
-      "size": 8766,
-      "modified": "2025-11-06T01:34:36.540332",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\guides\\QUICK_PUBLISH_REFERENCE.md": {
-      "hash": "4b9939f59b690471c2eb2eff42e55ec356def78faa6c6641900234fd69fadc82",
-      "size": 3324,
-      "modified": "2025-11-06T01:34:36.542337",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\guides\\README.md": {
-      "hash": "05380914b4c630627187ff20318bd926f45f4a5bbd19bcec45537cfd389c9ae7",
-      "size": 831,
-      "modified": "2025-11-06T01:50:00.325712",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\guides\\README_APPROVAL.md": {
-      "hash": "5cbfabdd7ee6806b41e3fab8e1b9c792c5b5418513c65e952a839f9c9a4843e0",
-      "size": 4469,
-      "modified": "2025-11-06T01:34:36.543332",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\installation\\INSTALLATION.md": {
-      "hash": "b63b917cfadb9f3f3f359390849948bd9c8b7f30895810f360e251e0603a1a80",
-      "size": 7608,
-      "modified": "2025-11-06T01:34:36.532334",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\installation\\README.md": {
-      "hash": "25743d648c61663ca6ccd5e184fa8ce6799da8f6d8fa98c271634b80b426098e",
-      "size": 831,
-      "modified": "2025-11-06T01:50:00.272292",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\legacy\\LEGACY_ARCHIVE_STATUS.md": {
-      "hash": "ca2211d1ee7099e6e905af7ce8eb665049803ee588cd2ab0fd9a0616fca7e5cf",
-      "size": 1874,
-      "modified": "2025-11-06T01:34:36.534335",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\legacy\\LEGACY_FEATURE_MAP.md": {
-      "hash": "8786ddff04ff419445aebd4eae18e538c1d4e4841faa8f6ef761dc9af3ea47cd",
-      "size": 4980,
-      "modified": "2025-11-03T15:48:19.990388",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\legacy\\QUICKSTART_LEGACY.md": {
-      "hash": "df26febd6e475f906739f77f651d5a37fe132aa3bab66c3a9a0ca4f328c19dec",
-      "size": 1103,
-      "modified": "2025-11-06T01:34:36.541336",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\legacy\\README.md": {
-      "hash": "d164b1a61e2140503288d0b15a2249fdb872f5b8b60d7d8ccf961c4b13e96243",
-      "size": 985,
-      "modified": "2025-11-06T01:50:20.195744",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\COMPLETION_SUMMARY.md": {
-      "hash": "7c3a2dc08f653d2a0329637b95c80565060694c43ee06d2e678957e557a4191f",
-      "size": 10747,
-      "modified": "2025-11-06T01:34:36.531340",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\PUBLICATION_READY.md": {
-      "hash": "2daf7aaa12301ef490af09bc705bf29dbce5316808286f9541c2f8a884e5a010",
-      "size": 2937,
-      "modified": "2025-11-06T01:34:36.538336",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\README.md": {
-      "hash": "86292870681384a71015f32c7da0b539513f364ced876012d512efa24933b09b",
-      "size": 5160,
-      "modified": "2025-11-06T01:34:53.662136",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\v1.0.3_beta\\PRODUCTION_PYPI_PUBLISHED.md": {
-      "hash": "2b3e4c5669523023662ec223bceacd42cf2a3e64225e57a8b390b49ebea5482d",
-      "size": 2984,
-      "modified": "2025-11-06T01:34:53.663137",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\v1.0.3_beta\\TEST_PYPI_VALIDATION_PASSED.md": {
-      "hash": "b83e196f05b57e48b33162fbdde1d2b28f70a7b48fce2306f5995fa003ecbd2d",
-      "size": 1926,
-      "modified": "2025-11-06T01:34:53.664137",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\v1.0.3_beta\\v1.0.3_beta_publication_log.md": {
-      "hash": "459f4243f4751d820e964013f433f43d653deb98863b0be326819b09492aed57",
-      "size": 3720,
-      "modified": "2025-11-06T01:34:53.665136",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_BETA_PUBLICATION_READY.md": {
-      "hash": "654158955e47a4d7b740971534c57b69d01c72137fd99c3ecc795e939e075136",
-      "size": 8065,
-      "modified": "2025-11-06T01:34:36.544338",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_BETA_TEST_REPORT.md": {
-      "hash": "7e131071876dd978989c08f1d5a0d323ddf74c5a370a59383af8254ea3dc0cf2",
-      "size": 9418,
-      "modified": "2025-11-06T01:34:36.545336",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_DISTRIBUTION_REPORT.md": {
-      "hash": "f10e2e1569b9456202b8a452500f862f39f69e79281c096066932308c07fd212",
-      "size": 13855,
-      "modified": "2025-11-06T01:34:36.547334",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_FINAL_STATUS.md": {
-      "hash": "c43c8fd6941380526b5c1adacb6d4de29c335b35aefbe1d630548f41407cb8c3",
-      "size": 6755,
-      "modified": "2025-11-06T01:34:36.549334",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "codesentinel\\utils\\README.md": {
-      "hash": "9775aa70893c4dc5b25ea7fe431ae9abf80d62340d1e7f6fe740c20e37857ee8",
-      "size": 1683,
-      "modified": "2025-11-03T15:48:19.982320",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "INSTALL_CODESENTINEL_GUI.py": {
-      "hash": "bb8e7528dcd08493e3c3d41cdd3e653506c4b5358819992ea86ea8f650dedfe3",
-      "size": 3643,
-      "modified": "2025-11-06T01:34:36.509333",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "publish_to_pypi.py": {
-      "hash": "0255c23e08d7673aea31aff43e1e116a350539b63b460e587ef0a83c5391d283",
-      "size": 3062,
-      "modified": "2025-11-06T01:34:53.665136",
+    "requirements.txt": {
+      "hash": "4abe8630d5b2c3e98fbc20d4cc476b81e7f5473328a431fbd4831ba10573a32d",
+      "size": 602,
+      "modified": "2025-11-06T17:21:54.782443",
       "is_critical": false,
       "is_whitelisted": false
     },
     "run_tests.py": {
       "hash": "92424abeae19dd94dc1d75448874fdd9cb94605f8b00740559ff26e554e6b82f",
       "size": 1063,
-      "modified": "2025-11-03T14:38:49.010988",
+      "modified": "2025-11-06T17:21:54.783595",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "SECURITY.md": {
+      "hash": "01b1e53d87129cec3c2260c012ae8f29f9201e514ff763af8ceb1cf0ad5edf09",
+      "size": 8772,
+      "modified": "2025-11-10T14:14:20.474993",
       "is_critical": false,
       "is_whitelisted": false
     },
     "setup.py": {
-      "hash": "05870fffffa3abf86ce47e2845b98cdf61c5faa6edb549a933d6bfbd6806520b",
-      "size": 2804,
-      "modified": "2025-11-06T02:08:03.636319",
+      "hash": "7ce66137f86acd8878961d6d6b39a90764953d2afa9ffbc9c0c306190790ecae",
+      "size": 2792,
+      "modified": "2025-11-06T17:38:33.923845",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "test_integrity.py": {
+      "hash": "6b8323c93a9699d46c1d2a2ef9bb174334feec744115779ab9cdde27ac965285",
+      "size": 499,
+      "modified": "2025-11-10T14:54:49.888768",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "test_integrity_debug.py": {
+      "hash": "1e4672cb880c9e1ec5b0649dd1408102202cdd9fc129aaacc072eb30d0d0b97b",
+      "size": 378,
+      "modified": "2025-11-10T14:58:58.943031",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "archive\\AGENT_INSTRUCTIONS.md": {
+      "hash": "26aca69f77a36478702cc8f14b9d302aecca9dff95a63ee9082f2b57ae3883fb",
+      "size": 14757,
+      "modified": "2025-11-07T04:23:36.125592",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel\\AGENT_INSTRUCTIONS.md": {
+      "hash": "bd8c31a2ef08a7650cd36459b3c1ae7f97514406b46cfef6efd22c52ac1f5b19",
+      "size": 12399,
+      "modified": "2025-11-07T02:48:38.798171",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\gui_launcher.py": {
       "hash": "9ede4fbdc2c6ba1ac9137d9758b3203b926cca268aa950ec6f8b726f15062657",
       "size": 13132,
-      "modified": "2025-11-03T15:48:19.975741",
+      "modified": "2025-11-06T17:21:54.691552",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\gui_project_setup.py": {
       "hash": "0833ce4b5488eb3c81004b69cf07f0d238317c62c61ae8865751cb6047b4ca9b",
       "size": 5568,
-      "modified": "2025-11-03T15:48:19.977742",
+      "modified": "2025-11-06T17:21:54.692552",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\gui_wizard_v2.py": {
-      "hash": "1633711d979e3f001fb9de0247e960eff798ddb8b2e9ca2ebcdb79a0fa7441ee",
-      "size": 84636,
-      "modified": "2025-11-05T13:35:42.997655",
+      "hash": "2b9ed9f17e16bcc4452a681c6ee9a089c35e4916940a219e93c07d31573f1c74",
+      "size": 88481,
+      "modified": "2025-11-10T14:15:08.213004",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\launcher.py": {
       "hash": "52da1b7515f7543b0785ec8446b1257033fb213e854a900042562391beb6bdea",
       "size": 748,
-      "modified": "2025-11-03T15:48:19.980744",
+      "modified": "2025-11-06T17:21:54.696376",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\__init__.py": {
-      "hash": "e174f11c9e83f906e47e45b406ebc6c645bf2bcdcb5d84ddb884e94506fd3575",
-      "size": 993,
-      "modified": "2025-11-06T02:08:03.708679",
+      "hash": "bc9b9a4e1af1005b3025265664345e3cad845daf748cfed5e0cbfe7c7fb31c82",
+      "size": 1026,
+      "modified": "2025-11-10T14:12:43.278294",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "deployment\\AGENT_INSTRUCTIONS.md": {
+      "hash": "69027274b643c55500587f365c3b8bdd90754b0030979ab74fc97199a4676055",
+      "size": 19757,
+      "modified": "2025-11-07T03:45:05.162954",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\ADVANCED_ANALYTICS_FRAMEWORK.md": {
+      "hash": "0cd8a3409145d0bffd250982890d71fd180d667ede74278bb925ac5df54a8eb8",
+      "size": 6987,
+      "modified": "2025-11-07T03:49:19.472952",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\AGENT_INSTRUCTIONS.md": {
+      "hash": "60b340a46e00c8e8e0b88c17c94daaccdcc6e7391b7029ca0f955d3ff5097857",
+      "size": 15624,
+      "modified": "2025-11-07T04:23:36.128592",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\AUTOMATED_TASKS_AUDIT_20251107.md": {
+      "hash": "0cd323c2691fce4dec7461cb87493d665f4a94f5763ab1bb73714e2e351000c5",
+      "size": 17569,
+      "modified": "2025-11-07T02:31:35.159305",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\DOCUMENTATION_REVIEW_POLICY_OPTIMIZATION_20251107.md": {
+      "hash": "7413193fdee42ca4b31556fddddf8a02f550b2c692bba95652fdc62b7993d706",
+      "size": 18886,
+      "modified": "2025-11-07T02:21:00.033810",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\DOCUMENT_FORMATTING_AUTOMATION.md": {
+      "hash": "9777e1380f48deae234e2e8fef5465c3de2877387af6a289f1a5832bc0e3d85b",
+      "size": 7276,
+      "modified": "2025-11-07T05:26:32.784666",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\ENTERPRISE_INTEGRATION_GUIDE.md": {
+      "hash": "9613454aa25b3d4977cc24fdb994d2c41b7c42f19b1368911a38914f980bf02c",
+      "size": 6688,
+      "modified": "2025-11-07T03:50:52.974114",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\FEATURE_AUDIT_DOCUMENT_CLASSIFICATION_20251107.md": {
+      "hash": "8308b7d1cff27c7bbfe2bcadc6f0ed383ccb4eea4b310af08aee597f002cadee",
+      "size": 24943,
+      "modified": "2025-11-07T02:13:09.079714",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\FEATURE_DISTRIBUTED_AGENT_INSTRUCTION_STRATEGY.md": {
+      "hash": "4ca63ba93aac77f11c75fe3abbc98f52cddbb2d51e5e481f343017e25d5ce82c",
+      "size": 16573,
+      "modified": "2025-11-07T02:30:42.734787",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\FINAL_COMPLETION_SUMMARY_20251107.md": {
+      "hash": "4af1f487449babe9bc3365bc187195029b94f44dad169aaff5cc7f6db0f1abf7",
+      "size": 17669,
+      "modified": "2025-11-07T02:25:43.269882",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\FORMATTING_IMPLEMENTATION_SUMMARY.md": {
+      "hash": "a1282ed2f596d155eee12a3ccbaf00e8e4a3f83d0d11237b80a673ed6dc4c29c",
+      "size": 13224,
+      "modified": "2025-11-10T12:21:28.534683",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\GOVERNANCE_T0-5_ESTABLISHMENT.md": {
+      "hash": "8dd53798fdeb636273e08e8cb608b53f1b55027d2deaf990159625614d38675d",
+      "size": 6680,
+      "modified": "2025-11-06T17:38:33.859625",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\HEADER_FOOTER_GUIDE.md": {
+      "hash": "2157af9bb5ae6a407ad1e1251a0c53104263402835d7ca0cc85df246de6eb42c",
+      "size": 6331,
+      "modified": "2025-11-10T14:38:33.299549",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\HEADER_FOOTER_QUICK_REFERENCE.md": {
+      "hash": "c1e0914f9608148ee35051248775f307910efea007b3d1fbef2b6cf8cb88feab",
+      "size": 2468,
+      "modified": "2025-11-10T14:38:33.426965",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\INFRASTRUCTURE_HARDENING_REPORT.md": {
+      "hash": "c778ae8adf0726161334fd2f03ac8ed22a4d2a09738d788e502c02050ef8ca6f",
+      "size": 11008,
+      "modified": "2025-11-06T17:38:33.860624",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\README.md": {
+      "hash": "02c6b36e7c0855b0f8c84d37945d303f9c8253b393a97a157bbc7974ffa68b5e",
+      "size": 2290,
+      "modified": "2025-11-10T14:38:33.164362",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\ROOT_CLEANUP_AUTOMATION.md": {
+      "hash": "879b1b63472b3662a4330bb655295ce403d93b6a45a0341143b143e221e99301",
+      "size": 7842,
+      "modified": "2025-11-10T12:21:28.449461",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\SEAM_PROTECTION_BRANDING.md": {
+      "hash": "67c43c662596899bbe717a733cb854eeddda7c9e546eade5184fbb775d226efb",
+      "size": 4052,
+      "modified": "2025-11-10T14:17:14.366313",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\SESSION_IMPLEMENTATION_ANALYSIS_20251107.md": {
+      "hash": "6931e69691f57b8f8a5da85d1937691030c610114ae1d4cf9ac235e9d26b8e94",
+      "size": 20416,
+      "modified": "2025-11-07T02:41:28.961575",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\UNC_TESTING_GUIDE.md": {
+      "hash": "949441e11b247a0e1e7cc6f938b6416844181b766b43512be7cbe87c0a9c0c07",
+      "size": 12438,
+      "modified": "2025-11-06T17:38:33.875187",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\UPDATE_COMMAND_IMPLEMENTATION_SUMMARY.md": {
+      "hash": "aa8050945e232247831b3c9377e407fcbce261b39c0ee79b19d20b5232628e9c",
+      "size": 7822,
+      "modified": "2025-11-10T12:51:31.200574",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "github\\AGENT_INSTRUCTIONS.md": {
+      "hash": "4745cd9beade60b024b55b35497d32741c15a0508098bec819ef663cea7abe0e",
+      "size": 21268,
+      "modified": "2025-11-07T04:23:36.130591",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "infrastructure\\AGENT_INSTRUCTIONS.md": {
+      "hash": "e218bbb57d583631c20121fb16de37bebc21eb8bdcb5004a4d0c54e9b0343e5d",
+      "size": 14525,
+      "modified": "2025-11-07T03:47:01.221546",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "logs\\.codesentinel_integrity.json": {
+      "hash": "d1d3f5262066d3c9ca052a863d5e3ce23cf3acc4cd9f9ed15e408f29ed85851c",
+      "size": 17,
+      "modified": "2025-11-07T04:31:14.849335",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "logs\\.test_integrity.json": {
+      "hash": "d1d3f5262066d3c9ca052a863d5e3ce23cf3acc4cd9f9ed15e408f29ed85851c",
+      "size": 17,
+      "modified": "2025-11-07T04:31:14.911256",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "logs\\codesentinel.log": {
+      "hash": "d1d3f5262066d3c9ca052a863d5e3ce23cf3acc4cd9f9ed15e408f29ed85851c",
+      "size": 17,
+      "modified": "2025-11-07T04:31:14.964094",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "requirements\\requirements-dev.txt": {
+      "hash": "d1d3f5262066d3c9ca052a863d5e3ce23cf3acc4cd9f9ed15e408f29ed85851c",
+      "size": 17,
+      "modified": "2025-11-07T04:31:15.085930",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "scripts\\publish_to_pypi.py": {
+      "hash": "1a8aaaee56668920ebb3178793ffa210ac2e82ee54ce27ff5a7201146c0ab36f",
+      "size": 21,
+      "modified": "2025-11-07T04:31:15.037882",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "tests\\AGENT_INSTRUCTIONS.md": {
+      "hash": "67d9ddb899057d4a513e8458e8e14f1bdf288ec74612abc2acab439fafc1d43e",
+      "size": 13354,
+      "modified": "2025-11-07T02:51:15.684235",
       "is_critical": false,
       "is_whitelisted": false
     },
     "tests\\test_cli.py": {
       "hash": "0d21b8633db978eae7c53b23680cff28ea6a12296a9956e5a79269232c41cbbd",
       "size": 1632,
-      "modified": "2025-11-02T01:46:36.421427",
+      "modified": "2025-11-06T17:21:54.787643",
       "is_critical": false,
       "is_whitelisted": false
     },
     "tests\\test_config.py": {
       "hash": "245eb045a34a6a00a82e13dc16626598226a5106c02cd01a4b871193c1100790",
       "size": 2650,
-      "modified": "2025-11-02T01:46:36.395273",
+      "modified": "2025-11-06T17:21:54.788658",
       "is_critical": false,
       "is_whitelisted": false
     },
     "tests\\test_core.py": {
       "hash": "3129d0cdd3a13aa376b80bdd839c446652d05a56009fef48db162f618c9cd718",
       "size": 1856,
-      "modified": "2025-11-05T13:35:43.005648",
+      "modified": "2025-11-06T17:21:54.788658",
       "is_critical": false,
       "is_whitelisted": false
     },
     "tests\\test_dev_audit.py": {
       "hash": "ba9ce9d1b6678f31e0115b94bd2225c0cb5944c5d1b1bb61096fc49452ed73fc",
       "size": 596,
-      "modified": "2025-11-03T15:48:20.011184",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "tests\\test_install_packages.py": {
-      "hash": "6a3156d180c455bef3038493f645b9e63db27cf5908b0bd7d3f7265927b43103",
-      "size": 7089,
-      "modified": "2025-11-05T15:34:03.305440",
+      "modified": "2025-11-06T17:21:54.789979",
       "is_critical": false,
       "is_whitelisted": false
     },
     "tests\\test_process_monitor.py": {
       "hash": "a1b89f1f61957ffff45dbf24370d1fbc78f00d23d9d376baacc4f4fdcc1f6510",
       "size": 4361,
-      "modified": "2025-11-03T15:48:20.013177",
+      "modified": "2025-11-06T17:21:54.790994",
       "is_critical": false,
       "is_whitelisted": false
     },
     "tests\\__init__.py": {
       "hash": "c1cae7135d4de742c84765fbd107d7d52356427ecfa6393810d1cc1f3e0c5786",
       "size": 29,
-      "modified": "2025-11-02T01:46:36.298410",
+      "modified": "2025-11-06T17:21:54.786612",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\canvas_scroll_fix_summary.py": {
-      "hash": "42e321a0e720de1d37008857a6cf0da07746af69a6b81796ce1ec82bd284f9b7",
-      "size": 3711,
-      "modified": "2025-11-02T16:52:56.830004",
+    "tools\\AGENT_INSTRUCTIONS.md": {
+      "hash": "9004d43a75913c416497a52ed822c67240826a94d0bfb462177c7e8e989f6d48",
+      "size": 15825,
+      "modified": "2025-11-07T04:23:36.133592",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\check_step_info.py": {
-      "hash": "df2569465564a07770b20b0fc6206b1cc2ccf8361f5e094bda53156fdfe042d3",
-      "size": 887,
-      "modified": "2025-11-02T16:43:52.115032",
+    "tools\\verify_version.py": {
+      "hash": "94010d8bf823fe0b894675bcd0c6fc4fa977bb95ecf9153ec3af1d4ac8cf5727",
+      "size": 8337,
+      "modified": "2025-11-06T17:38:33.926856",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\debug_github_rendering.py": {
-      "hash": "84687872de26da8e01f0989d7246607670f84e39b3ff8dd033b8d1ae07d0910a",
-      "size": 3309,
-      "modified": "2025-11-02T16:41:17.286745",
+    "tools\\codesentinel\\duplication_detector.py": {
+      "hash": "b92cf97bff18f0fe79d0f2f25bd9eb517a02a7eed17cd664b7e8490d5b042d41",
+      "size": 6398,
+      "modified": "2025-11-10T12:02:55.996825",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\debug_persistence.py": {
-      "hash": "89150c3c98965388bab7ccdf650f949db5de49cf59fe415ef9ee002267daf963",
-      "size": 4064,
-      "modified": "2025-11-02T03:31:30.464397",
+    "tools\\codesentinel\\root_cleanup.py": {
+      "hash": "7f2e05ad40e91142d8457f09e980a6f90b433400a2f7e6a575ca145a40d9e2e5",
+      "size": 13106,
+      "modified": "2025-11-07T05:18:08.545659",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\github_navigation_final_summary.py": {
-      "hash": "40f82e7c10a9eb1b16254a6d82835cbd0208805231a5ada8677b902efe63f474",
-      "size": 4204,
-      "modified": "2025-11-02T16:17:48.819233",
+    "docs\\architecture\\AGENT_INSTRUCTION_STRATEGY.md": {
+      "hash": "4d58fb655db58c5b1ff49494742baab141665d838b5e69329df98652d89efb4c",
+      "size": 20699,
+      "modified": "2025-11-07T02:16:10.099429",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\github_rendering_final_fix.py": {
-      "hash": "0b6024ea018db216e22efedae9e4632203859dc31874fcfadc652a89a13bc85c",
-      "size": 2916,
-      "modified": "2025-11-02T16:45:37.606891",
+    "docs\\architecture\\DOCUMENT_CLASSIFICATION.md": {
+      "hash": "5f7b47b1815a22401abf00931f416cc0c40001bb402779ea3c07a22704c10635",
+      "size": 24630,
+      "modified": "2025-11-07T04:58:43.142063",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\github_rendering_fix_summary.py": {
-      "hash": "c7d2d97a281f13a13e6a29d728ebda7fafca5bfe629116cbeeadd6b14245f5b5",
-      "size": 4445,
-      "modified": "2025-11-02T16:29:40.985153",
+    "docs\\architecture\\PACKAGING_RATIONALE.md": {
+      "hash": "e46d51634a499ab6de31892e02edbd25785fe7d3f36a4b65e1edd9e5870fef93",
+      "size": 1691,
+      "modified": "2025-11-06T17:38:33.876504",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\github_validation_lock_fix.py": {
-      "hash": "6ae54fd282e5890628de905e48a24db2e7e18fc63895856d4433ebddb6ca8b9d",
-      "size": 5198,
-      "modified": "2025-11-02T16:40:17.443838",
+    "docs\\architecture\\POLICY.md": {
+      "hash": "fa210e83d43f05d9eb4603cc140cfc1479917485cf43656c395195372e7af047",
+      "size": 13013,
+      "modified": "2025-11-07T04:55:49.916063",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\navigation_validation_summary.py": {
-      "hash": "56309017313dbeda824fe917eb2fa5912b86a9ef38c265e3075a86497e1d8b6c",
-      "size": 7632,
-      "modified": "2025-11-02T15:56:51.240401",
+    "docs\\architecture\\PRIORITY_DISTRIBUTION_SYSTEM.md": {
+      "hash": "1a8896a6878a95269bdb6e14f2e8c2dec5b26387d6e7242e04a35339dee4ad0f",
+      "size": 12797,
+      "modified": "2025-11-06T17:38:33.880167",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\quick_test.py": {
-      "hash": "01655f0e16165973e0b49de3d047475db183f19952449ea1d39555a8f5bc3f1e",
-      "size": 898,
-      "modified": "2025-11-02T16:13:30.834902",
+    "docs\\architecture\\PROCESS_MONITOR.md": {
+      "hash": "71147e867cdf6f1816e3eae26533366b9d17414086a569e24483af14644f063d",
+      "size": 5150,
+      "modified": "2025-11-06T17:38:33.881182",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_canvas_scroll_fix.py": {
-      "hash": "9cc35eba3fe67ba8b9fa3e1b4b7d0832444196616cc9a0256b9885000ecd66c6",
-      "size": 1881,
-      "modified": "2025-11-02T16:51:33.301689",
+    "docs\\architecture\\README.md": {
+      "hash": "2fb738a8544bc78402edd1874807227ccd7447dff6130dd96a9ce43b4fc1bcbc",
+      "size": 1234,
+      "modified": "2025-11-06T17:38:33.882063",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_checkbox_persistence.py": {
-      "hash": "032d2cbf062642258cdc2f08fc064eaa1e114a1b4fdd8a391819a1610d538b54",
-      "size": 3614,
-      "modified": "2025-11-02T03:22:36.458481",
+    "docs\\architecture\\SESSION_IMPLEMENTATION_ANALYSIS_20251107.md": {
+      "hash": "c73420eebb075828705f728500707ba0f49b17b82030fb1da2f296ea7c7c3f73",
+      "size": 1009,
+      "modified": "2025-11-07T04:55:36.981375",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_code_formatting.py": {
-      "hash": "82616aede95678f300ed834593cd42b1d658758e77d5f8257428904ddcd0816e",
-      "size": 5422,
-      "modified": "2025-11-02T03:58:11.959920",
+    "docs\\architecture\\VALIDATION_LOCKS_IMPLEMENTATION.md": {
+      "hash": "f887e18583fbb8fdb1a911e4df39e54346e0cf7198b439d88730e77d3c363e91",
+      "size": 7065,
+      "modified": "2025-11-06T17:38:33.883163",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_comprehensive_fix.py": {
-      "hash": "2675d7f957977181c0007cd852e0b204bd712391db87fc87590139d72cc12b51",
-      "size": 4339,
-      "modified": "2025-11-02T03:37:58.646528",
+    "docs\\audit\\AUDIT_A4_1_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:28.463116",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_comprehensive_github.py": {
-      "hash": "b80abf45a290d7f71a541bedf8365ef46a15863abddfb35d4e9c1ebec133a0b8",
-      "size": 3547,
-      "modified": "2025-11-02T16:29:06.851563",
+    "docs\\audit\\AUDIT_A4_2_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:28.564933",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_formatting.py": {
-      "hash": "b678a1fd71412f7845bd9090fe32218773c75012196055773dc03f71ac0b897e",
-      "size": 3030,
-      "modified": "2025-11-02T03:52:10.014132",
+    "docs\\audit\\AUDIT_A4_3_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:28.629741",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_github_checkbox_command.py": {
-      "hash": "8410a5e8e85c1f3370f438284413926ee8c5b0536f3391a8cca9cda70e736c5d",
-      "size": 2134,
-      "modified": "2025-11-02T16:15:57.154401",
+    "docs\\audit\\AUDIT_COMPLETE_SYSTEM_READY.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:28.696935",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_github_checkbox_locking.py": {
-      "hash": "27342d82f7fe5477d1ea46cb231fbbe3873a29ea841bfd2c26f597c9b5339017",
-      "size": 2573,
-      "modified": "2025-11-02T16:10:15.183450",
+    "docs\\audit\\AUDIT_PHASE_1_AND_2_FINAL_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:28.763604",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_github_page_rendering.py": {
-      "hash": "54cdad652451348427455d257cff9b40410c939504c796340df7be6ad8dd088d",
-      "size": 3371,
-      "modified": "2025-11-02T16:23:20.653053",
+    "docs\\audit\\README.md": {
+      "hash": "a26e6d62fec643e7f6e7500537e060b66ba21f9da75798d7b1ebe85535a7f81b",
+      "size": 924,
+      "modified": "2025-11-06T17:38:33.885179",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_github_validation_issue.py": {
-      "hash": "d08587eda0c04bb44276739542c0ead8e381bd4f05a01e04f54fd92fb3c9e8b8",
-      "size": 3132,
-      "modified": "2025-11-02T16:02:39.100428",
+    "docs\\guides\\DOCUMENTATION_AUDIT.md": {
+      "hash": "4f50beb8f64c0bbf1eac844cfac1a2ebd4a505972089cae28b238cd30dc9a427",
+      "size": 8383,
+      "modified": "2025-11-06T17:38:33.895392",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_ide_integration.py": {
-      "hash": "e8ecb40e6976ebd55633fa2c05dfe6e530c228b402f11e942e79c978c94b1d80",
-      "size": 1415,
-      "modified": "2025-11-02T02:59:13.607622",
+    "docs\\guides\\DOCUMENTATION_REORGANIZATION_SUMMARY.md": {
+      "hash": "2ddc8b95dfb2845803c16462878ec8b653162831c013b72cd5971754b1ff273d",
+      "size": 6502,
+      "modified": "2025-11-10T14:21:41.438374",
       "is_critical": false,
       "is_whitelisted": false
     },
-    "quarantine_legacy_archive\\legacy_v0\\test_ide_page_rendering.py": {
-      "hash": "7081538a2981a5c991211ab6dcc28dd4db8e863950ef3ca2df9cd57c71c90719",
-      "size": 5956,
-      "modified": "2025-11-02T15:27:14.495865",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_info_buttons.py": {
-      "hash": "59a1dc561db802fe1d805c9d93cb3e86c279092129a5735146a8a8cfc73fb6b3",
-      "size": 2367,
-      "modified": "2025-11-02T03:42:12.886470",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_integration_wizard.py": {
-      "hash": "d23d93342bcea922e01e19bd21b4773aaf6c0830bd605a1948f07678d586f316",
-      "size": 7276,
-      "modified": "2025-11-02T15:18:34.261954",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_optional_fix.py": {
-      "hash": "72dbcb876f613059e2dca7de9227e1f13365256ce77691c5e0c67b97513c0d50",
-      "size": 3057,
-      "modified": "2025-11-02T03:33:40.113533",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_persistence.py": {
-      "hash": "4708baedfbc5deb338550ee10a1990187fee6683205db9588398774bc74f944f",
-      "size": 3824,
-      "modified": "2025-11-02T03:29:00.946896",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_repository_setup.py": {
-      "hash": "06be56ec3eb2904e5fc4dafd989bfc3d024f7739af10a377cda53ab42aa2a506",
-      "size": 5293,
-      "modified": "2025-11-02T04:18:25.264878",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_requirements.py": {
-      "hash": "6879ae90809517032c6c1bfb333e2a3a04d63017e8475f85d74a91d84ac443b7",
-      "size": 2805,
-      "modified": "2025-11-02T03:14:50.597503",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_step7_navigation.py": {
-      "hash": "eb52f1a38b27bb9c397ebe0f91780d144d2bcb3742b31cad64ea81c23a570e0d",
-      "size": 6617,
-      "modified": "2025-11-02T15:40:18.679240",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_timing_fix.py": {
-      "hash": "904250d89994ddfe05a2bfdbf617a45888e55ba724f833aee962ce70fe33f22a",
-      "size": 2954,
-      "modified": "2025-11-02T16:27:17.007487",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_validation_persistence.py": {
-      "hash": "54372bc1cccf521ca16b40bcc63a0f1c70f63646fb5856c12f182f6db0551ef5",
-      "size": 2976,
-      "modified": "2025-11-02T16:07:04.080220",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_validation_unlock.py": {
-      "hash": "bf4bdb83dc4f56aa59c81f73310c6385a3b8431ff1585807dcb742f023242343",
-      "size": 3894,
-      "modified": "2025-11-02T16:36:50.044638",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\test_widget_cleanup.py": {
-      "hash": "bedafd4f496c7e00f45a6d4802fc6b09302e6660ccba6ce867425589e71b6a58",
-      "size": 3998,
-      "modified": "2025-11-02T15:09:32.332627",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\visual_feedback_enhancements.py": {
-      "hash": "164db38edb95a1aac3707d83b240984afdbab1e54009e0bda2bd32598f49eb0c",
-      "size": 6781,
-      "modified": "2025-11-02T15:48:57.747874",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_scripts\\check_dependencies.py": {
-      "hash": "c93c57ce17469746fc9f0b7247610f6650e18b84adcfc1ef19a33cf3ce72b0be",
-      "size": 14731,
-      "modified": "2025-11-02T01:56:29.648376",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_scripts\\install_codesentinel.py": {
-      "hash": "d27a498129ddfd37f536c183f2836e3c5245bc6ad74ddaa4459c0a8c0d484c0a",
-      "size": 10050,
-      "modified": "2025-11-02T18:36:21.836030",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_scripts\\launch.py": {
-      "hash": "e1a945b9361c23a79f8ab9c2a4f97ce373deb95039f4944466377f8bbdc4e528",
-      "size": 4205,
-      "modified": "2025-11-02T21:27:56.889266",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_scripts\\setup_wizard.py": {
-      "hash": "bf349be4d9a7fe05d00878e415ebc763dd8465ee2d706fbd454d7a31df649d81",
-      "size": 16460,
-      "modified": "2025-11-02T20:14:25.325511",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_tests\\test_launcher.py": {
-      "hash": "e310af46ecc376583bffab68fbeadd440109fcbbeddac18dd3842ec33f7af9cc",
-      "size": 355,
-      "modified": "2025-11-02T21:15:26.167344",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_tests\\test_validation_locks.py": {
-      "hash": "4528479af6b85968aee1e1db7dd39e74f008f4d65440afc4569d94b16fed6b3c",
-      "size": 8590,
-      "modified": "2025-11-02T22:25:08.683443",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_tests\\test_wizard.py": {
-      "hash": "2d2b8351e58d5a660c075d7b0a196256f941a37fc24e7bb87a6cf16a7e199a6a",
-      "size": 300,
-      "modified": "2025-11-02T21:14:49.773501",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_src\\codesentinel\\ui\\components\\base_page.py": {
-      "hash": "b59151544e107e0ef4fdb998e8fb78ad1b8184944546e4a5b1c1d7cf304ee2a8",
-      "size": 6070,
-      "modified": "2025-11-02T17:57:07.330271",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_src\\codesentinel\\ui\\setup\\location_page.py": {
-      "hash": "f37d2343d9fbe68e6a2317771f620a4fa8d8ec88ccbe3c564c7c3a10a7d05a5e",
-      "size": 16471,
-      "modified": "2025-11-02T19:38:13.639159",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_src\\codesentinel\\ui\\setup\\welcome_page.py": {
-      "hash": "fbd67ec976309467570eef8bcb4402c6a9eb8c91ee64b1cc28c1b861b7f9c6a2",
-      "size": 10456,
-      "modified": "2025-11-02T19:37:43.368773",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_src\\codesentinel\\ui\\setup\\wizard.py": {
-      "hash": "83fcb22b1868997b24c850d789840b8a52e321c9a4b031a40ebb8a5296b31f99",
-      "size": 11013,
-      "modified": "2025-11-02T17:55:32.154894",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_src\\codesentinel\\core\\config\\manager.py": {
-      "hash": "e6d8722c395b382baa42fd8d3877d945697b0c8fbd5cbbcdaf4d1400395145bd",
-      "size": 12908,
-      "modified": "2025-11-02T17:57:07.521725",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\orphaned_src\\codesentinel\\core\\security\\credential_manager.py": {
-      "hash": "ee9bbb1a6a848d40bc38819c4d1c527d7935a92144fa63f547e94ee8f88c8fab",
-      "size": 8644,
-      "modified": "2025-11-02T17:57:07.439578",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\alert_system.py": {
-      "hash": "aad84d5f51298c0e594a7f89fa8a3fb3f19554f3a3c87c17444c4bfcd7bdbf12",
-      "size": 13104,
-      "modified": "2025-11-02T00:32:15.008826",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\dependency_suggester.py": {
-      "hash": "8eaf5afd545c26c9259bd98a68f1cbf662991777528269dea0f4a994c84dd3b3",
-      "size": 13500,
-      "modified": "2025-11-01T23:16:05.147125",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\gui_demo.py": {
-      "hash": "65366482ec58993c84a4a44843a3b5a522a3dcf41d9ec84b49800e7b3aed595f",
-      "size": 4436,
-      "modified": "2025-11-02T01:31:34.327084",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\gui_setup_wizard.py": {
-      "hash": "3220808f85733c2646da3fb8a15b189c764501cc755c2f4a0a425eb44bb0c9a2",
-      "size": 168161,
-      "modified": "2025-11-02T16:55:35.099247",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\monthly_maintenance.py": {
-      "hash": "6162d8242cf982175ee04d680ec09199702b8699ea91d128093728ccd6a6925c",
-      "size": 28491,
-      "modified": "2025-11-02T01:02:18.897508",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\path_configurator.py": {
-      "hash": "302e3ac6f1bf362edcbf81c1b15a826a0b98891549e1c23b1c70d87ea2444413",
-      "size": 10549,
-      "modified": "2025-11-02T01:48:03.660030",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\scheduler.py": {
-      "hash": "5cd03582c86478c05d381829e5c1693d49d03bc1290ccc72238ccfd544a2db41",
-      "size": 23814,
-      "modified": "2025-11-02T00:35:38.428913",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\setup_launcher.py": {
-      "hash": "02b20a8f3746d322d5b6b6d9b334ac2defa9d2275b71d52821e78dc539aaa56d",
-      "size": 2954,
-      "modified": "2025-11-02T01:31:11.856819",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\setup_wizard.py": {
-      "hash": "610529d45f693fc2ece0bfc2d4f4da6a1e446248b25422cf3f175ef73a62c9a9",
-      "size": 50858,
-      "modified": "2025-11-02T01:48:20.712920",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\weekly_maintenance.py": {
-      "hash": "a2a5e8b5c5281d12679b5fb2d3d5ebbdbf8d224de66dcfc6ebef1f7565bf74a9",
-      "size": 14719,
-      "modified": "2025-11-01T14:41:13.578666",
-      "is_critical": false,
-      "is_whitelisted": false
-    },
-    "quarantine_legacy_archive\\legacy_v0\\codesentinel\\__init__.py": {
-      "hash": "a6749ce7fe66f8aa3d6120bebe15da8bb2a55902ba0c85399c032ca51ff0be97",
-      "size": 1210,
-      "modified": "2025-11-02T00:22:54.863840",
+    "docs\\guides\\INDEX.md": {
+      "hash": "25442b45e091fd894fc3d18eb26f7759b7a837354f42f8a2c5f4c26ce62e7c44",
+      "size": 4532,
+      "modified": "2025-11-10T14:21:35.239021",
       "is_critical": false,
       "is_whitelisted": false
     },
     "docs\\guides\\publish_v1_0_3_beta.py": {
       "hash": "32b4fa1650814f7d4dc4d7f1bf928c1cd3ecd6bacd31263f454841a9c2e975f3",
       "size": 5232,
-      "modified": "2025-11-06T01:34:36.561337",
+      "modified": "2025-11-06T17:38:33.899967",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\guides\\PYPI_PUBLICATION_GUIDE.md": {
+      "hash": "533a3b584a7070d14b7c5050063b55e32d02ef431330abe96b659936b4f44de2",
+      "size": 8766,
+      "modified": "2025-11-06T17:38:33.896955",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\guides\\QUICK_PUBLISH_REFERENCE.md": {
+      "hash": "4b9939f59b690471c2eb2eff42e55ec356def78faa6c6641900234fd69fadc82",
+      "size": 3324,
+      "modified": "2025-11-06T17:38:33.897968",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\guides\\README.md": {
+      "hash": "f2fe97649cb87485957709d0939dd08e05c32ba1f19345594f8f9b44195c209b",
+      "size": 1715,
+      "modified": "2025-11-10T14:21:35.140974",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\guides\\README_APPROVAL.md": {
+      "hash": "5cbfabdd7ee6806b41e3fab8e1b9c792c5b5418513c65e952a839f9c9a4843e0",
+      "size": 4469,
+      "modified": "2025-11-06T17:38:33.898968",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\installation\\INSTALLATION.md": {
+      "hash": "b63b917cfadb9f3f3f359390849948bd9c8b7f30895810f360e251e0603a1a80",
+      "size": 7608,
+      "modified": "2025-11-06T17:38:33.900968",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\installation\\README.md": {
+      "hash": "25743d648c61663ca6ccd5e184fa8ce6799da8f6d8fa98c271634b80b426098e",
+      "size": 831,
+      "modified": "2025-11-06T17:38:33.901968",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\legacy\\LEGACY_ARCHIVE_STATUS.md": {
+      "hash": "ca2211d1ee7099e6e905af7ce8eb665049803ee588cd2ab0fd9a0616fca7e5cf",
+      "size": 1874,
+      "modified": "2025-11-06T17:38:33.902968",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\legacy\\LEGACY_FEATURE_MAP.md": {
+      "hash": "8786ddff04ff419445aebd4eae18e538c1d4e4841faa8f6ef761dc9af3ea47cd",
+      "size": 4980,
+      "modified": "2025-11-06T17:38:33.903966",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\legacy\\QUICKSTART_LEGACY.md": {
+      "hash": "df26febd6e475f906739f77f651d5a37fe132aa3bab66c3a9a0ca4f328c19dec",
+      "size": 1103,
+      "modified": "2025-11-06T17:38:33.905298",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\legacy\\README.md": {
+      "hash": "d164b1a61e2140503288d0b15a2249fdb872f5b8b60d7d8ccf961c4b13e96243",
+      "size": 985,
+      "modified": "2025-11-06T17:38:33.906311",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\DEVELOPMENT_RESUMPTION_PLAN.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:38.714198",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\PHASE_1_ROADMAP.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:37.861073",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\PHASE_3_IMPLEMENTATION_PLAN.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:38.045625",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\PHASE_3_ITERATION_4_PLAN.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:38.140521",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\PHASE_3_ITERATION_5_PLAN.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:38.313504",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\PHASE_3_ROADMAP.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:37.945462",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\PROPOSED_FEATURES.md": {
+      "hash": "3899c1261e383afb47fcb4619cb0aded6f501bde10ead47df9a803795730088f",
+      "size": 47,
+      "modified": "2025-11-07T04:37:59.503891",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\SECURE_CREDENTIALS_DEVELOPMENT_PLAN.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:38.495939",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\planning\\SECURE_CREDENTIALS_STRATEGY_2025.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:38.614037",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\COMPLETION_SUMMARY.md": {
+      "hash": "7c3a2dc08f653d2a0329637b95c80565060694c43ee06d2e678957e557a4191f",
+      "size": 10747,
+      "modified": "2025-11-06T17:38:33.908308",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\PUBLICATION_READY.md": {
+      "hash": "2daf7aaa12301ef490af09bc705bf29dbce5316808286f9541c2f8a884e5a010",
+      "size": 2937,
+      "modified": "2025-11-06T17:38:33.909312",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\README.md": {
+      "hash": "86292870681384a71015f32c7da0b539513f364ced876012d512efa24933b09b",
+      "size": 5160,
+      "modified": "2025-11-06T17:38:33.910311",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\quick_reference\\deployment_operations.md": {
+      "hash": "cc394ced5401a5a6b724c08163457f82512fac9930ca704a197ca6bd6aeb2a0f",
+      "size": 3786,
+      "modified": "2025-11-07T04:01:19.610720",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\quick_reference\\github_operations.md": {
+      "hash": "539c9966a6a1343786e55cf92c3b51ecb9e0b9fc6c09168eeb7d134da5f83a25",
+      "size": 3620,
+      "modified": "2025-11-07T03:59:16.637042",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\quick_reference\\infrastructure_operations.md": {
+      "hash": "d983bc9fd3962736de697c083b6a150f80d9e87892cbe9e1e256a4330f33373b",
+      "size": 3800,
+      "modified": "2025-11-07T04:04:22.753490",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\FINAL_DOC_REVIEW_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:37.616019",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\MEASUREMENT_TASK_M4_1_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:37.384658",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\MEASUREMENT_TASK_M4_2_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:37.527800",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\MERGE_READY_CHECKIN.md": {
+      "hash": "14690b5889583ad3252d780bb342b9dabf484a62510a22426ebef488e91120af",
+      "size": 4669,
+      "modified": "2025-11-07T02:25:43.414108",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_1_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:46.364151",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_2_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:46.456335",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_3_BRANCH_SETUP_COMPLETE.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:46.614408",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_3_COMPLETE.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:46.533041",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_3_ITERATION_1_COMPLETE.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:29:46.685589",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_3_ITERATION_2_COMPLETE.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:02.384679",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_3_ITERATION_3_COMPLETE.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:02.480679",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\PHASE_3_ITERATION_4_COMPLETE.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:02.566371",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\READY_FOR_PUSH_FINAL_SUMMARY.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:37.769442",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\SYSTEM_OPERATIONAL_SUMMARY.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:37.699215",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\TEST_CASE_T4_1_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:02.647863",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\reports\\TEST_CASE_T4_2_COMPLETION_REPORT.md": {
+      "hash": "955a79295e63778f2e2b4e0b9f10ccaac9459910f442e00c01283e97bbf096e9",
+      "size": 19,
+      "modified": "2025-11-07T04:30:02.731863",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\v1.0.3_beta\\PRODUCTION_PYPI_PUBLISHED.md": {
+      "hash": "2b3e4c5669523023662ec223bceacd42cf2a3e64225e57a8b390b49ebea5482d",
+      "size": 2984,
+      "modified": "2025-11-06T17:38:33.911309",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\v1.0.3_beta\\TEST_PYPI_VALIDATION_PASSED.md": {
+      "hash": "b83e196f05b57e48b33162fbdde1d2b28f70a7b48fce2306f5995fa003ecbd2d",
+      "size": 1926,
+      "modified": "2025-11-06T17:38:33.912443",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\v1.0.3_beta\\v1.0.3_beta_publication_log.md": {
+      "hash": "459f4243f4751d820e964013f433f43d653deb98863b0be326819b09492aed57",
+      "size": 3720,
+      "modified": "2025-11-06T17:38:33.917407",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_BETA_PUBLICATION_READY.md": {
+      "hash": "654158955e47a4d7b740971534c57b69d01c72137fd99c3ecc795e939e075136",
+      "size": 8065,
+      "modified": "2025-11-06T17:38:33.914082",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_BETA_TEST_REPORT.md": {
+      "hash": "7e131071876dd978989c08f1d5a0d323ddf74c5a370a59383af8254ea3dc0cf2",
+      "size": 9418,
+      "modified": "2025-11-06T17:38:33.915084",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_DISTRIBUTION_REPORT.md": {
+      "hash": "f10e2e1569b9456202b8a452500f862f39f69e79281c096066932308c07fd212",
+      "size": 13855,
+      "modified": "2025-11-06T17:38:33.916160",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\publication_logs\\v1.0.3_beta\\V1_0_3_FINAL_STATUS.md": {
+      "hash": "c43c8fd6941380526b5c1adacb6d4de29c335b35aefbe1d630548f41407cb8c3",
+      "size": 6755,
+      "modified": "2025-11-06T17:38:33.916160",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\audit\\results\\audit_global_overhead_results.json": {
+      "hash": "05088d7a38c1423fffba603764dfb10c7dac9890a2bac7177ec28bfdb77e3e0a",
+      "size": 2347,
+      "modified": "2025-11-06T17:38:33.887348",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\audit\\results\\audit_integrity_fault_test_results.json": {
+      "hash": "36a9f5423b905521c5be00ddceeb5ff8e0cc4da067255ff82a332f077863db65",
+      "size": 1501,
+      "modified": "2025-11-06T17:38:33.888349",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "docs\\audit\\results\\audit_integrity_overhead_results.json": {
+      "hash": "dc6dc9c4f411ddcd228022d30c580c4be822b2f90ec4ab55875d4bdeb00fd538",
+      "size": 1905,
+      "modified": "2025-11-06T17:38:33.889347",
       "is_critical": false,
       "is_whitelisted": false
     },
     "docs\\audit\\scripts\\audit_global_overhead.py": {
       "hash": "4e074ccba1e668186300de006cc32337144c1a95670524322e61d030bfce9936",
       "size": 9653,
-      "modified": "2025-11-06T01:34:36.551338",
+      "modified": "2025-11-06T17:38:33.891346",
       "is_critical": false,
       "is_whitelisted": false
     },
     "docs\\audit\\scripts\\audit_integrity_overhead.py": {
       "hash": "2bddfbf775b689828da2d16f4b7da0d70fa7490b01c6983b5728a0793d3a5562",
       "size": 10577,
-      "modified": "2025-11-06T01:34:36.556333",
+      "modified": "2025-11-06T17:38:33.892346",
       "is_critical": false,
       "is_whitelisted": false
     },
     "docs\\audit\\scripts\\fault_test_integrity.py": {
       "hash": "ff8c100ad53c5eed23b66b68accf8940cd9163d0fdcec480402e036a889a5b30",
       "size": 14275,
-      "modified": "2025-11-06T01:34:36.559334",
+      "modified": "2025-11-06T17:38:33.894348",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel\\assets\\polymath.png": {
+      "hash": "0e4e6043e8ab0093f22e13d092b6b734444954315432cac3e8054e3fad2bf30c",
+      "size": 4893,
+      "modified": "2025-11-06T17:21:54.681066",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel\\cli\\document_formatter_cli.py": {
+      "hash": "59030a15f319fe262c1e21d7cf20f246d126df76980519d6699019f2d2a5894a",
+      "size": 17275,
+      "modified": "2025-11-07T05:25:15.864819",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\cli\\__init__.py": {
-      "hash": "5b816ddce048bda2d3d0ab2506380694ed00a7f5469996b671911ee41a77b4a3",
-      "size": 20822,
-      "modified": "2025-11-06T02:49:44.044868",
+      "hash": "4a4473894c53ef0f987b8fd00cf092e89988366d10b562b2a1470d8dc213984c",
+      "size": 135899,
+      "modified": "2025-11-10T14:59:28.845903",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\cli\\__main__.py": {
       "hash": "2f6b9bba7c75478e8181b3b8b0017215e313d47cdea34971bf64f7041b054ba4",
       "size": 62,
-      "modified": "2025-11-03T15:48:19.971742",
+      "modified": "2025-11-06T17:21:54.685065",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\core\\dev_audit.py": {
-      "hash": "e21e10748f471690a9d90de134f83d6bf363533666bbf09e89b36d50954c845e",
-      "size": 41476,
-      "modified": "2025-11-06T01:34:36.529334",
+      "hash": "357b855854577055593fbfa78ebc7b74f4046f1454699d1b1377f34665ca8dad",
+      "size": 41494,
+      "modified": "2025-11-10T14:14:20.526305",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\core\\__init__.py": {
       "hash": "e92536a3b549f6f5b4b62365e79a0b003c43be66f8aa8235e2ddd1dc2a5a19e4",
       "size": 12153,
-      "modified": "2025-11-03T15:48:19.973742",
+      "modified": "2025-11-06T17:21:54.686381",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel\\gui\\codesentinel.log": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "modified": "2025-11-07T06:47:35.629200",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel\\gui\\formatting_config.py": {
+      "hash": "017e8925599858a76aeed94d7675a9bcf51cd7e3f51c07061d2233f50612a26e",
+      "size": 7132,
+      "modified": "2025-11-07T06:56:48.862147",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\gui\\__init__.py": {
       "hash": "fc29a789bcc98d39b831ad2dbf76bf6452f42e8b413d2b0375dee0c4c7cb2fdc",
       "size": 212,
-      "modified": "2025-11-02T01:42:37.353740",
+      "modified": "2025-11-06T17:21:54.689536",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\utils\\alerts.py": {
       "hash": "b2ec64ad906cecdb44996af8489f85f0d91e76d89ae3ad759dd5b7aa1cb6890f",
       "size": 10597,
-      "modified": "2025-11-05T13:35:42.999646",
+      "modified": "2025-11-06T17:21:54.699568",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\utils\\config.py": {
       "hash": "5d475d75394bd28cc4171a584b233db722b3b1ca64cfe73a0196ed85e4ada6d5",
       "size": 11679,
-      "modified": "2025-11-05T22:57:45.488602",
+      "modified": "2025-11-06T17:38:33.854595",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel\\utils\\document_formatter.py": {
+      "hash": "79cd5dbd69f8d3137db9049a0805202a726a833a8d08dc5d188af05478247f54",
+      "size": 16718,
+      "modified": "2025-11-07T05:23:41.227835",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\utils\\file_integrity.py": {
-      "hash": "842f2b94b925f4d0f059364f42349e78d05deb4e3123bdd23c29c5364051e6c5",
-      "size": 17377,
-      "modified": "2025-11-06T02:49:43.994502",
+      "hash": "a41fc8d80bccf3df9860e9c02eb298fb8ab4cf18b0cfa2f04b1904d74a9d1ffd",
+      "size": 17901,
+      "modified": "2025-11-06T17:38:33.856625",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\utils\\path_resolver.py": {
       "hash": "f61370ae9e1a8dd9f2702d791b30f682fc32347e6edfbef49a8f4f47358a66ad",
       "size": 7754,
-      "modified": "2025-11-03T15:48:19.988389",
+      "modified": "2025-11-06T17:21:54.704568",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\utils\\process_monitor.py": {
       "hash": "69a0bdb413b2baa2855753621d12adad2150c5558e6abf3fe7dc265dc0aaf910",
       "size": 10894,
-      "modified": "2025-11-06T02:49:44.133048",
+      "modified": "2025-11-06T17:38:33.857622",
+      "is_critical": false,
+      "is_whitelisted": false
+    },
+    "codesentinel\\utils\\README.md": {
+      "hash": "9775aa70893c4dc5b25ea7fe431ae9abf80d62340d1e7f6fe740c20e37857ee8",
+      "size": 1683,
+      "modified": "2025-11-06T17:21:54.698568",
       "is_critical": false,
       "is_whitelisted": false
     },
     "codesentinel\\utils\\scheduler.py": {
-      "hash": "fedbe1f064d4409979597253936ca6f6edd72c9738ee3172c56689c79c755493",
-      "size": 12129,
-      "modified": "2025-11-02T01:42:03.722899",
+      "hash": "bd65b0d40e7945d9920d9072d5394e7e0c1160c7e2f36c7ab728e393a26f712a",
+      "size": 32486,
+      "modified": "2025-11-10T13:22:28.579726",
       "is_critical": false,
       "is_whitelisted": false
     }
   },
   "statistics": {
-    "total_files": 136,
+    "total_files": 156,
     "critical_files": 0,
     "whitelisted_files": 0,
-    "excluded_files": 1932,
+    "excluded_files": 425,
     "skipped_files": 0
   }
 }

@@ -58,7 +58,7 @@ The archive system manages CodeSentinel's document lifecycle including:
 
 **Steps**:
 
-1. **Verify Authority**: Check if user approval needed ✅
+1. **Verify Authority**: Check if user approval needed 
    - Tier 1 docs: YES (explicit instruction required)
    - Tier 2 docs: YES (user approval)
    - Tier 3 docs: NO (agent discretion)
@@ -105,11 +105,11 @@ The archive system manages CodeSentinel's document lifecycle including:
    - Add note to CHANGELOG.md
 
 7. **Verification**:
-   - Archive copy exists and is correct ✅
-   - Metadata file created ✅
-   - Original location updated ✅
-   - All references updated ✅
-   - Backup location includes archive ✅
+   - Archive copy exists and is correct 
+   - Metadata file created 
+   - Original location updated 
+   - All references updated 
+   - Backup location includes archive 
 
 8. **Commit**:
    - Message: `archive: move [document name] to inactive`
@@ -179,11 +179,11 @@ The archive system manages CodeSentinel's document lifecycle including:
    - Note what changed from v1 to v2
 
 7. **Verification**:
-   - Old version archived correctly ✅
-   - New version directory created ✅
-   - Metadata tracks both versions ✅
-   - Main repo updated to new version ✅
-   - Version history documented ✅
+   - Old version archived correctly 
+   - New version directory created 
+   - Metadata tracks both versions 
+   - Main repo updated to new version 
+   - Version history documented 
 
 8. **Commit**:
    - Message: `archive: version [doc_name] from v1 to v2`
@@ -231,11 +231,11 @@ The archive system manages CodeSentinel's document lifecycle including:
    ```
 
 5. **Verification**:
-   - File count matches ✅
-   - Archive is readable ✅
-   - Manifest created ✅
-   - Backup location is safe ✅
-   - Recent backup exists ✅
+   - File count matches 
+   - Archive is readable 
+   - Manifest created 
+   - Backup location is safe 
+   - Recent backup exists 
 
 6. **Update Backup Index**:
    - Update `archive/metadata/backup_manifest.json`
@@ -264,10 +264,10 @@ The archive system manages CodeSentinel's document lifecycle including:
    - Use `archive_index.json` for quick lookup
 
 2. **Verify Archive Completeness**:
-   - Document exists in archive? ✅
-   - Metadata accurate? ✅
-   - File not corrupted? ✅
-   - Correct version? ✅
+   - Document exists in archive? 
+   - Metadata accurate? 
+   - File not corrupted? 
+   - Correct version? 
 
 3. **Copy Document from Archive**:
    - Copy from archive location to restore destination
@@ -282,10 +282,10 @@ The archive system manages CodeSentinel's document lifecycle including:
    - Track recovery event
 
 5. **Verify Restored Document**:
-   - Document content correct ✅
-   - File format intact ✅
-   - All references still valid ✅
-   - Restored to correct location ✅
+   - Document content correct 
+   - File format intact 
+   - All references still valid 
+   - Restored to correct location 
 
 6. **Documentation**:
    - Log restoration event
@@ -332,39 +332,39 @@ The archive system manages CodeSentinel's document lifecycle including:
 
 ```
 archive/
-├── active/
-│   ├── tier1_critical/
-│   │   ├── policy/
-│   │   │   └── POLICY/
-│   │   │       ├── v1/
-│   │   │       ├── v2/
-│   │   │       └── metadata.json
-│   │   ├── reports/
-│   │   └── compliance/
-│   │
-│   ├── tier2_informative/
-│   │   ├── guides/
-│   │   ├── api/
-│   │   └── features/
-│   │
-│   ├── tier3_temporary/
-│   │   └── job_reports/
-│   │
-│   └── tier4_agent/
-│       ├── 4a_core/
-│       ├── 4b_infrastructure/
-│       └── 4c_temporary/
-│
-├── inactive/
-│   ├── tier1_critical/
-│   ├── tier2_informative/
-│   ├── tier3_temporary/
-│   └── tier4_agent/
-│
-└── metadata/
-    ├── archive_index.json
-    ├── classification_audit.log
-    └── backup_manifest.json
+ active/
+    tier1_critical/
+       policy/
+          POLICY/
+              v1/
+              v2/
+              metadata.json
+       reports/
+       compliance/
+   
+    tier2_informative/
+       guides/
+       api/
+       features/
+   
+    tier3_temporary/
+       job_reports/
+   
+    tier4_agent/
+        4a_core/
+        4b_infrastructure/
+        4c_temporary/
+
+ inactive/
+    tier1_critical/
+    tier2_informative/
+    tier3_temporary/
+    tier4_agent/
+
+ metadata/
+     archive_index.json
+     classification_audit.log
+     backup_manifest.json
 ```
 
 ---

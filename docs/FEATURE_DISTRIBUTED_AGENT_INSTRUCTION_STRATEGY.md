@@ -137,30 +137,30 @@ Embedded in satellite instructions:
 
 ```
 POLICY.md (227 lines)
-├── Core Principles
-├── Permanent Directives
-└── Strategic Frameworks
-    │
-    ├─→ DOCUMENT_CLASSIFICATION.md (669 lines)
-    │   ├── 5-Tier System
-    │   ├── Authority Matrices
-    │   └── Lifecycle Workflows
-    │
-    └─→ AGENT_INSTRUCTION_STRATEGY.md (597 lines)
-        ├── Satellite Architecture
-        ├── Implementation Templates
-        └── Governance Model
-            │
-            ├─→ codesentinel/AGENT_INSTRUCTIONS.md (50-150 lines each)
-            ├─→ tools/codesentinel/AGENT_INSTRUCTIONS.md
-            ├─→ tests/AGENT_INSTRUCTIONS.md
-            └─→ docs/AGENT_INSTRUCTIONS.md
-                │
-                └─→ Quick Reference Cards (5-10 lines each)
-                    ├── Authority Matrices
-                    ├── Decision Trees
-                    ├── Common Procedures
-                    └── Validation Checklists
+ Core Principles
+ Permanent Directives
+ Strategic Frameworks
+    
+    → DOCUMENT_CLASSIFICATION.md (669 lines)
+        5-Tier System
+        Authority Matrices
+        Lifecycle Workflows
+    
+    → AGENT_INSTRUCTION_STRATEGY.md (597 lines)
+         Satellite Architecture
+         Implementation Templates
+         Governance Model
+            
+            → codesentinel/AGENT_INSTRUCTIONS.md (50-150 lines each)
+            → tools/codesentinel/AGENT_INSTRUCTIONS.md
+            → tests/AGENT_INSTRUCTIONS.md
+            → docs/AGENT_INSTRUCTIONS.md
+                
+                → Quick Reference Cards (5-10 lines each)
+                     Authority Matrices
+                     Decision Trees
+                     Common Procedures
+                     Validation Checklists
 ```
 
 ### Reference Integration
@@ -221,14 +221,14 @@ Embedded decision trees guide classification:
 Document Classification Decision Tree
 
 Is this secret/encryption keys?
-├─ YES → Tier 0 (Secret) ✓
-└─ NO → Continue
+ YES → Tier 0 (Secret) ✓
+ NO → Continue
 
 Is this infrastructure/policy/compliance?
-├─ YES → Is this versioned? Do we need audit trail?
-│  ├─ YES → Tier 1 (Critical Infrastructure) ✓
-│  └─ NO → Continue
-└─ NO → Continue
+ YES → Is this versioned? Do we need audit trail?
+   YES → Tier 1 (Critical Infrastructure) ✓
+   NO → Continue
+ NO → Continue
 
 ...continues until classification complete
 ```
@@ -348,33 +348,33 @@ Result: **100% compliance maintained** while achieving 80-90% efficiency gains
 
 ```yaml
 docs/
-├── architecture/
-│   ├── POLICY.md                          # Global foundation (227 lines, T4a)
-│   ├── DOCUMENT_CLASSIFICATION.md         # 5-tier system (669 lines, T4a)
-│   └── AGENT_INSTRUCTION_STRATEGY.md      # Strategy framework (597 lines, T4a)
-│
-├── AGENT_INSTRUCTIONS.md                  # Documentation operations (T4b)
-└── [audit reports and feature documentation]
+ architecture/
+    POLICY.md                          # Global foundation (227 lines, T4a)
+    DOCUMENT_CLASSIFICATION.md         # 5-tier system (669 lines, T4a)
+    AGENT_INSTRUCTION_STRATEGY.md      # Strategy framework (597 lines, T4a)
+
+ AGENT_INSTRUCTIONS.md                  # Documentation operations (T4b)
+ [audit reports and feature documentation]
 
 codesentinel/
-├── AGENT_INSTRUCTIONS.md                  # CLI/core operations (T4b)
-├── cli/
-│   └── AGENT_INSTRUCTIONS.md             # CLI-specific procedures (T4b)
-├── core/
-│   └── AGENT_INSTRUCTIONS.md             # Core functionality (T4b)
-└── utils/
-    └── AGENT_INSTRUCTIONS.md             # Utility operations (T4b)
+ AGENT_INSTRUCTIONS.md                  # CLI/core operations (T4b)
+ cli/
+    AGENT_INSTRUCTIONS.md             # CLI-specific procedures (T4b)
+ core/
+    AGENT_INSTRUCTIONS.md             # Core functionality (T4b)
+ utils/
+     AGENT_INSTRUCTIONS.md             # Utility operations (T4b)
 
 tools/
-├── AGENT_INSTRUCTIONS.md                  # Maintenance operations (T4b)
-├── codesentinel/
-│   ├── AGENT_INSTRUCTIONS.md             # Scheduler/monitoring (T4b)
-│   └── scheduler.py
-└── config/
-    └── AGENT_INSTRUCTIONS.md             # Configuration procedures (T4b)
+ AGENT_INSTRUCTIONS.md                  # Maintenance operations (T4b)
+ codesentinel/
+    AGENT_INSTRUCTIONS.md             # Scheduler/monitoring (T4b)
+    scheduler.py
+ config/
+     AGENT_INSTRUCTIONS.md             # Configuration procedures (T4b)
 
 tests/
-└── AGENT_INSTRUCTIONS.md                  # Testing procedures (T4b)
+ AGENT_INSTRUCTIONS.md                  # Testing procedures (T4b)
 ```
 
 ### Satellite Instruction Template

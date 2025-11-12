@@ -42,7 +42,7 @@ Location: `quarantine_legacy_archive/legacy_v0/`
 
 - Typography: Segoe UI/Arial; headers bold; compact 9–11pt body text
 - Layout: ttk Frames, LabelFrames; scrollable content using Canvas + Scrollbar
-- Visual markers: ✓ and ✗ (policy). GUI texts sometimes used emojis; permitted for GUI
+- Visual markers: ✓ and  (policy). GUI texts sometimes used emojis; permitted for GUI
 - Colors: neutral grayscale, subtle section headers
 - UX fixes: Avoid relative packing issues; prefer direct pack and scroll containers; navigation locking for validation
 

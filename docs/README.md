@@ -4,20 +4,26 @@ Welcome to CodeSentinel documentation. This folder contains comprehensive guides
 
 ## Quick Navigation
 
-### 📦 [Installation](installation/)
+###  [Installation](installation/)
 
 How to install CodeSentinel on Windows, macOS, and Linux. Includes GUI installers and Python package installation.
 
-### 📖 [Guides](guides/)
+###  [Header/Footer Management](HEADER_FOOTER_GUIDE.md)
 
-Step-by-step guides for common tasks:
+Comprehensive guide for managing documentation headers and footers with intelligent project detection. Includes template library, interactive editing, and branding integration.
 
+###  [Guides](guides/)
+
+Step-by-step guides for common tasks and deployment:
+
+- **Quick Links:** [Publication & Deployment Index](guides/INDEX.md)
 - Getting started with CodeSentinel
+- Quick publication reference (~5-10 minutes)
+- Complete PyPI publication guide (30-45 minutes)
 - Contributing to the project
-- Publishing to PyPI
 - Legacy feature mapping
 
-### 🏗️ [Architecture](architecture/)
+###  [Architecture](architecture/)
 
 System design and policy documentation:
 
@@ -26,7 +32,7 @@ System design and policy documentation:
 - Packaging and design rationale
 - Component specifications
 
-### 📜 [Legacy](legacy/)
+###  [Legacy](legacy/)
 
 Information about deprecated and archived code:
 
@@ -34,7 +40,7 @@ Information about deprecated and archived code:
 - Feature mapping for old versions
 - Legacy code status
 
-### 📋 [Publication Logs](publication_logs/)
+###  [Publication Logs](publication_logs/)
 
 Version-specific publication records and release documentation. Each version (v1.0.3_beta, etc.) has its own folder with publication logs and validation reports.
 
