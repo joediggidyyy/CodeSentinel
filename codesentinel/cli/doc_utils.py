@@ -410,3 +410,440 @@ def verify_and_fix_documentation_pipeline(file_paths: List[Path], dry_run: bool 
                 print(f"  [DRY-RUN] Would fix: {doc_file.name} ({', '.join(file_issues)})")
     
     return results
+
+
+def detect_project_info() -> dict:
+    """
+    Intelligently detect project and repository information.
+    
+    Returns:
+        Dictionary with detected project info (project_name, description, repo_url, etc.)
+    """
+    import json
+    import re
+    import subprocess
+    
+    project_root = Path.cwd()
+    info = {
+        'project_name': 'Project',
+        'description': 'A powerful automation tool',
+        'repo_name': project_root.name,
+        'repo_url': '',
+        'version': '1.0.0',
+    }
+    
+    # Try to detect from pyproject.toml
+    pyproject_path = project_root / 'pyproject.toml'
+    if pyproject_path.exists():
+        try:
+            content = pyproject_path.read_text(encoding='utf-8')
+            
+            # Extract name from [project] section
+            name_match = re.search(r'^\s*name\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            if name_match:
+                info['project_name'] = name_match.group(1)
+            
+            # Extract description
+            desc_match = re.search(r'^\s*description\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            if desc_match:
+                info['description'] = desc_match.group(1)
+            
+            # Extract version
+            version_match = re.search(r'^\s*version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+            if version_match:
+                info['version'] = version_match.group(1)
+        except Exception:
+            pass
+    
+    # Try to detect from setup.py
+    setup_path = project_root / 'setup.py'
+    if setup_path.exists() and not info.get('project_name') or info['project_name'] == 'Project':
+        try:
+            content = setup_path.read_text(encoding='utf-8')
+            
+            # Extract name
+            name_match = re.search(r'name\s*=\s*["\']([^"\']+)["\']', content)
+            if name_match:
+                info['project_name'] = name_match.group(1)
+            
+            # Extract description
+            desc_match = re.search(r'description\s*=\s*["\']([^"\']+)["\']', content)
+            if desc_match:
+                info['description'] = desc_match.group(1)
+        except Exception:
+            pass
+    
+    # Try to detect from package __init__.py
+    pkg_init = project_root / 'codesentinel' / '__init__.py'
+    if pkg_init.exists():
+        try:
+            content = pkg_init.read_text(encoding='utf-8')
+            
+            # Look for docstring with description
+            docstring_match = re.search(r'^"""(.*?)"""', content, re.MULTILINE | re.DOTALL)
+            if docstring_match:
+                docstring = docstring_match.group(1).strip()
+                lines = docstring.split('\n')
+                # Use the first non-empty line after title as description
+                for line in lines[1:]:
+                    line = line.strip()
+                    if line and not line.startswith('='):
+                        info['description'] = line
+                        break
+        except Exception:
+            pass
+    
+    # Try to detect from git remote
+    try:
+        git_url = subprocess.check_output(
+            ['git', 'config', '--get', 'remote.origin.url'],
+            cwd=project_root,
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+        if git_url:
+            info['repo_url'] = git_url
+            # Extract repo name from URL
+            if '/' in git_url:
+                info['repo_name'] = git_url.split('/')[-1].replace('.git', '')
+    except:
+        pass
+    
+    return info
+
+
+def get_header_templates() -> dict:
+    """
+    Get all available header templates with project-specific values filled in.
+    
+    Automatically detects project name and description and integrates them.
+    """
+    project_info = detect_project_info()
+    
+    # Create dynamic templates based on project info
+    return {
+        'README.md': {
+            'template': f"# {project_info['project_name']}\n\n{project_info['description']}\n\n---\n\n",
+            'description': 'Main project README template',
+            'project_specific': True,
+        },
+        'SECURITY.md': {
+            'template': f"# Security Policy\n\nThis document outlines the security practices and policies for {project_info['project_name']}.\n\n---\n\n",
+            'description': 'Security policy document template',
+            'project_specific': True,
+        },
+        'CHANGELOG.md': {
+            'template': "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n---\n\n",
+            'description': 'Changelog tracking document template',
+            'project_specific': False,
+        },
+        'CONTRIBUTING.md': {
+            'template': f"# Contributing Guidelines\n\nThank you for your interest in contributing to {project_info['project_name']}!\n\n---\n\n",
+            'description': 'Contributing guidelines template',
+            'project_specific': True,
+        },
+    }
+
+
+def get_footer_templates() -> dict:
+    """
+    Get all available footer templates with project-specific values filled in.
+    
+    Automatically detects project name and version and integrates them.
+    """
+    project_info = detect_project_info()
+    
+    return {
+        'standard': {
+            'template': '\n---\n\nSEAM Protected™ by CodeSentinel\n',
+            'description': 'Standard SEAM Protection branding footer',
+        },
+        'with_project': {
+            'template': f'\n---\n\n{project_info["project_name"]} - SEAM Protected™ by CodeSentinel\n',
+            'description': 'Footer with project name',
+            'project_specific': True,
+        },
+        'with_links': {
+            'template': '\n---\n\nSEAM Protected™ by CodeSentinel\n\n- [Security Policy](SECURITY.md)\n- [Contributing](CONTRIBUTING.md)\n- [License](LICENSE)\n',
+            'description': 'Footer with links to key documents',
+        },
+        'with_version': {
+            'template': f'\n---\n\n**Version:** {project_info["version"]}\n\nSEAM Protected™ by CodeSentinel\n',
+            'description': 'Footer with version information',
+            'project_specific': True,
+        },
+        'minimal': {
+            'template': '\n\nSEAM Protected™ by CodeSentinel\n',
+            'description': 'Minimal footer without separator line',
+        },
+    }
+
+
+def show_template_options(template_type: str = 'both') -> None:
+    """
+    Display available header and footer templates with project-specific values.
+    
+    Args:
+        template_type: 'header', 'footer', or 'both'
+    """
+    project_info = detect_project_info()
+    print("\n" + "="*70)
+    print(f"[PROJECT] Detected Project: {project_info['project_name']}")
+    print(f"   Description: {project_info['description']}")
+    if project_info['repo_url']:
+        print(f"   Repository: {project_info['repo_url']}")
+    print("="*70)
+    
+    if template_type in ['header', 'both']:
+        print("\nHEADER TEMPLATES")
+        print("="*70)
+        headers = get_header_templates()
+        for file_name, template_info in headers.items():
+            marker = "[PROJECT]" if template_info.get('project_specific') else "        "
+            print(f"\n{marker} [FILE] {file_name}")
+            print(f"   Description: {template_info['description']}")
+            print(f"   Preview:\n")
+            lines = template_info['template'].split("\n")[:3]
+            for line in lines:
+                if line:
+                    print(f"   {line}")
+    
+    if template_type in ['footer', 'both']:
+        if template_type == 'both':
+            print("\n" + "="*70)
+        print("FOOTER TEMPLATES")
+        print("="*70)
+        footers = get_footer_templates()
+        for template_name, template_info in footers.items():
+            marker = "[PROJECT]" if template_info.get('project_specific') else "        "
+            print(f"\n{marker} [TEMPLATE] {template_name.upper()}")
+            print(f"   Description: {template_info['description']}")
+            print(f"   Preview:\n")
+            lines = template_info['template'].split("\n")[:3]
+            for line in lines:
+                if line:
+                    print(f"   {line}")
+    
+    print("\n" + "="*70)
+    print("[PROJECT] = Project-specific (uses detected project name/version)")
+    print("="*70 + "\n")
+
+
+def set_header_for_file(file_path: Path, template_name: Optional[str] = None, custom_header: Optional[str] = None) -> Tuple[bool, str]:
+    """
+    Set header for a documentation file.
+    
+    Args:
+        file_path: Path to file to modify
+        template_name: Name of predefined template or file name
+        custom_header: Custom header text to use instead of template
+        
+    Returns:
+        Tuple of (success, message)
+    """
+    if not file_path.exists():
+        return False, f"File not found: {file_path}"
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, f"Could not read file: {e}"
+    
+    import re
+    
+    # Get dynamic templates (with project-specific info)
+    headers = get_header_templates()
+    
+    # Determine which header to use
+    header_text = None
+    if custom_header:
+        header_text = custom_header
+    elif template_name and template_name in headers:
+        template_info = headers[template_name]
+        header_text = template_info['template']
+    elif file_path.name in headers:
+        template_info = headers[file_path.name]
+        header_text = template_info['template']
+    else:
+        return False, f"No template found for {file_path.name}"
+    
+    # Remove existing header (first H1 and separator line)
+    content = re.sub(r'^#\s+.*?(?=\n\n|$)', '', content, count=1, flags=re.MULTILINE)
+    content = re.sub(r'^\s*---\s*\n', '', content, flags=re.MULTILINE)
+    
+    # Add new header
+    new_content = header_text + content.lstrip()
+    
+    try:
+        file_path.write_text(new_content, encoding='utf-8')
+        return True, f"Updated header for {file_path.name}"
+    except Exception as e:
+        return False, f"Could not write file: {e}"
+
+
+def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom_footer: Optional[str] = None) -> Tuple[bool, str]:
+    """
+    Set footer for a documentation file.
+    
+    Args:
+        file_path: Path to file to modify
+        template_name: Name of predefined footer template
+        custom_footer: Custom footer text to use instead of template
+        
+    Returns:
+        Tuple of (success, message)
+    """
+    if not file_path.exists():
+        return False, f"File not found: {file_path}"
+    
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception as e:
+        return False, f"Could not read file: {e}"
+    
+    import re
+    
+    # Get dynamic templates (with project-specific info)
+    footers = get_footer_templates()
+    
+    # Determine which footer to use
+    footer_text = None
+    if custom_footer:
+        footer_text = custom_footer
+    elif template_name in footers:
+        footer_text = footers[template_name]['template']
+    else:
+        return False, f"Footer template '{template_name}' not found"
+    
+    # Remove existing footer (everything from last --- to end, or last paragraph)
+    content = re.sub(r'\n\s*---.*$', '', content, flags=re.DOTALL)
+    content = re.sub(r'\n\s*SEAM Protected™.*$', '', content, flags=re.DOTALL | re.MULTILINE)
+    
+    # Add new footer
+    if not content.endswith('\n'):
+        content += '\n'
+    
+    new_content = content + footer_text
+    
+    try:
+        file_path.write_text(new_content, encoding='utf-8')
+        return True, f"Updated footer for {file_path.name}"
+    except Exception as e:
+        return False, f"Could not write file: {e}"
+
+
+def edit_headers_interactive(doc_files: Optional[List[Path]] = None) -> None:
+    """
+    Interactive mode to edit headers for multiple documentation files.
+    
+    Args:
+        doc_files: List of files to edit, or None to use defaults
+    """
+    if doc_files is None:
+        project_root = Path.cwd()
+        doc_files = [
+            project_root / "README.md",
+            project_root / "SECURITY.md",
+            project_root / "CHANGELOG.md",
+            project_root / "CONTRIBUTING.md",
+        ]
+    
+    print("\n" + "="*70)
+    print("[EDITOR] INTERACTIVE HEADER EDITOR")
+    print("="*70)
+    
+    for file_path in doc_files:
+        if not file_path.exists():
+            continue
+        
+        print(f"\n[FILE] {file_path.name}")
+        print("-" * 70)
+        
+        # Show template options with project-specific values
+        headers = get_header_templates()
+        if file_path.name in headers:
+            template_info = headers[file_path.name]
+            project_marker = "[PROJECT]" if template_info.get('project_specific') else "        "
+            print(f"{project_marker} Description: {template_info['description']}")
+            print(f"\nSuggested template:\n")
+            print(template_info['template'][:200])
+            
+            choice = input("Use suggested template? (y/n/custom): ")
+
+            if choice == 'y':
+                success, msg = set_header_for_file(file_path, file_path.name)
+                print(f"[OK] {msg}" if success else f"[FAIL] {msg}")
+            elif choice == 'custom':
+                print("Enter custom header (type 'END' on new line when done):")
+                lines = []
+                while True:
+                    line = input()
+                    if line == 'END':
+                        break
+                    lines.append(line)
+                custom_header = '\n'.join(lines) + '\n'
+                success, msg = set_header_for_file(file_path, custom_header=custom_header)
+                print(f"[OK] {msg}" if success else f"[FAIL] {msg}")
+            else:
+                print("Skipped.")
+        else:
+            print(f"No template available for {file_path.name}")
+    
+    print("\n" + "="*70 + "\n")
+
+
+def edit_footers_interactive(doc_files: Optional[List[Path]] = None) -> None:
+    """
+    Interactive mode to edit footers for multiple documentation files.
+    
+    Args:
+        doc_files: List of files to edit, or None to use defaults
+    """
+    if doc_files is None:
+        project_root = Path.cwd()
+        doc_files = [
+            project_root / "README.md",
+            project_root / "SECURITY.md",
+            project_root / "CHANGELOG.md",
+            project_root / "CONTRIBUTING.md",
+        ]
+    
+    print("\n" + "="*70)
+    print("[EDITOR] INTERACTIVE FOOTER EDITOR")
+    print("="*70)
+    
+    for file_path in doc_files:
+        if not file_path.exists():
+            continue
+        
+        print(f"\n[FILE] {file_path.name}")
+        print("-" * 70)
+        
+        # Show footer template options with project-specific values
+        footers = get_footer_templates()
+        print("Available footer templates:\n")
+        for idx, (template_name, template_info) in enumerate(footers.items(), 1):
+            marker = "[PROJECT]" if template_info.get('project_specific') else "        "
+            print(f"  {idx}. {marker} {template_name.upper()}: {template_info['description']}")
+        
+        choice = input("\nSelect template (number/custom): ").strip().lower()
+        
+        if choice.isdigit() and 1 <= int(choice) <= len(footers):
+            template_name = list(footers.keys())[int(choice) - 1]
+            success, msg = set_footer_for_file(file_path, template_name)
+            print(f"[OK] {msg}" if success else f"[FAIL] {msg}")
+        elif choice == 'custom':
+            print("Enter custom footer (type 'END' on new line when done):")
+            lines = []
+            while True:
+                line = input()
+                if line == 'END':
+                    break
+                lines.append(line)
+            custom_footer = '\n' + '\n'.join(lines) + '\n'
+            success, msg = set_footer_for_file(file_path, custom_footer=custom_footer)
+            print(f"[OK] {msg}" if success else f"[FAIL] {msg}")
+        else:
+            print("Skipped.")
+    
+    print("\n" + "="*70 + "\n")
