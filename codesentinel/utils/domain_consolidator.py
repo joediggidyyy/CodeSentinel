@@ -2,15 +2,20 @@
 Domain History Consolidator
 ============================
 
-DHIS Layer 2: Consolidation and Pattern Analysis
+DHIS Layer 2 & 3: Consolidation, Pattern Analysis, and Agent Query API
 
 Reads domain history.jsonl files, analyzes patterns, and generates
 INDEX.json with aggregated intelligence and confidence scores.
 
 This module feeds ORACL Tier 2 (Context) and Tier 3 (Intelligence).
+
+Agent Query API:
+- get_domain_guidance(domain): Get strategic guidance for a domain
+- search_history(query, domain): Search historical patterns
 """
 
 import json
+import re
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Tuple, Optional
@@ -293,6 +298,202 @@ class DomainConsolidator:
             summary_lines.append(f"\nPeak Hours: {hours_str}")
         
         return '\n'.join(summary_lines)
+
+
+# ============================================================================
+# DHIS Layer 3: Agent Query API
+# ============================================================================
+
+def get_domain_guidance(domain: str, workspace_root: Optional[Path] = None) -> Dict[str, Any]:
+    """
+    Get strategic guidance for a specific domain.
+    
+    DHIS Layer 3: Agent Query API - Returns actionable intelligence from INDEX.json.
+    
+    Args:
+        domain: Domain name (cli, core, utils, process, root, policy)
+        workspace_root: Workspace root path (auto-detected if None)
+        
+    Returns:
+        Dict containing:
+        - domain: Domain name
+        - confidence: Confidence score (0.0-1.0)
+        - guidance: Strategic recommendations
+        - patterns: Key patterns detected
+        - recent_activity: Summary of recent operations
+    """
+    workspace_root = workspace_root or Path.cwd()
+    index_file = workspace_root / "docs" / "domains" / domain / "INDEX.json"
+    
+    if not index_file.exists():
+        return {
+            'domain': domain,
+            'confidence': 0.0,
+            'guidance': f"No history available for domain '{domain}'. Domain is either new or unused.",
+            'patterns': {},
+            'recent_activity': 'No recent activity recorded',
+            'status': 'no_data'
+        }
+    
+    try:
+        with open(index_file, 'r', encoding='utf-8') as f:
+            index = json.load(f)
+    except (IOError, json.JSONDecodeError) as e:
+        return {
+            'domain': domain,
+            'confidence': 0.0,
+            'guidance': f"Error reading domain index: {e}",
+            'patterns': {},
+            'recent_activity': 'Error',
+            'status': 'error'
+        }
+    
+    patterns = index.get('patterns', {})
+    confidence = patterns.get('confidence_score', 0.0)
+    total_ops = patterns.get('total_operations', 0)
+    success_rate = patterns.get('success_rate', 0.0)
+    
+    # Generate strategic guidance based on patterns
+    guidance_parts = []
+    
+    if confidence >= 0.8:
+        guidance_parts.append(f"HIGH CONFIDENCE ({confidence*100:.0f}%): Domain patterns are reliable and actionable.")
+    elif confidence >= 0.5:
+        guidance_parts.append(f"MODERATE CONFIDENCE ({confidence*100:.0f}%): Patterns detected but need more data.")
+    else:
+        guidance_parts.append(f"LOW CONFIDENCE ({confidence*100:.0f}%): Insufficient data for reliable patterns.")
+    
+    if success_rate >= 0.95:
+        guidance_parts.append(f"Operations are highly stable ({success_rate*100:.0f}% success).")
+    elif success_rate >= 0.80:
+        guidance_parts.append(f"Operations are mostly stable ({success_rate*100:.0f}% success) but monitor for issues.")
+    else:
+        guidance_parts.append(f"WARNING: Lower success rate ({success_rate*100:.0f}%) - investigate failures.")
+    
+    # Top action recommendations
+    action_freq = patterns.get('action_frequency', {})
+    if action_freq:
+        top_action = list(action_freq.keys())[0]
+        guidance_parts.append(f"Most common operation: '{top_action}' ({action_freq[top_action]} times).")
+    
+    # Files modified insights
+    files_modified = patterns.get('files_modified', [])
+    if files_modified:
+        guidance_parts.append(f"Active files: {len(files_modified)} files touched recently.")
+    
+    guidance = " ".join(guidance_parts)
+    
+    return {
+        'domain': domain,
+        'confidence': confidence,
+        'guidance': guidance,
+        'patterns': {
+            'action_frequency': action_freq,
+            'success_rate': success_rate,
+            'avg_duration_ms': patterns.get('avg_duration_ms', 0),
+            'peak_hours': patterns.get('peak_hours', [])
+        },
+        'recent_activity': f"{total_ops} operations in last {index.get('time_window_days', 7)} days",
+        'status': 'ok'
+    }
+
+
+def search_history(
+    query: str, 
+    domain: Optional[str] = None, 
+    workspace_root: Optional[Path] = None,
+    days: int = 30
+) -> List[Dict[str, Any]]:
+    """
+    Search historical patterns across domains or within a specific domain.
+    
+    DHIS Layer 3: Agent Query API - Full-text search of historical activity.
+    
+    Args:
+        query: Search query (regex pattern or plain text)
+        domain: Specific domain to search (None = search all domains)
+        workspace_root: Workspace root path (auto-detected if None)
+        days: Number of days to search back (default: 30)
+        
+    Returns:
+        List of matching records with relevance scores
+    """
+    workspace_root = workspace_root or Path.cwd()
+    domains_dir = workspace_root / "docs" / "domains"
+    
+    if not domains_dir.exists():
+        return []
+    
+    # Determine which domains to search
+    if domain:
+        domains_to_search = [domain]
+    else:
+        domains_to_search = ['cli', 'core', 'utils', 'process', 'root', 'policy']
+    
+    results = []
+    query_lower = query.lower()
+    
+    # Try to compile as regex (fallback to literal if invalid)
+    try:
+        query_regex = re.compile(query, re.IGNORECASE)
+        use_regex = True
+    except re.error:
+        use_regex = False
+    
+    for domain_name in domains_to_search:
+        history_file = domains_dir / domain_name / "history.jsonl"
+        
+        if not history_file.exists():
+            continue
+        
+        try:
+            with open(history_file, 'r', encoding='utf-8') as f:
+                for line_num, line in enumerate(f, 1):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    try:
+                        record = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    
+                    # Check if record is within time window
+                    timestamp_str = record.get('timestamp', '')
+                    try:
+                        timestamp = datetime.fromisoformat(timestamp_str)
+                        if timestamp < datetime.now() - timedelta(days=days):
+                            continue
+                    except (ValueError, TypeError):
+                        continue
+                    
+                    # Calculate relevance score
+                    relevance = 0.0
+                    record_text = json.dumps(record).lower()
+                    
+                    if use_regex:
+                        matches = query_regex.findall(record_text)
+                        relevance = len(matches) / 10.0  # Scale by match count
+                    else:
+                        # Count occurrences of query terms
+                        relevance = record_text.count(query_lower) / 10.0
+                    
+                    if relevance > 0:
+                        results.append({
+                            'domain': domain_name,
+                            'record': record,
+                            'relevance': min(1.0, relevance),
+                            'line_number': line_num,
+                            'timestamp': timestamp_str
+                        })
+        
+        except IOError:
+            continue
+    
+    # Sort by relevance (descending) then timestamp (descending)
+    results.sort(key=lambda x: (-x['relevance'], x['timestamp']), reverse=False)
+    
+    return results
 
 
 def consolidate_domains_cli(days: int = 7, verbose: bool = False) -> None:
