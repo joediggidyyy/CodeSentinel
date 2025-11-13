@@ -201,3 +201,88 @@ def _format_relative(path: Path) -> str:
     except ValueError:
         return str(path)
     return str(rel).replace("\\", "/")
+
+
+def build_dev_audit_context(results: Dict[str, Any]) -> AgentContext:
+    """Build an AgentContext from the results of a development audit."""
+    context = AgentContext(command="dev-audit", analysis_results=results)
+
+    # Helper to create opportunities from hints
+    def create_opp_from_hint(hint: dict, opp_type: str) -> RemediationOpportunity:
+        # If agent_decision_required is not set, default based on safe_to_automate
+        safe_to_automate = hint.get("safe_to_automate", False)
+        agent_decision_required = hint.get("agent_decision_required", not safe_to_automate)
+        
+        return RemediationOpportunity(
+            id=f"{opp_type}-{hint.get('file', 'general')}-{hint.get('priority', 'medium')}",
+            type=opp_type,
+            priority=hint.get("priority", "medium"),
+            title=hint.get("issue", "Untitled Issue"),
+            description=hint.get("suggestion", hint.get("violation", "No description.")),
+            current_state={"details": hint},
+            proposed_action="Review and apply suggested actions.",
+            agent_decision_required=agent_decision_required,
+            safe_to_automate=safe_to_automate,
+            suggested_actions=hint.get("suggested_actions", []),
+        )
+
+    # Process hints from each category
+    remediation_hints = results.get("remediation_context", {})
+    for hint in remediation_hints.get("security_issues", []):
+        context.add_opportunity(create_opp_from_hint(hint, "security"))
+
+    for hint in remediation_hints.get("efficiency_issues", []):
+        context.add_opportunity(create_opp_from_hint(hint, "efficiency"))
+
+    for hint in remediation_hints.get("minimalism_issues", []):
+        context.add_opportunity(create_opp_from_hint(hint, "minimalism"))
+
+    return context
+
+
+def build_scan_context(results: Dict[str, Any]) -> AgentContext:
+    """Build an AgentContext from the results of scan operations."""
+    context = AgentContext(command="scan", analysis_results=results)
+    
+    # Extract bloat audit results if present
+    bloat_audit = results.get('bloat_audit', {})
+    if bloat_audit and 'summary' in bloat_audit:
+        summary = bloat_audit['summary']
+        priority_actions = summary.get('priority_actions', [])
+        
+        # Create opportunities from priority actions
+        for i, action in enumerate(priority_actions):
+            opportunity = RemediationOpportunity(
+                id=f"bloat-{i}",
+                type="bloat_audit",
+                priority="high" if i == 0 else "medium",
+                title=f"Repository bloat: {action}",
+                description=f"Priority action detected during bloat audit: {action}",
+                current_state={"action": action},
+                proposed_action=action,
+                agent_decision_required=False,
+                safe_to_automate=False,  # Bloat audit items require review
+                suggested_actions=[action],
+            )
+            context.add_opportunity(opportunity)
+    
+    # Extract security scan results if present
+    security_results = results.get('security', {})
+    if security_results and 'vulnerabilities' in security_results:
+        vulns = security_results.get('vulnerabilities', [])
+        for vuln in vulns:
+            opportunity = RemediationOpportunity(
+                id=f"security-{vuln.get('id', 'unknown')}",
+                type="security_vulnerability",
+                priority=vuln.get('severity', 'medium'),
+                title=f"Security: {vuln.get('name', 'Unknown vulnerability')}",
+                description=vuln.get('description', 'No description available'),
+                current_state={"vulnerability": vuln},
+                proposed_action="Review and remediate vulnerability",
+                agent_decision_required=True,
+                safe_to_automate=False,
+                suggested_actions=vuln.get('remediation_steps', []),
+            )
+            context.add_opportunity(opportunity)
+    
+    return context
