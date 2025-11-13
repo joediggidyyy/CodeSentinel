@@ -1,0 +1,38 @@
+================================================================================
+CODESENTINEL METRICS REPORT
+================================================================================
+
+Generated: 2025-11-13 01:37:15
+
+DATA RANGE:
+  Start: 2025-11-13T01:03:23.777064
+  End:   2025-11-13T01:23:11.371516
+
+SUMMARY STATISTICS:
+  Total records:          13
+  Total commands:         13
+  Successful:              6
+  Failed:                  7
+  Success rate:         46.2%
+  Unique sessions:        13
+
+COMMAND FREQUENCY:
+--------------------------------------------------------------------------------
+  cli_syntax_error             7x  [OK]   0  [FAIL]   7  (  0.0%)  Avg:     N/A
+  memory                       3x  [OK]   3  [FAIL]   0  (100.0%)  Avg:   35.8ms
+  status                       3x  [OK]   3  [FAIL]   0  (100.0%)  Avg:   26.5ms
+
+PERFORMANCE METRICS:
+--------------------------------------------------------------------------------
+  memory                       35.79 ms
+  status                       26.49 ms
+
+TOP ERROR PATTERNS:
+--------------------------------------------------------------------------------
+  [2x] argument command: invalid choice: 'invalid_command' (choose from statu...
+  [2x] argument command: invalid choice: 'badcommand' (choose from status, sc...
+  [1x] unrecognized arguments: --invalid-flag
+  [1x] argument command: invalid choice: 'test_invalid' (choose from status, ...
+  [1x] unrecognized arguments: --bad-flag
+
+================================================================================

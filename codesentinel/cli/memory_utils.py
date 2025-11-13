@@ -22,7 +22,7 @@ def handle_memory_show(args, session_memory) -> None:
     print("=" * 70)
     
     # Task summary
-    print("\n📋 TASK TRACKING:")
+    print("\n[TASK TRACKING]:")
     task_summary = session_memory.get_task_summary()
     if task_summary == "No active tasks":
         print("   No active tasks")
@@ -32,19 +32,19 @@ def handle_memory_show(args, session_memory) -> None:
     
     # Recent decisions
     decisions = session_memory.get_recent_decisions(limit=5)
-    print("\n🧠 RECENT DECISIONS:")
+    print("\n[RECENT DECISIONS]:")
     if decisions:
         for i, dec in enumerate(decisions[-5:], 1):
             print(f"   {i}. {dec.get('decision', 'Unknown')}")
             rationale = dec.get('rationale', '')
             if rationale:
-                print(f"      └─ {rationale[:60]}...")
+                print(f"      -> {rationale[:60]}...")
     else:
         print("   No decisions logged")
     
     # Cache stats
     stats = session_memory.get_cache_stats()
-    print("\n💾 CACHE STATISTICS:")
+    print("\n[CACHE STATISTICS]:")
     print(f"   Cached files: {stats.get('cached_files', 0)}")
     print(f"   Logged decisions: {stats.get('logged_decisions', 0)}")
     print(f"   Tracked tasks: {stats.get('tasks_tracked', 0)}")
@@ -64,12 +64,12 @@ def handle_memory_stats(args, session_memory) -> None:
     print("SESSION MEMORY STATISTICS")
     print("=" * 70)
     
-    print("\n📊 CACHE CONTENTS:")
+    print("\n[CACHE CONTENTS]:")
     print(f"   Cached file contexts: {stats.get('cached_files', 0)}")
     print(f"   Logged decisions: {stats.get('logged_decisions', 0)}")
     print(f"   Tracked tasks: {stats.get('tasks_tracked', 0)}")
     
-    print("\n💾 DISK USAGE:")
+    print("\n[DISK USAGE]:")
     disk_kb = stats.get('disk_usage_bytes', 0) / 1024
     disk_mb = disk_kb / 1024
     if disk_mb > 0:
@@ -79,17 +79,17 @@ def handle_memory_stats(args, session_memory) -> None:
     print(f"   Files: {stats.get('cache_files', 0)}")
     print(f"   Location: {stats.get('cache_dir', 'Unknown')}")
     
-    print("\n⏱️  CONFIGURATION:")
+    print("\n[CONFIGURATION]:")
     print(f"   Cache TTL: {stats.get('ttl_minutes', 0)} minutes")
     print(f"   Max cache entries: {session_memory.MAX_CACHE_ENTRIES}")
     print(f"   Max file size: 1.0 MB")
     
     is_stale = session_memory.invalidate_if_stale()
-    print(f"\n🔄 SESSION STATUS:")
+    print(f"\n[SESSION STATUS]:")
     if is_stale:
-        print("   Status: ⚠️  STALE (invalidated)")
+        print("   Status: [WARN] STALE (invalidated)")
     else:
-        print("   Status: ✓ Active")
+        print("   Status: [OK] Active")
     
     print("\n" + "=" * 70)
 
