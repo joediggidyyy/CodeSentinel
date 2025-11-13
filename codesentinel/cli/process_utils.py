@@ -7,9 +7,11 @@ from typing import List, Dict, Any
 import os
 import psutil
 from datetime import datetime
+import time
 
 from ..utils.process_monitor import get_monitor
 from ..utils.instance_manager import find_instances, get_registered_instances
+from ..utils.session_memory import SessionMemory
 
 def _format_bytes(byte_count: float) -> str:
     """Formats bytes into a human-readable string (KB, MB, GB)."""
@@ -50,6 +52,8 @@ def _get_process_details(pid: int) -> Dict[str, Any]:
 
 def handle_lifecycle_status(args):
     """Handler for `codesentinel memory process status` - Show tracked processes."""
+    start_time = time.time()
+    
     monitor = get_monitor()
     status = monitor.get_status()
     tracked_pids = status.get('tracked_pids', [])
@@ -68,9 +72,25 @@ def handle_lifecycle_status(args):
             details = _get_process_details(pid)
             print(f"{details['pid']:<10} {details['name']:<25} {details['status']:<12} {_format_bytes(details['memory']):<12} {details['create_time']:<20}")
     print("="*80)
+    
+    # Log to DHIS
+    duration_ms = int((time.time() - start_time) * 1000)
+    session = SessionMemory()
+    session.log_domain_activity('process', {
+        'action': 'lifecycle_status_check',
+        'files_modified': ['codesentinel/utils/process_monitor.py'],
+        'success': True,
+        'duration_ms': duration_ms,
+        'metadata': {
+            'tracked_count': len(tracked_pids),
+            'instance_pid': os.getpid()
+        }
+    })
 
 def handle_lifecycle_history(args):
     """Handler for `codesentinel memory process history` - Show cleanup history."""
+    start_time = time.time()
+    
     print("\n[LIFECYCLE] Orphan Cleanup History")
     print("="*80)
     
@@ -96,10 +116,25 @@ def handle_lifecycle_history(args):
             print(f"{timestamp:<22} {pid:<8} {name:<25} {action:<15}")
     
     print("="*80)
+    
+    # Log to DHIS
+    duration_ms = int((time.time() - start_time) * 1000)
+    session = SessionMemory()
+    session.log_domain_activity('process', {
+        'action': 'lifecycle_history_query',
+        'files_modified': ['codesentinel/utils/process_monitor.py'],
+        'success': True,
+        'duration_ms': duration_ms,
+        'metadata': {
+            'total_cleanups': len(cleanup_history),
+            'limit_requested': limit
+        }
+    })
 
 
 def handle_discovery_instances(args):
     """Handler for `codesentinel memory process instances` - Show all CodeSentinel instances."""
+    start_time = time.time()
     
     verbose = getattr(args, 'verbose', False)
     print("\n[DISCOVERY] All Detected CodeSentinel Instances")
@@ -131,9 +166,25 @@ def handle_discovery_instances(args):
             else:
                 print(f"{details['pid']:<10} {inst.get('username', 'N/A'):<20} {details['status']:<12} {_format_bytes(details['memory']):<12}")
     print("="*80)
+    
+    # Log to DHIS
+    duration_ms = int((time.time() - start_time) * 1000)
+    session = SessionMemory()
+    session.log_domain_activity('process', {
+        'action': 'discovery_instances_query',
+        'files_modified': [],
+        'success': True,
+        'duration_ms': duration_ms,
+        'metadata': {
+            'instances_found': len(instances),
+            'verbose_mode': verbose
+        }
+    })
 
 def handle_discovery_system(args):
     """Handler for `codesentinel memory process system` - Show top system processes by memory."""
+    start_time = time.time()
+    
     limit = getattr(args, 'limit', 15)
     print(f"\n[DISCOVERY] Top {limit} System Processes by Memory Usage")
     print("="*80)
@@ -157,9 +208,25 @@ def handle_discovery_system(args):
         username = p_info.get('username') or 'N/A'
         print(f"{p_info['pid']:<10} {p_info['name']:<30} {username:<25} {_format_bytes(mem_bytes):<12}")
     print("="*80)
+    
+    # Log to DHIS
+    duration_ms = int((time.time() - start_time) * 1000)
+    session = SessionMemory()
+    session.log_domain_activity('process', {
+        'action': 'discovery_system_scan',
+        'files_modified': [],
+        'success': True,
+        'duration_ms': duration_ms,
+        'metadata': {
+            'total_processes': len(procs),
+            'limit_requested': limit
+        }
+    })
 
 def handle_intelligence_info(args):
     """Handler for `codesentinel memory process info` - Full instance diagnostics."""
+    start_time = time.time()
+    
     print("\n[INTELLIGENCE] CodeSentinel Instance Diagnostics")
     print("="*80)
     
@@ -202,9 +269,26 @@ def handle_intelligence_info(args):
         print("\nOther Registered Instances: [NONE]")
 
     print("="*80)
+    
+    # Log to DHIS
+    duration_ms = int((time.time() - start_time) * 1000)
+    session = SessionMemory()
+    session.log_domain_activity('process', {
+        'action': 'intelligence_info_diagnostics',
+        'files_modified': ['codesentinel/utils/process_monitor.py'],
+        'success': True,
+        'duration_ms': duration_ms,
+        'metadata': {
+            'current_pid': current_pid,
+            'tracked_count': status['tracked_count'],
+            'other_instances': len([i for i in other_instances if i['pid'] != current_pid]) if other_instances else 0
+        }
+    })
 
 def handle_coordination_coordinate(args):
     """Handler for `codesentinel memory process coordinate` - Inter-ORACL communication entry point."""
+    start_time = time.time()
+    
     print("\n[COORDINATION] Inter-ORACL Communication")
     print("="*80)
     print("This feature enables communication and coordination between CodeSentinel instances.")
@@ -238,3 +322,17 @@ def handle_coordination_coordinate(args):
         print("[CONCEPT] This requires a file watcher in each instance's main loop (v1.2).")
 
     print("="*80)
+    
+    # Log to DHIS
+    duration_ms = int((time.time() - start_time) * 1000)
+    session = SessionMemory()
+    session.log_domain_activity('process', {
+        'action': 'coordination_coordinate_check',
+        'files_modified': [],
+        'success': True,
+        'duration_ms': duration_ms,
+        'metadata': {
+            'other_instances': len(other_instances),
+            'current_pid': current_pid
+        }
+    })

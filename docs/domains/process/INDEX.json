@@ -1,0 +1,27 @@
+{
+  "domain": "process",
+  "last_updated": "2025-11-13T00:01:31.100626",
+  "time_window_days": 7,
+  "patterns": {
+    "action_frequency": {
+      "lifecycle_status_check": 1,
+      "lifecycle_history_query": 1,
+      "discovery_instances_query": 1
+    },
+    "success_rate": 1.0,
+    "avg_duration_ms": 321.0,
+    "files_modified": [
+      "codesentinel/utils/process_monitor.py"
+    ],
+    "peak_hours": [
+      23
+    ],
+    "confidence_score": 0.56,
+    "total_operations": 3
+  },
+  "metadata": {
+    "total_records_analyzed": 3,
+    "oldest_record": "2025-11-12T23:57:40.357731",
+    "newest_record": "2025-11-12T23:58:10.237102"
+  }
+}

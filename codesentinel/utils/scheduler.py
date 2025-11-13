@@ -550,6 +550,22 @@ class MaintenanceScheduler:
             self.logger.error(f"Emoji policy enforcement error: {e}")
             errors.append(f"Emoji policy enforcement failed: {str(e)}")
         
+        # Domain history consolidation (DHIS Layer 2)
+        try:
+            from .domain_consolidator import DomainConsolidator
+            consolidator = DomainConsolidator()
+            indices = consolidator.consolidate_all_domains(days=7)
+            
+            # Count domains with activity
+            active_domains = sum(1 for idx in indices.values() if idx['patterns']['total_operations'] > 0)
+            
+            tasks_executed.append(f'domain_consolidation_{active_domains}_active')
+            self.logger.info(f"Domain consolidation completed: {active_domains}/{len(indices)} domains with activity")
+            
+        except Exception as e:
+            self.logger.error(f"Domain consolidation error: {e}")
+            errors.append(f"Domain consolidation failed: {str(e)}")
+        
         # Standard daily tasks
         tasks_executed.extend(['security_check', 'log_cleanup'])
 

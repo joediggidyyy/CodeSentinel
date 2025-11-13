@@ -325,6 +325,66 @@ class SessionMemory:
         """Retrieve recent analysis decisions."""
         return self._decisions[-limit:]
     
+    def log_domain_activity(self, domain: str, activity_data: Dict[str, Any]) -> None:
+        """
+        Log work to domain history for DHIS integration.
+        
+        This method auto-populates docs/domains/{domain}/history.jsonl with
+        session activity, enabling the Domain-History Indexed System (DHIS)
+        to build intelligence and provide agent guidance.
+        
+        Args:
+            domain: Domain name (e.g., 'process', 'cli', 'root', 'policy')
+            activity_data: Dictionary containing activity details:
+                - action: What operation was performed
+                - files_modified: List of file paths affected
+                - success: Boolean indicating operation success
+                - duration_ms: Operation duration in milliseconds
+                - metadata: Additional context (optional)
+        
+        Example:
+            session.log_domain_activity('process', {
+                'action': 'status_check',
+                'files_modified': ['codesentinel/utils/process_monitor.py'],
+                'success': True,
+                'duration_ms': 45,
+                'metadata': {'processes_found': 3}
+            })
+        """
+        try:
+            # Create domain directory structure
+            domain_dir = self.workspace_root / "docs" / "domains" / domain
+            domain_dir.mkdir(parents=True, exist_ok=True)
+            
+            history_file = domain_dir / "history.jsonl"
+            
+            # Build session record
+            session_record = {
+                'timestamp': datetime.now().isoformat(),
+                'domain': domain,
+                'session_id': self.session_id,
+                'agent_id': f"session_{self.session_id}",
+                'activity': activity_data,
+                'success': activity_data.get('success', True),
+                'files_modified': activity_data.get('files_modified', []),
+                'duration_ms': activity_data.get('duration_ms', 0)
+            }
+            
+            # Append to domain history (JSONL format)
+            with open(history_file, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(session_record) + '\n')
+            
+            logger.debug(f"Logged activity to domain '{domain}': {activity_data.get('action', 'unknown')}")
+            
+            # Also log as decision for session context
+            self.log_decision(
+                decision=f"Domain activity: {domain}/{activity_data.get('action', 'unknown')}",
+                rationale=f"Logged to DHIS history for pattern detection"
+            )
+            
+        except Exception as e:
+            logger.warning(f"Failed to log domain activity for '{domain}': {e}")
+    
     def get_task_summary(self) -> str:
         """Generate summary of current task state for agent context."""
         if not self._tasks:
