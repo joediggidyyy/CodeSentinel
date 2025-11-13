@@ -1084,7 +1084,10 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
                     for line in lines:
                         print(f"  {line}")
                     if len(content.split('\n')) > 15:
-                        print(f"  ... ({len(content.split('\n')) - 15} more lines)")
+                        newline_char = '\n'
+                        total_lines = len(content.split(newline_char))
+                        remaining = total_lines - 15
+                        print(f"  ... ({remaining} more lines)")
                         
                     print("-" * 70)
                 except Exception as e:
