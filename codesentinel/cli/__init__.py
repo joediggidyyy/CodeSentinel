@@ -43,6 +43,7 @@ from .doc_utils import (
 from .scan_utils import handle_scan_command
 from .test_utils import handle_test_command
 from .update_utils import perform_update
+from .pdf_utils import handle_pdf_command, add_pdf_subparser
 from ..core import CodeSentinel
 from ..utils.process_monitor import start_monitor, stop_monitor
 from ..utils.metrics_wrapper import track_cli_command
@@ -425,6 +426,10 @@ def main():
     dev_audit_parser.add_argument(
         '--review', action='store_true',
         help='Interactive review mode for manual-review issues detected by agent analysis')
+    
+    # PDF conversion command
+    add_pdf_subparser(subparsers)
+    
     # File integrity command - robust management interface
     integrity_parser = subparsers.add_parser(
         'integrity',
@@ -2383,6 +2388,10 @@ except KeyboardInterrupt:
                     print(_json.dumps(results.get('summary', {}), indent=2))
             
             return
+
+        elif args.command == 'pdf':
+            # Handle PDF conversion command
+            handle_pdf_command(args, codesentinel)
 
         elif args.command == 'integrity':
             """Robust file integrity management interface."""

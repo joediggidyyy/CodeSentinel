@@ -5,6 +5,8 @@ This module provides integration between the main CLI and the beta testing suite
 enabling streamlined beta testing workflows directly from the command line.
 """
 
+import json
+import shutil
 import sys
 import re
 import subprocess
@@ -103,7 +105,6 @@ def _view_session_reports(manager):
     # Display session state info
     if session_file.exists():
         try:
-            import json
             with open(session_file, 'r') as f:
                 state = json.load(f)
             print("Session State:")
@@ -169,8 +170,6 @@ def _view_all_session_reports(manager, active_sessions):
         manager: BetaTestingManager instance.
         active_sessions: List of tuples (session_id, session_file, last_updated).
     """
-    import json
-    
     print("\n" + "=" * 70)
     print(f"ALL SESSION REPORTS - {manager.version}")
     print("=" * 70)
@@ -237,8 +236,6 @@ def _delete_sessions_menu(manager, active_sessions):
         manager: BetaTestingManager instance.
         active_sessions: List of tuples (session_id, session_file, last_updated).
     """
-    import shutil
-    
     print("\n" + "=" * 70)
     print("REMOVE SESSIONS FROM LIST")
     print("=" * 70)
@@ -1244,7 +1241,6 @@ def _run_single_test(manager, venv_path, test):
             # Parse pytest output for failure information
             if "FAILED" in combined_output:
                 # Extract failed test names
-                import re
                 failed_tests = re.findall(r'FAILED (.*?)(?:\s-|\s\[|$)', combined_output)
                 if failed_tests:
                     for failed_test in failed_tests:
@@ -1384,7 +1380,6 @@ def _cleanup_session(manager, venv_path):
     try:
         # Remove virtual environment
         if Path(venv_path).exists():
-            import shutil
             shutil.rmtree(venv_path)
             print(f"[OK] Removed virtual environment: {_get_relative_path(venv_path)}")
     except Exception as e:

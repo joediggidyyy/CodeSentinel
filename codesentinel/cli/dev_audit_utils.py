@@ -8,7 +8,9 @@ auditing the development environment itself.
 import json
 import os
 import platform
+import shutil
 import sys
+from datetime import datetime
 from pathlib import Path
 
 def get_user_settings_path():
@@ -95,7 +97,6 @@ def configure_workspace_tools():
         existing_settings["github.copilot.chat.mcp.enabled"] = True
         
         # Write settings
-        import json
         with open(settings_path, 'w', encoding='utf-8') as f:
             json.dump(existing_settings, f, indent=2)
         
@@ -345,9 +346,6 @@ def apply_automated_fixes(codesentinel, dry_run=True):
     Returns:
         dict: Summary of fixes applied or that would be applied
     """
-    import shutil
-    from datetime import datetime
-    
     print("\\nAutomated Fix Application")
     print("=" * 60)
     

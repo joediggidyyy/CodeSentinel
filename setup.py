@@ -57,6 +57,7 @@ setup(
         "requests>=2.25.0",
         "schedule>=1.1.0",
         "psutil>=5.8.0",
+        "reportlab>=4.0.0",
     ],
     extras_require={
         "dev": [

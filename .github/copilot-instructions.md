@@ -1,11 +1,6 @@
 <!-- 
 This file is auto-organized by the instruction defragmentation utility.
-Last organized: 2025-11-11 14:15:24
--->
-
-<!-- 
-This file is auto-organized by the instruction defragmentation utility.
-Last organized: 2025-11-11 13:59:19
+Last organized: 2025-11-13 (Updated by agent analysis)
 -->
 
 CANONICAL_PROJECT_VERSION: "1.1.2"
@@ -16,1054 +11,337 @@ CANONICAL_PROJECT_VERSION: "1.1.2"
 CodeSentinel is a security-first automated maintenance and monitoring system with SEAM Protection™:
 **Security, Efficiency, And Minimalism** (with Security taking absolute priority).
 
----
+## Project Architecture
 
----
+CodeSentinel follows a **dual-architecture pattern** with clear separation of concerns:
 
-## Core Principles
+### Core Package (`codesentinel/`)
+- **Purpose**: Installable Python package (distributed via PyPI)
+- **Entry Points**: 
+  - `codesentinel` → `codesentinel.cli:main`
+  - `codesentinel-setup` → `codesentinel.launcher:main`
+  - `codesentinel-setup-gui` → `codesentinel.gui_launcher:main`
+- **Structure**:
+  - `cli/`: Command-line interface with modular `*_utils.py` pattern (see below)
+  - `core/`: Business logic (DevAudit, CodeSentinel main class)
+  - `utils/`: Shared utilities (session_memory, root_policy, ORACL™ components)
+  - `gui/`: GUI components (setup wizard, project setup)
 
-### SECURITY
-- No hardcoded credentials - Environment variables or config files only
-- Audit logging - All operations logged with timestamps
-- Configuration validation - Auto-creation of missing configs with secure defaults
-- Dependency scanning - Automated vulnerability detection
+### Automation Layer (`tools/codesentinel/`)
+- **Purpose**: Standalone maintenance and automation scripts
+- **Key Scripts**:
+  - `root_cleanup.py`: Root directory policy enforcement
+  - `scheduler.py`: Automated task scheduling
+  - `manage_satellites.py`: Distributed agent instruction management
+  - `report_workflow.py`: Report generation and archival
 
-### EFFICIENCY
-- **DRY (Don't Repeat Yourself)**: Code reuse and modularization is MANDATORY
-  - Always consolidate duplicate implementations into shared utilities
-  - Extract common patterns into reusable functions/modules
-  - Create centralized configuration files (never duplicate constants)
-  - Reference single source of truth across all implementations
-- Avoid redundant code and duplicate implementations
-- Consolidate multiple versions of similar functionality
-- Clean up orphaned test files and unused scripts
-- Optimize import structures and module organization
+### CLI Modularization Pattern
+The CLI follows a **utility-based pattern** to avoid monolithic files:
 
-### MINIMALISM
-- Remove unnecessary dependencies
-- Archive deprecated code to quarantine_legacy_archive/
-- Maintain single source of truth for each feature
-- Keep codebase focused and maintainable
-- **Code Reuse Over Duplication**: Always prefer importing shared code over copying
-
-### PLATFORM INDEPENDENCE (CRITICAL)
-- **ASCII-Only Console Output**: NEVER use Unicode symbols (✓✗→←•) in `print()` or `logger.*()` statements
-- **Why**: Windows console encoding (cp1252) cannot display Unicode, causing `UnicodeEncodeError` crashes
-- **Approved Symbols**: Use `[OK]` `[FAIL]` `[WARN]` `->` `*` instead of Unicode equivalents
-- **Exception**: Markdown files (`.md`) and file content can safely use UTF-8/Unicode
-- **Policy Document**: See `docs/architecture/CROSS_PLATFORM_OUTPUT_POLICY.md` for complete guidelines
-- **Testing Required**: All console output must be tested on Windows, Linux, and macOS
-
-### QUARANTINE_LEGACY_ARCHIVE POLICY
-- **Mandatory Reference Directory**: `quarantine_legacy_archive/` is essential for agent remediation and code archaeology
-- **Purpose**: Preserve archived code, configurations, and artifacts for reference, analysis, and potential recovery
-- **Compression Policy**: Compress to `.tar.gz` after 30 days of inactivity, but retain in repository
-- **Security Scanning**: ALWAYS thoroughly check archive for:
-  - Malicious file insertion or tampering
-  - Credential leakage in archived code
-  - Dependencies with known vulnerabilities
-  - Integrity of archived content
-- **Exclusion from Most Checks**: Archive directory is excluded from:
-  - Minimalism violation reports (not considered "clutter")
-  - Routine cleanup operations
-  - Code style enforcement
-  - Import optimization scans
-- **Integrity Verification Required**: When archive is accessed or modified:
-  - Verify file hashes match original
-  - Scan for new/modified files
-  - Check for external tampering
-  - Log all access and modifications
-
----
-
----
-
-## CRITICAL: Foundational Policies
-
-
-**THESE ARE NON-NEGOTIABLE - Any implementation violating these is INCORRECT:**
-
-### 1. NON-DESTRUCTIVE OPERATIONS - Policy Priority #1
-
-**RULE: Never implement direct file/directory deletion without first implementing archival**
-
-- ❌ WRONG: `path.unlink()` or `shutil.rmtree()` as default behavior
-- ✅ RIGHT: `shutil.move(item, archive_path)` to `quarantine_legacy_archive/`
-
-When implementing cleanup/remediation features:
-1. **ALWAYS archive first** - Move to quarantine_legacy_archive/
-2. **Ask user permission** - Even with --force, document what will be archived
-3. **Provide recovery option** - Items must be accessible in archive
-4. **LOG all operations** - Track what was moved and why
-
-**Example Pattern:**
 ```python
-# CORRECT: Archive-first pattern
+# codesentinel/cli/__init__.py (main entry point)
+from .scan_utils import handle_scan_command
+from .test_utils import handle_test_command
+from .update_utils import perform_update
+from .doc_utils import verify_documentation_branding
+from .dev_audit_utils import run_tool_audit
+# ... delegates to specialized utility modules
+
+# Example: codesentinel/cli/scan_utils.py
+def handle_scan_command(args, sentinel):
+    """Handle 'codesentinel scan' command."""
+    # Focused implementation for scan operations
+```
+
+**Pattern to Follow**: When adding CLI functionality, create or extend a `*_utils.py` module rather than adding hundreds of lines to `__init__.py`.
+
+## ORACL™ Intelligence System
+
+**ORACL™** (Omniscient Recommendation Archive & Curation Ledger) provides 3-tier intelligent context:
+
+### Tier 1: Session Memory (ALWAYS USE FIRST)
+- **Module**: `codesentinel/utils/session_memory.py`
+- **Purpose**: In-memory cache for current task (0-60 min lifetime)
+- **Usage Pattern**:
+  ```python
+  from codesentinel.utils.session_memory import SessionMemory
+  
+  session = SessionMemory()
+  session.log_task(task_id=1, title="Task", status="in-progress")
+  
+  # Check cache before reading files
+  cached = session.get_file_context("path/to/file.py")
+  if cached:
+      content = cached['content']
+  else:
+      content = read_file("path/to/file.py")
+      session.cache_file_context("path/to/file.py", {"summary": "..."}, content)
+  
+  session.log_decision(decision="What", rationale="Why", related_files=["file.py"])
+  session.log_task(task_id=1, title="Task", status="completed")
+  ```
+- **Performance Target**: >60% cache hit rate, <2MB session size
+
+### Tier 2: Context Tier
+- **Module**: `codesentinel/utils/oracl_context_tier.py`
+- **Purpose**: 7-day rolling window of recent session summaries
+- **Use Case**: Understanding recent work context across sessions
+
+### Tier 3: Intelligence Tier
+- **Modules**: `archive_decision_provider.py`, `archive_index_manager.py`
+- **Purpose**: Long-term pattern recognition and strategic recommendations
+- **Use Case**: High-impact decisions requiring historical wisdom
+
+**Rule**: Start with Tier 1 (session memory) for ALL multi-step tasks. Only query higher tiers when you need broader context.
+
+## Core Principles (SEAM Protection™)
+
+### SECURITY (Priority #1)
+- No hardcoded credentials - Environment variables or config files only
+- All operations logged with timestamps to `logs/` directory
+- Configuration validation with auto-creation of secure defaults
+- Automated vulnerability detection via `codesentinel scan`
+
+### EFFICIENCY (Priority #2)
+- **DRY Principle**: MANDATORY code reuse and modularization
+  - Consolidate duplicate implementations into shared utilities (`codesentinel/utils/`)
+  - Extract common patterns into reusable functions
+  - Import from single source of truth (e.g., `root_policy.py` for root directory policy)
+- Session memory caching reduces file re-reads by 60-74%
+
+### MINIMALISM (Priority #3)
+- Archive deprecated code to `quarantine_legacy_archive/` (NEVER delete directly)
+- Single source of truth for each feature
+- Remove unnecessary dependencies
+- `codesentinel clean` commands for artifact removal
+
+## Critical Policies (NON-NEGOTIABLE)
+
+### 1. Non-Destructive Operations
+**RULE**: Never delete files/directories without archiving first.
+
+```python
+# ✅ CORRECT: Archive-first pattern
 archive_dir = Path("quarantine_legacy_archive")
 archive_dir.mkdir(exist_ok=True)
-target = archive_dir / item.name
-shutil.move(str(item), str(target))
+shutil.move(str(item), str(archive_dir / item.name))
 
-# WRONG: Direct deletion pattern (DO NOT USE)
-item.unlink()  # ❌ FORBIDDEN
-shutil.rmtree(item)  # ❌ FORBIDDEN
+# ❌ FORBIDDEN: Direct deletion
+item.unlink()  # NEVER DO THIS
+shutil.rmtree(item)  # NEVER DO THIS
 ```
 
-### 2. POLICY ALIGNMENT CHECK
+All file operations must:
+- Archive to `quarantine_legacy_archive/` first
+- Ask user permission (unless `--force` with clear documentation)
+- Provide recovery option
+- Log all operations
 
-Before implementing ANY file operation feature:
-
-1. **Read the Persistent Policies section** above
-2. **Ask yourself:**
-   - Does this violate NON-DESTRUCTIVE? 
-   - Does this remove functionality?
-   - Does this compromise security?
-3. **If ANY answer is yes: REDESIGN**
-
-Recent violation example:
-- Task: Add --full flag to clean --root
-- Initial implementation: Deleted unauthorized files directly
-- Violation: Broke NON-DESTRUCTIVE policy - Policy #1
-- Fix: Changed to archive all violations instead
-
-### 3. FILE OPERATION SAFEGUARDS
-
-For any feature adding file operations:
+### 2. Python 3.8+ Type Annotation Compatibility
+**CRITICAL**: CodeSentinel supports Python 3.8+. Use uppercase generic types from `typing` module.
 
 ```python
-# TEMPLATE: Safe file operation pattern
-
-# ✅ DO THIS:
-def safe_file_operation(items_to_process):
-    archive_path = workspace_root / "quarantine_legacy_archive"
-    archive_path.mkdir(exist_ok=True)
-    
-    for item in items_to_process:
-        # Step 1: Assessment
-        reason = assess_file_necessity(item)
-        target = determine_target_location(item)
-        
-        # Step 2: User confirmation (non-dry-run)
-        if not dry_run and not force:
-            response = input(f"Archive {item.name} ({reason})? (y/N): ")
-            if response != 'y':
-                continue
-        
-        # Step 3: Archive (never delete)
-        try:
-            shutil.move(str(item), str(archive_path / item.name))
-            log(f"Archived: {item}")
-        except Exception as e:
-            log_error(f"Failed to archive: {e}")
-
-# ❌ DON'T DO THIS:
-def unsafe_file_operation(items_to_delete):
-    for item in items_to_delete:
-        item.unlink()  # DIRECT DELETION - VIOLATES POLICY!
-        # No assessment, no archival, no recovery option
-```
-
-### 4. VALIDATION BEFORE IMPLEMENTATION
-
-When implementing new --flag or feature:
-
-1. **Trace all code paths** - What happens in each condition?
-2. **Find delete operations** - Search for `.unlink()`, `rmtree()`, `remove()`
-3. **Ask: Is there an archive alternative?** - If yes, use it
-4. **Check for user confirmation** - Is there a prompt before destructive action?
-5. **Test with dry-run** - Does --dry-run show what WOULD happen without doing it?
-
-### 5. CODE REVIEW CHECKLIST
-
-Before committing file operation features:
-
-- [ ] No direct `.unlink()` or `rmtree()` calls (unless approved for specific cases)
-- [ ] Default behavior is archival, not deletion
-- [ ] User sees what will happen before it happens (--dry-run support)
-- [ ] User can approve/reject before action (confirmation prompt)
-- [ ] All operations are logged
-- [ ] Archived items are in quarantine_legacy_archive/ or similar approved archive
-- [ ] Recovery is possible (items not permanently deleted)
-- [ ] Policy compliance is documented in code comments
-
----
-
----
-
-## ORACL™ Intelligence Ecosystem
-
-**ORACL™** (Omniscient Recommendation Archive & Curation Ledger) — *Intelligent Decision Support*
-
----
-
----
-
-## Agent-Driven Remediation
-
-When `codesentinel !!!! --agent` is run, you will receive comprehensive audit context with:
-
-- Detected issues (security, efficiency, minimalism)
-- Remediation hints with priority levels
-- Safe-to-automate vs. requires-review flags
-- Step-by-step suggested actions
-
-### Root Directory Assessment Methodology
-
-**CRITICAL**: When encountering conflicts between different validation systems (e.g., `clean --root` vs `root_cleanup.py` validation), follow this assessment flow **BEFORE** making any changes:
-
-1. **MANUAL STATE ASSESSMENT**
-   - List all files/directories at root: `ls -la` or equivalent
-   - For each item, determine its purpose and status (authorized vs unauthorized)
-   - Compare against `tools/codesentinel/root_cleanup.py`: ALLOWED_ROOT_FILES and ALLOWED_ROOT_DIRS constants
-   - Document the actual vs expected state
-
-2. **DISTINGUISH OPERATION SCOPES**
-   - `codesentinel clean --root`: Removes clutter patterns only (`__pycache__`, `*.pyc`, `*.pyo`, `*.tmp`)
-   - `root_cleanup.py` validation: Enforces policy compliance (checks all items against allowed lists)
-   - **These are DIFFERENT operations with DIFFERENT purposes** - both can be "correct" simultaneously
-
-3. **IDENTIFY CONTRADICTIONS**
-   - If operations report different results, note what each operation's SCOPE actually covers
-   - Example: clean found "0 items" ✓ (no Python clutter) while validation found "3 issues" ✓ (policy violations)
-   - This is NOT contradictory - they're checking different things
-
-4. **DETERMINE ACTION REQUIRED**
-   - Is the issue about accumulated clutter? → Use clean operations
-   - Is the issue about policy non-compliance? → Use validation/remediation operations
-   - Is there an unauthorized file? → **ALWAYS** determine WHY it exists before deletion
-   - Is there a test/debug file from development? → Archive to quarantine_legacy_archive/ rather than delete
-
-5. **DOCUMENT FINDINGS BEFORE ACTING**
-   - Write down what was found, why each item is present, what operation should address it
-   - Distinguish between:
-     - Development artifacts (test_integrity.py) → archive during cleanup phase
-     - Unauthorized system directories (.codesentinel/) → remove per policy
-     - Legitimate but misplaced files → move to correct location or archive
-
-Your role is to:
-
-1. **ANALYZE**: Review each issue with full context
-2. **PRIORITIZE**: Focus on critical/high priority items first  
-3. **DECIDE**: Determine safe vs. requires-review actions
-4. **PLAN**: Build step-by-step remediation plan
-5. **EXECUTE**: Only perform safe, non-destructive operations
-6. **REPORT**: Document all actions and decisions
-
----
-
----
-
-## Persistent Policies
-
-When working with this codebase:
-
-1. **NON-DESTRUCTIVE**: Never delete code without archiving first
-2. **FEATURE PRESERVATION**: All existing functionality must be maintained
-3. **STYLE PRESERVATION**: Respect existing code style and patterns
-4. **SECURITY FIRST**: Security concerns always take priority
-5. **MODULARIZATION & REUSE**: Always optimize code structure through code reuse and modularization. This is default behavior.
-6. **REPOSITORY-RELATIVE PATHS**: All user-facing output must display paths relative to repository root (e.g., `RepoName/path/to/file`), never absolute system paths. This is a permanent, cross-project policy.
-7. **PERMANENT POLICY (T0-5)**: Framework compliance review required with every package release
-   - Every pre-release and production release must include comprehensive framework compliance review
-   - Review must verify SEAM Protected™: Security, Efficiency, And Minimalism alignment
-   - Review must validate all persistent policies (non-destructive, feature preservation, security-first)
-   - Compliance review is a release-blocking requirement, cannot be deferred
-   - Classified as Constitutional (Irreversible) tier in governance system
-   - Review must assess technical debt impact and long-term sustainability
-   - Report must be part of release package and documentation
-   - Failure to include compliance review blocks release approval
-
----
-
----
-
-## Architecture Overview
-
-The codebase follows a dual-architecture pattern:
-
-- **`codesentinel/`** - Core Python package with CLI interface (`codesentinel`, `codesentinel-setup`)
-- **`tools/codesentinel/`** - Comprehensive maintenance automation scripts
-- **`tools/config/`** - JSON configuration files for alerts, scheduling, and policies
-- **`tests/`** - Test suite using pytest with unittest fallback
-
----
-
----
-
-## Key Commands
-
-### Development Audit
-```bash
-# Run interactive audit
-codesentinel !!!!
-
-# Get agent-friendly context for remediation
-codesentinel !!!! --agent
-```
-
-### Maintenance Operations
-```bash
-# Daily maintenance workflow
-python tools/codesentinel/scheduler.py --schedule daily
-
-# Weekly maintenance (security, dependencies, performance)
-python tools/codesentinel/scheduler.py --schedule weekly
-```
-
----
-
----
-
-## Integration Points
-
-### GitHub Integration
-- Repository-aware configuration detection
-- Copilot instructions generation (this file)
-- PR review automation capabilities
-
-### Multi-Platform Support  
-- Python 3.13/3.14 requirement with backward compatibility
-- Cross-platform paths using `pathlib.Path` consistently
-- PowerShell/Python dual execution support for Windows/Unix
-
----
-
----
-
-## When Modifying This Codebase
-
-1. **Understand the dual architecture** - Core package vs. tools scripts serve different purposes
-2. **Maintain execution order** - Change detection dependency is critical
-3. **Preserve configuration structure** - JSON configs have specific schemas
-4. **Test both execution paths** - pytest and unittest must both work
-5. **Follow security-first principle** - Never compromise security for convenience
-6. **Update timeout values carefully** - Task timeouts affect workflow reliability
-
----
-
----
-
-## Safe Actions (can automate)
-
-- Moving test files to proper directories
-- Adding entries to .gitignore
-- Removing __pycache__ directories
-- Archiving confirmed-redundant files to quarantine_legacy_archive/
-
----
-
----
-
-## Requires Review (agent decision needed)
-
-- Deleting or archiving potentially-used code
-- Consolidating multiple implementations
-- Removing packaging configurations
-- Modifying imports or entry points
-
----
-
----
-
-## Forbidden Actions
-
-- Deleting files without archiving
-- Forcing code style changes
-- Removing features without verification
-- Modifying core functionality without explicit approval
-
----
-
-## Agent Operating Rules (MANDATORY)
-
-### QUICK START: Session Memory (USE FOR EVERY TASK)
-
-**Copy this pattern at the start of EVERY multi-step operation:**
-
-```python
-from codesentinel.utils.session_memory import SessionMemory
-
-# 1. Initialize
-session = SessionMemory()
-session.log_task(task_id=1, title="Your task name", status="in-progress")
-
-# 2. Before EVERY file read, check cache
-cached = session.get_file_context("path/to/file.py")
-if cached:
-    content = cached['content']  # Use cached
-else:
-    content = read_file("path/to/file.py")  # Read and cache
-    session.cache_file_context("path/to/file.py", {"summary": "..."}, content)
-
-# 3. Log EVERY decision
-session.log_decision(
-    decision="What you decided",
-    rationale="Why you decided it",
-    related_files=["affected_file.py"]
-)
-
-# 4. Mark task complete
-session.log_task(task_id=1, title="Your task name", status="completed")
-
-# 5. Session auto-saves on exit
-```
-
-**Expected results:**
-- 60-74% reduction in file reads
-- <10ms cache retrieval vs 100-500ms file reads
-- Automatic learning and intelligence building
-- Resume capability if interrupted
-
----
-
-### ORACL™ Memory Usage (PRIORITY #1 - ALWAYS USE)
-
-**CRITICAL: ALWAYS initialize and use session memory for multi-step tasks**
-
-Session-level memory is your PRIMARY tool for efficiency. This is NOT optional.
-
-#### Mandatory Session Memory Pattern
-
-**REQUIRED at start of EVERY multi-step task:**
-
-```python
-from codesentinel.utils.session_memory import SessionMemory
-
-# Initialize session memory (MANDATORY)
-session = SessionMemory()
-
-# Log the task
-session.log_task(task_id=1, title="Task description", status="in-progress")
-```
-
-#### When to Use Session Memory (ALWAYS)
-
-**[REQUIRED] Use session memory for:**
-- ANY task involving multiple file reads
-- Multi-step operations (>2 steps)
-- Decision-making processes
-- File analysis and parsing
-- Configuration changes
-- Any operation that might need to resume
-
-**How to use it:**
-
-```python
-# STEP 1: Check cache BEFORE reading files
-cached_context = session.get_file_context("path/to/file.py")
-if cached_context:
-    # Use cached data - avoid re-reading
-    file_summary = cached_context['summary']
-else:
-    # Read and cache
-    content = read_file(...)
-    summary = analyze(content)
-    session.cache_file_context("path/to/file.py", summary, content)
-
-# STEP 2: Log decisions as you make them
-session.log_decision(
-    decision="Chose to archive instead of delete",
-    rationale="File matches pattern from previous successful cleanup",
-    related_files=["path/to/file.py"]
-)
-
-# STEP 3: Update task status
-session.log_task(task_id=1, title="Cleanup", status="completed")
-```
-
-#### Session Memory Benefits (Why This Matters)
-
-- **74% reduction in file re-reads** (measured)
-- **Instant context retrieval** (<10ms vs. 100-500ms)
-- **Automatic promotion** to Context Tier (7-day history)
-- **Persistence across interruptions** (resume capability)
-- **Decision audit trail** (builds ORACL™ intelligence)
-
-#### Performance Optimization (Session Tier First)
-
-Before moving to Context or Intelligence tiers:
-
-1. **Optimize session caching** - Are you checking cache before every file read?
-2. **Verify decision logging** - Are all decisions being logged?
-3. **Measure cache hit rate** - Use `session.get_cache_stats()` to verify >60% hit rate
-4. **Check persistence** - Sessions should auto-save on exit
-
-**Target Metrics (Session Tier):**
-- Cache hit rate: >60%
-- Session file size: <2MB
-- Decision log entries: >5 per session
-- File contexts cached: >10 per session
-
-### DRY Principle Enforcement (CRITICAL)
-
-**MANDATORY: Eliminate code duplication - Code reuse is a core SEAM Protection™ requirement**
-
-Before implementing ANY new functionality:
-
-1. **SEARCH FOR EXISTING IMPLEMENTATIONS**: 
-   - Use `grep_search` or `semantic_search` to find similar code
-   - Check for existing utilities, helpers, or shared modules
-   - Verify no duplicate constants, configurations, or data structures exist
-
-2. **CONSOLIDATE BEFORE CREATING**:
-   - If similar code exists in 2+ places, create a shared utility FIRST
-   - Extract duplicated logic into centralized modules
-   - Create configuration files for repeated constants/data
-   - Import and reuse rather than copy-paste
-
-3. **SHARED CODE LOCATIONS**:
-   - `codesentinel/utils/` - Shared utility functions
-   - `codesentinel/core/` - Core business logic
-   - `codesentinel/utils/root_policy.py` - Root directory policy (example of DRY)
-   - Configuration files - Centralized data (JSON, TOML, constants)
-
-**Recent DRY Success Examples**:
-- ✅ Created `codesentinel/utils/root_policy.py` to eliminate duplicate ALLOWED_ROOT_FILES/DIRS
-- ✅ Modularized CLI commands into `*_utils.py` to eliminate duplication in `__init__.py`
-- ✅ Created `doc_utils.py` to share documentation verification functions
-
-**DRY Violations are Efficiency Violations**:
-- Multiple implementations of the same logic = Technical debt
-- Duplicate constants = Maintenance nightmare
-- Copy-paste code = Bug multiplication
-- **Action**: Always refactor duplicates into shared modules
-
-### User-Facing Path Display Policy (PERMANENT)
-
-**MANDATORY: Display repository-relative paths in all user-facing output**
-
-When displaying file paths, directory paths, or any filesystem locations to users:
-
-1. **NEVER show absolute paths** beyond the repository root
-2. **ALWAYS show paths relative to repository root** with the repository name as prefix
-3. **Use forward slashes** for cross-platform consistency
-4. **Prefix with repository name** (e.g., `CodeSentinel/`)
-
-**Implementation Requirements**:
-- Create helper function to convert absolute paths to relative paths
-- Pattern: `repo_name/relative/path/to/file.ext`
-- Apply to ALL user-visible output: logs, reports, terminal messages, UI displays
-
-**Examples**:
-
-✅ **CORRECT:**
-```
-✓ Report generated: CodeSentinel/tests/beta_testing/v1.1.0-beta.1/iterations/iteration_1.md
-✓ Environment: CodeSentinel/tests/beta_testing/v1.1.0-beta.1/environment/venv_abc123
-✓ Removed: CodeSentinel/dist/old_build.whl
-```
-
-❌ **INCORRECT:**
-```
-✓ Report generated: C:\Users\joedi\Documents\CodeSentinel\tests\beta_testing\v1.1.0-beta.1\iterations\iteration_1.md
-✓ Environment: /home/user/projects/CodeSentinel/tests/beta_testing/v1.1.0-beta.1/environment/venv_abc123
-✓ Removed: C:\Users\joedi\Documents\CodeSentinel\dist\old_build.whl
-```
-
-**Why This Matters**:
-- **Security**: Prevents exposure of system user paths and directory structures
-- **Privacy**: Doesn't leak username or home directory locations
-- **Portability**: Paths work across Windows, macOS, Linux
-- **Clarity**: Users see workspace-relative locations that are meaningful in project context
-- **Consistency**: All output has uniform path representation
-
-**Helper Function Pattern**:
-```python
-def _get_relative_path(absolute_path):
-    """Convert absolute path to repository-relative path."""
-    try:
-        abs_path = Path(absolute_path)
-        repo_root = Path.cwd()  # Or detect via .git directory
-        rel_path = abs_path.relative_to(repo_root)
-        return f"RepoName/{rel_path}".replace("\\", "/")
-    except ValueError:
-        # Fallback for paths outside repo
-        return f"RepoName/.../{abs_path.name}"
-```
-
-**Application Scope**:
-- Terminal/console output
-- Log messages
-- Error messages
-- Report generation
-- Status updates
-- File operation confirmations
-- Any user-visible path reference
-
-**Exceptions** (use absolute paths ONLY for):
-- Internal logging to debug files (not shown to user)
-- System calls that require absolute paths
-- Configuration files that explicitly store absolute paths
-
-This is a **PERMANENT, CONSTITUTIONAL-TIER** policy that applies to ALL current and future projects.
-
-### Pre-Edit File State Validation
-
-**CRITICAL: Always check file state before making ANY edits**
-
-Before invoking `replace_string_in_file`, `edit_notebook_file`, or similar editing tools:
-
-1. **READ FIRST**: Use `read_file` to inspect current file state
-2. **VERIFY CONTEXT**: Ensure the code you're about to edit actually exists
-3. **CHECK FOR DUPLICATES**: Confirm imports/blocks aren't already present
-4. **ASSESS STRUCTURE**: Understand surrounding code to avoid corruption
-
-**Why this is mandatory:**
-- Prevents duplicate imports and code blocks
-- Avoids file corruption from mismatched oldString patterns
-- Ensures edits are contextually appropriate
-- Reduces failed edit attempts and token waste
-
-**Pattern to follow:**
-```python
-# ❌ WRONG: Edit without reading
-replace_string_in_file(...)  # May fail or duplicate code
-
-# ✅ CORRECT: Read, assess, then edit
-read_file(path, start, end)  # Inspect current state
-# Analyze what's present
-# Craft precise oldString with context
-replace_string_in_file(...)  # Clean, targeted edit
-```
-
-### Python 3.8 Type Annotation Compatibility (CRITICAL)
-
-**MANDATORY: All type annotations must use Python 3.8-compatible syntax**
-
-CodeSentinel supports **Python 3.8+** as declared in `pyproject.toml` and `setup.py`. Python 3.8 does NOT support PEP 585 lowercase generic syntax introduced in Python 3.9.
-
-**The Problem:**
-```python
-# ❌ FORBIDDEN - Causes TypeError in Python 3.8
-def func() -> tuple[bool, list[str]]:
-    return True, ["item"]
-```
-
-**The Solution:**
-```python
-# ✅ REQUIRED - Python 3.8 compatible
+# ✅ CORRECT (Python 3.8 compatible)
 from typing import Tuple, List, Dict, Set, Optional
 
 def func() -> Tuple[bool, List[str]]:
     return True, ["item"]
+
+# ❌ FORBIDDEN (Python 3.9+ only, breaks 3.8)
+def func() -> tuple[bool, list[str]]:  # TypeError in Python 3.8
+    return True, ["item"]
 ```
 
-**Complete Compatibility Table:**
+### 3. Cross-Platform Output (ASCII-Only Console)
+**RULE**: NEVER use Unicode symbols in `print()` or `logger.*()` statements.
 
-| ❌ Python 3.9+ (FORBIDDEN) | ✅ Python 3.8+ (REQUIRED) |
-|---------------------------|--------------------------|
-| `tuple[...]`              | `Tuple[...]`             |
-| `list[...]`               | `List[...]`              |
-| `dict[...]`               | `Dict[...]`              |
-| `set[...]`                | `Set[...]`               |
-
-**Validation Before Commit:**
-- Search for incompatible patterns: `grep -r "-> tuple\[" codesentinel/`
-- Verify all type annotations use capitalized types from `typing` module
-- CI tests on Python 3.8 will catch violations
-
-**Reference Documentation:** `docs/development/PYTHON_COMPATIBILITY.md`
-
-**Historical Incident:** v1.1.1 release CI failed on Python 3.8 due to lowercase type annotations in `doc_utils.py`, `update_utils.py`, and `__init__.py`. All occurrences fixed in commits `0af3799` and `48b9d28`.
-
-### ORACL™ Integration
-
-**Session-First Architecture - Optimize Tier 1 before moving up**
-
-ORACL™ is an intelligent archive-based decision support system with a 3-tier memory architecture. **START WITH TIER 1 (Session) and optimize there before using higher tiers.**
-
-#### Tier Priority for Agent Operations
-
-**TIER 1: Session Memory (USE FIRST - ALWAYS)**
-- **When**: EVERY multi-step task, file analysis, decision-making
-- **Latency**: <10ms (in-memory)
-- **Component**: `codesentinel.utils.session_memory.SessionMemory`
-- **Status**: ✓ ACTIVE - Use immediately
-
-**TIER 2: Context Tier (Use for recent work context)**
-- **When**: Need context from last 7 days, multi-session workflows
-- **Latency**: <100ms (disk read)
-- **Component**: `codesentinel.utils.oracl_context_tier`
-- **Status**: ✓ ACTIVE - Query for weekly patterns
-
-**TIER 3: Intelligence Tier (Use for strategic decisions)**
-- **When**: High-impact decisions with long-term patterns
-- **Latency**: <500ms (indexed search)
-- **Component**: `codesentinel.utils.archive_decision_provider`
-- **Status**: ✓ ACTIVE - Query for historical wisdom
-
-#### Session Tier Integration (MANDATORY)
-
-**ALWAYS start here. Optimize session-level caching BEFORE moving to higher tiers.**
+**Why**: Windows console (cp1252) cannot display Unicode, causing `UnicodeEncodeError` crashes.
 
 ```python
-from codesentinel.utils.session_memory import SessionMemory
+# ✅ APPROVED symbols
+print("[OK] Success")
+print("[FAIL] Error")
+print("[WARN] Warning")
+print("-> Processing")
 
-# STEP 1: Initialize at task start (REQUIRED)
-session = SessionMemory()
-
-# STEP 2: Check cache before file operations
-cached = session.get_file_context("path/to/file.py")
-if cached and not cached_is_stale(cached):
-    # Use cached data - avoid re-reading
-    use_cached_analysis(cached['summary'])
-else:
-    # Only read if cache miss or stale
-    content = read_file("path/to/file.py")
-    analysis = perform_analysis(content)
-    session.cache_file_context("path/to/file.py", analysis, content)
-
-# STEP 3: Log all decisions (builds intelligence)
-session.log_decision(
-    decision="Archive file to quarantine",
-    rationale="Matches deprecated pattern from v1.0.x",
-    related_files=["deprecated_module.py"]
-)
-
-# STEP 4: Track task state
-session.log_task(task_id=1, title="Code cleanup", status="completed")
-
-# STEP 5: Session auto-saves and promotes to Context Tier on exit
+# ❌ FORBIDDEN symbols (cause crashes on Windows)
+print("✓ Success")  # NEVER
+print("✗ Error")    # NEVER
+print("→ Processing")  # NEVER
 ```
 
-#### Session Tier Optimization Checklist
+**Exception**: Markdown files (`.md`) and file content CAN use UTF-8/Unicode safely.
 
-Before using Context or Intelligence tiers, verify:
-
-- [ ] Session memory initialized at task start
-- [ ] File context caching used for all multi-read files
-- [ ] Cache hit rate measured and >60%
-- [ ] Decisions logged with rationale
-- [ ] Task state tracked
-- [ ] Session auto-save verified working
-
-**Target Performance (Session Tier):**
-- Cache hit rate: >60%
-- File read reduction: >50%
-- Session persistence: 100%
-- Decision log completeness: >80%
-
-#### Practical Workflow Example (Session-First)
+### 4. Repository-Relative Paths
+All user-facing output must show paths relative to repository root with repo name prefix:
 
 ```python
-# EXAMPLE: Multi-file analysis with session caching
+# ✅ CORRECT
+print("Report: CodeSentinel/docs/reports/audit.md")
 
-from codesentinel.utils.session_memory import SessionMemory
-
-# Initialize session (ALWAYS FIRST)
-session = SessionMemory()
-session.log_task(task_id=1, title="Analyze codebase for duplicates", status="in-progress")
-
-# List of files to analyze
-files_to_check = ["module_a.py", "module_b.py", "module_c.py"]
-duplicates_found = []
-
-for file_path in files_to_check:
-    # CHECK CACHE FIRST (avoid re-reading)
-    cached = session.get_file_context(file_path)
-    
-    if cached:
-        # Cache hit - use existing analysis
-        analysis = cached['summary']
-        print(f"[CACHE HIT] {file_path}")
-    else:
-        # Cache miss - read and analyze
-        print(f"[CACHE MISS] {file_path}")
-        content = read_file(file_path)
-        analysis = analyze_for_duplicates(content)
-        
-        # Store in cache for future use
-        session.cache_file_context(file_path, analysis, content)
-    
-    # Process analysis
-    if analysis.get('has_duplicates'):
-        duplicates_found.append(file_path)
-        
-        # LOG DECISION
-        session.log_decision(
-            decision=f"Identified duplicates in {file_path}",
-            rationale=f"Found {len(analysis['duplicate_blocks'])} duplicate blocks",
-            related_files=[file_path]
-        )
-
-# Complete task
-session.log_task(task_id=1, title="Analyze codebase for duplicates", status="completed")
-
-# Get performance stats
-stats = session.get_cache_stats()
-print(f"Cache hit rate: {stats['hit_rate']:.1%}")
-print(f"Files cached: {stats['total_files']}")
-print(f"Decisions logged: {stats['total_decisions']}")
-
-# Session auto-saves on exit and promotes to Context Tier
+# ❌ WRONG
+print("Report: C:\\Users\\joedi\\Documents\\CodeSentinel\\docs\\reports\\audit.md")
 ```
 
-**Why this matters:**
-- First run: All cache misses, reads all files
-- Second run: All cache hits (if files unchanged), 74% faster
-- Decision log builds intelligence for future tasks
-- Context Tier learns from successful patterns
+## Development Workflows
 
-#### Common Anti-Patterns (AVOID THESE)
+### Build and Test
+```bash
+# Run tests (pytest preferred, unittest fallback)
+python run_tests.py
+# OR
+pytest tests/ --tb=short --verbose
 
-**❌ WRONG: Not using session memory at all**
-```python
-# BAD: Reading same file multiple times
-for i in range(5):
-    content = read_file("config.json")  # Re-reads every iteration!
-    process(content)
+# Build package
+python -m build
+
+# Install in development mode
+pip install -e .
 ```
 
-**✅ RIGHT: Session caching pattern**
-```python
-session = SessionMemory()
-cached = session.get_file_context("config.json")
-if cached:
-    content = cached['content']
-else:
-    content = read_file("config.json")
-    session.cache_file_context("config.json", {"parsed": True}, content)
+### Interactive Beta Testing
+```bash
+# Run interactive test wizard (8-step protocol)
+codesentinel test --interactive
 
-for i in range(5):
-    process(content)  # Use cached content
+# Automated CI/CD mode
+codesentinel test --automated
 ```
 
-**❌ WRONG: Jumping to Intelligence Tier for simple decisions**
-```python
-# BAD: Using ORACL™ for trivial file read
-from codesentinel.utils.archive_decision_provider import get_decision_context_provider
-provider = get_decision_context_provider()
-context = provider.get_decision_context(...)  # Overkill for simple operation!
-```
+Test suite generates reports in `tests/beta_testing/{version}/iterations/` with session management and state persistence.
 
-**✅ RIGHT: Use appropriate tier**
-```python
-# GOOD: Session memory for simple caching
-session = SessionMemory()
-cached = session.get_file_context("file.py")
-# Fast, lightweight, appropriate for the task
-```
-
-**❌ WRONG: Not logging decisions**
-```python
-# BAD: Making decisions without logging
-if file_is_duplicate:
-    archive_file(file)  # No audit trail, no learning
-```
-
-**✅ RIGHT: Log all significant decisions**
-```python
-session = SessionMemory()
-if file_is_duplicate:
-    session.log_decision(
-        decision="Archive duplicate file",
-        rationale="Exact match found in module_b.py",
-        related_files=[file, "module_b.py"]
-    )
-    archive_file(file)
-```
-
-#### Performance Monitoring (Session Tier)
-
-Always check your cache effectiveness:
+### Root Directory Policy
+Root directory policy is centralized in `codesentinel/utils/root_policy.py`:
 
 ```python
-# After task completion
-stats = session.get_cache_stats()
-
-print(f"Cache Performance:")
-print(f"  Hit rate: {stats['hit_rate']:.1%}")
-print(f"  Total reads: {stats['total_reads']}")
-print(f"  Cache hits: {stats['cache_hits']}")
-print(f"  Cache misses: {stats['cache_misses']}")
-
-# If hit rate < 60%, investigate:
-# - Are you checking cache before reads?
-# - Are files changing frequently?
-# - Is cache being cleared unnecessarily?
-```
-
-#### When to Query Context Tier (After Session Optimized)
-
-**[OK] Query Context Tier for:**
-- Understanding what was done in last 7 days
-- Resuming multi-day workflows
-- Checking recent file modification patterns
-- Verifying recent decision outcomes
-
-```python
-from codesentinel.utils.oracl_context_tier import get_weekly_summaries
-
-# Query recent context (last 7 days)
-summaries = get_weekly_summaries(limit=7)
-for summary in summaries:
-    if 'root_cleanup' in summary['task_types']:
-        # Learn from recent cleanup strategies
-        apply_recent_pattern(summary)
-```
-
-#### When to Query Intelligence Tier (High-Impact Only)
-
-**[OK] DO query Intelligence Tier for:**
-- Policy violation handling (root cleanup, unauthorized files)
-- Cleanup strategy decisions (archive vs. move vs. delete)
-- Dependency update decisions (breaking changes, security patches)
-- Large-scale refactoring (pattern selection, migration strategy)
-- Recurring issues (pattern analysis, historical success rates)
-
-**[FAIL] DON'T query Intelligence Tier for:**
-- Simple file reads/writes
-- Standard CLI operations
-- Trivial decisions with no historical pattern
-- Operations < 5 seconds execution time
-- Read-only queries with no side effects
-
-#### Lightweight Integration Pattern
-
-```python
-# ONLY for high-impact decisions:
-from codesentinel.utils.archive_decision_provider import get_decision_context_provider
-
-# Query historical context
-provider = get_decision_context_provider()
-context = provider.get_decision_context(
-    decision_type="policy_violation_handling",  # or "cleanup_strategy", "dependency_update"
-    current_state={
-        "violation_type": "unauthorized_file_in_root",
-        "severity": "medium",
-        "file_pattern": "*.tmp"
-    },
-    search_radius_days=30  # How far back to search
-)
-
-# Use context to inform decision
-if context and context.confidence_score > 0.7:
-    # High confidence - use ORACL™ recommendation
-    recommended_action = context.recommended_actions[0]
-    print(f"ORACL™ suggests: {recommended_action} (confidence: {context.confidence_score:.0%})")
-    # Execute with high confidence
-else:
-    # Low/no confidence - use default logic or ask user
-    # Fall back to standard decision-making
-
-# ALWAYS report outcome (builds intelligence)
-provider.report_decision_outcome(
-    decision_type="policy_violation_handling",
-    state={"violation_type": "unauthorized_file_in_root"},
-    action="archive",  # What you actually did
-    outcome="success",  # or "failure"
-    reason="File successfully moved to quarantine_legacy_archive/"
+from codesentinel.utils.root_policy import (
+    ALLOWED_ROOT_FILES,  # Set of allowed filenames
+    ALLOWED_ROOT_DIRS,   # Set of allowed directory names
+    FILE_MAPPINGS        # Pattern → target directory mapping
 )
 ```
 
-#### ORACL™ Decision Types
+**DON'T** duplicate these constants elsewhere. Import from `root_policy.py`.
 
-- `policy_violation_handling` - Root policy, security violations
-- `cleanup_strategy` - File/directory cleanup decisions
-- `dependency_update` - Package update decisions
-- `archive_operation` - Archival strategy decisions
+### Development Audit Command
+```bash
+# Interactive audit with detailed report
+codesentinel !!!!
 
-#### Performance Guidelines
+# Agent-friendly context for remediation (JSON output)
+codesentinel !!!! --agent
+```
 
-- **Target latency**: < 100ms for cached queries, < 500ms for cold queries
-- **Cache TTL**: 30 minutes for decision context (auto-managed)
-- **Minimal overhead**: Decision context queries are O(1) to O(log n)
-- **Fail gracefully**: If ORACL™ unavailable, fall back to default logic
+The `!!!!` command provides SEAM-aligned audit results with:
+- Security violations (high priority)
+- Efficiency issues (duplicate code, bloat)
+- Minimalism violations (unnecessary files)
+- Remediation hints with confidence scores
 
-#### Confidence Score Interpretation
+## Key File Locations
 
-- **≥ 0.90**: Very high confidence - auto-execute recommended action
-- **0.70-0.89**: Good confidence - execute with logging
-- **0.50-0.69**: Moderate confidence - consider alternatives or ask user
-- **< 0.50**: Low confidence - use default logic, don't rely on ORACL™
+### Configuration
+- `codesentinel.json`: User-editable main config (created by setup wizard)
+- `tools/config/`: JSON configs for alerts, scheduling, policies
 
-#### Current ORACL™ Integrations
+### Code Organization
+- `codesentinel/cli/*_utils.py`: CLI command implementations (modular pattern)
+- `codesentinel/utils/`: Shared utilities (import from here, don't duplicate)
+- `tools/codesentinel/`: Standalone automation scripts
+- `quarantine_legacy_archive/`: Archived code (excluded from cleanup checks)
 
-**[OK] Active Integrations** (lightweight, high-impact only):
+### Documentation
+- `docs/architecture/`: Architecture decisions and design docs
+- `docs/reports/`: Generated reports and audit results
+- `docs/guides/`: User guides and reference material
+- `README.md`: Primary user-facing documentation
 
-1. **Dev Audit Agent Mode** (`codesentinel !!!! --agent`)
-   - Queries ORACL™ for policy violation patterns
-   - Enriches agent context with historical success rates
-   - Adds confidence scores to remediation recommendations
-   - Location: `codesentinel/cli/dev_audit_utils.py`
+### Testing
+- `tests/`: Test suite (pytest framework)
+- `tests/beta_testing/`: Interactive test wizard sessions and reports
+- `run_tests.py`: Test runner with pytest/unittest fallback
 
-2. **Root Directory Cleanup** (`codesentinel clean --root`)
-   - `suggest_action_for_file()`: Queries ORACL™ before suggesting actions
-   - `execute_cleanup_actions()`: Reports outcomes back to ORACL™
-   - Builds intelligence on successful/failed cleanup strategies
-   - Location: `codesentinel/cli/root_clean_utils.py`
+## Common Tasks
 
-**Additional Integration Opportunities** (future consideration):
+### Adding a New CLI Command
+1. Create or extend a `codesentinel/cli/*_utils.py` module
+2. Implement handler function: `def handle_X_command(args, sentinel):`
+3. Import and call from `codesentinel/cli/__init__.py` main parser
+4. Add argparse subcommand and route to handler
 
-- Dependency update decisions (security patch application)
-- Large refactoring strategy selection
-- Configuration migration planning
-- Test coverage optimization
-- Performance tuning recommendations
+### Adding Shared Utility
+1. Check if similar functionality exists in `codesentinel/utils/`
+2. If consolidating duplicate code, create new module in `utils/`
+3. Import and use from single location (maintain DRY principle)
+4. Add type hints using Python 3.8 compatible syntax
 
-**Integration Philosophy**:
-- ORACL™ calls are **optional** - always fail gracefully
-- Only query for **high-impact decisions** (not simple operations)
-- Always **report outcomes** to build intelligence
-- Target < 100ms latency for cached queries
+### Working with Session Memory
+1. Initialize at task start: `session = SessionMemory()`
+2. Check cache before file reads: `cached = session.get_file_context(path)`
+3. Log decisions: `session.log_decision(decision, rationale, related_files)`
+4. Track tasks: `session.log_task(id, title, status)`
+5. Session auto-saves and promotes to Context Tier on exit
 
-### ORACL™ Memory Ecosystem (3-Tier Architecture)
+### Implementing Cleanup Operation
+1. NEVER delete directly - archive to `quarantine_legacy_archive/`
+2. Implement `--dry-run` flag for preview
+3. Add user confirmation prompt (unless `--force`)
+4. Log all operations to audit trail
+5. Provide recovery instructions
 
-To enhance agent efficiency and long-term learning, ORACL™ is integrated with a 3-tier memory system. This allows the agent to access context at different levels of granularity, from immediate task details to deep historical wisdom.
+## Integration Points
 
-#### Tier 1: Session Tier (Short-Term Cache)
-- **Component**: `codesentinel/utils/session_memory.py`
-- **Purpose**: High-speed, ephemeral cache for the **current, active task**. Prevents re-reading files and re-analyzing decisions within a single work session.
-- **Lifetime**: **0-60 minutes**.
-- **When to Use**: For immediate context related to the task at hand.
-  - *Query*: "What was the summary of the file I just read?"
-  - *Action*: Access via `SessionMemory` instance.
+### GitHub Integration
+- `.github/copilot-instructions.md`: This file (auto-organized by defragmentation utility)
+- Repository-aware configuration detection
+- PR review automation capabilities (future)
 
-#### Tier 2: Context Tier (Mid-Term Aggregates)
-- **Component**: `codesentinel/utils/oracl_context_tier.py`
-- **Purpose**: Stores curated summaries from **recently completed sessions** (e.g., last few days). Provides context on what was recently accomplished.
-- **Lifetime**: **7 days** (rolling window).
-- **When to Use**: To understand the context of recent, related work.
-  - *Query*: "What were the key files involved in the task I completed yesterday?"
-  - *Action*: Use `get_weekly_summaries()` from the context tier module.
+### VS Code Integration
+- Copilot reads this file for context-aware suggestions
+- Process monitor tracks background tasks
+- Alert system supports file-based notifications
 
-#### Tier 3: Intelligence Tier (Long-Term Archive)
-- **Component**: The main ORACL™ Archive (`archive_index_manager.py`, `archive_decision_provider.py`).
-- **Purpose**: Permanent storage for identifying **significant, historical patterns and strategies**.
-- **Lifetime**: **Permanent**.
-- **When to Use**: For strategic decisions requiring historical wisdom.
-  - *Query*: "What is the historically most successful way to resolve a specific policy violation?"
-  - *Action*: Use `get_decision_context_provider()` as per the standard ORACL™ integration pattern.
+### Multi-Platform Support
+- Windows, macOS, Linux compatibility
+- PowerShell/cmd.exe/bash/zsh support
+- Cross-platform paths using `pathlib.Path` consistently
+- ASCII-only console output for universal compatibility
 
-#### Data Flow (One-Way Promotion)
+## Version Management
 
-`Tier 1 (Session)` → `Tier 2 (Context)` → `Tier 3 (Intelligence)`
+Current version: **1.1.2** (synchronized across):
+- `pyproject.toml`
+- `setup.py`
+- `codesentinel/__init__.py`
+- `CHANGELOG.md`
 
-1.  **Session to Context (Automatic)**: At the end of a successful agent session, a summary is automatically promoted from Tier 1 to Tier 2. This is a non-blocking, background operation.
-2.  **Context to Intelligence (Weekly Task)**: A scheduled maintenance task analyzes the weekly summaries in Tier 2. High-confidence patterns are promoted to the permanent Tier 3 archive.
-
-As an agent, you do not need to manage this promotion. Your responsibility is to **query the correct tier** for the information you need. Start with the lowest, fastest tier and move up as required.
-
-### README Rebuild Root Validation
-
-**CRITICAL: Always validate root directory before README rebuild**
-
-When executing README rebuild operations:
-
-1. **ROOT CLEANUP FIRST**: Call root directory validation/cleanup before analyzing repo structure
-2. **OPTIMAL DATA**: Ensure file structure diagram reflects compliant, clean repository state
-3. **POLICY ENFORCEMENT**: Root must meet specification before documentation generation
-
-**Implementation requirement:**
-- `update readme --rebuild` must invoke `clean --root --full --dry-run` or equivalent validation
-- Report any policy violations detected during root scan
-- Optionally offer to fix violations before proceeding with rebuild
-- Document root state in rebuild operation log
-
-**Why this is mandatory:**
-- README should reflect ideal repository state, not current violations
-- File structure diagrams guide contributors - must show proper organization
-- Prevents documenting temporary/unauthorized files as permanent structure
-- Aligns documentation with SEAM Protection™ standards
+Update version with: `codesentinel update version --set-version X.Y.Z`
 
 ---
+
+## Quick Reference
+
+| What | Command/Module |
+|------|---------------|
+| Run audit | `codesentinel !!!!` |
+| Security scan | `codesentinel scan` |
+| Clean artifacts | `codesentinel clean --cache --test --build` |
+| Root cleanup | `codesentinel clean --root` |
+| Session memory | `from codesentinel.utils.session_memory import SessionMemory` |
+| Root policy | `from codesentinel.utils.root_policy import ALLOWED_ROOT_FILES` |
+| Interactive test | `codesentinel test --interactive` |
+| Build package | `python -m build` |
+| Run tests | `python run_tests.py` |
+
+---
+
+**Remember**: 
+1. Session memory for multi-step tasks (ALWAYS)
+2. Archive before delete (NEVER skip)
+3. ASCII-only console output (Windows compatibility)
+4. Python 3.8+ type annotations (uppercase generics)
+5. DRY principle (import, don't duplicate)
+
+---
+````
+```

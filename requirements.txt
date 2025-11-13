@@ -23,6 +23,9 @@ requests>=2.25.0  # For HTTP requests, Slack webhooks, email (via SMTP), and ext
 # Task scheduling and automation
 schedule>=1.1.0  # For automated scheduled task execution and workflow management
 
+# PDF generation and document conversion
+reportlab>=4.0.0  # For markdown to PDF conversion with formatting preservation
+
 # GUI Framework (optional but included for full functionality)
 # tkinter - Included with Python 3.7+, no pip installation needed
 # To install on Linux: sudo apt-get install python3-tk

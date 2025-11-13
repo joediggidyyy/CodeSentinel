@@ -4,9 +4,11 @@ Documentation utilities for verification and fixing.
 This module contains shared functions for documentation branding,
 header/footer management, and integrity verification.
 """
+import json
+import re
+import subprocess
 from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any
-import re
 
 
 def _normalize_markdown_whitespace(content: str) -> str:
@@ -419,10 +421,6 @@ def detect_project_info() -> dict:
     Returns:
         Dictionary with detected project info (project_name, description, repo_url, etc.)
     """
-    import json
-    import re
-    import subprocess
-    
     project_root = Path.cwd()
     info = {
         'project_name': 'Project',
@@ -649,8 +647,6 @@ def set_header_for_file(file_path: Path, template_name: Optional[str] = None, cu
     except Exception as e:
         return False, f"Could not read file: {e}"
     
-    import re
-    
     # Get dynamic templates (with project-specific info)
     headers = get_header_templates()
     
@@ -700,8 +696,6 @@ def set_footer_for_file(file_path: Path, template_name: str = 'standard', custom
         content = file_path.read_text(encoding='utf-8')
     except Exception as e:
         return False, f"Could not read file: {e}"
-    
-    import re
     
     # Get dynamic templates (with project-specific info)
     footers = get_footer_templates()
