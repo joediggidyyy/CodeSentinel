@@ -1,35 +1,8 @@
 # Changelog
 
-## [v1.1.2] - 2025-11-11
-
--   Initial release for this version.
-
-All notable changes to CodeSentinel will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [1.1.1] - 2025-11-11
+## [v1.1.3.b1] - 2025-11-13
 
 ### Added
-
-- Added `dist/` directory to ALLOWED_ROOT_DIRS for packaging workflow support
-- Created ORACL™ lesson for version promotion workflow (confidence: 0.95)
-
-### Changed
-
-- Promoted version from 1.1.1.b1 to 1.1.1 (official release)
-- Updated version metadata across `__init__.py`, `setup.py`, and `pyproject.toml`
-- Updated intelligence report with v1.1.1 release status and completion metrics
-
-### Fixed
-
-- Synchronized version metadata across all configuration files
-- Resolved version inconsistency in package builds
-
-## [Unreleased]
-
-### Changes
 
 - Implement quarantine_legacy_archive compression with security scanning (7b564b1)
 - docs: Add header/footer quick reference card (2007027)
@@ -39,7 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: reorganize publication guides and update documentation structure (47ae670)
 - docs: add SEAM Protection branding guide and strategy (31f41b7)
 - branding: introduce SEAM Protection trademark branding (c338d62)
-- refactor: remove non-policy emojis from CLI output and fix sys import issue (8676932)
 - feat: Add intelligent emoji detection with policy-aware scanning (193c6b7)
 - feat: Add emoji cleaning to 'codesentinel clean' command (53f5043)
 - feat: Add 'codesentinel clean' command for repository maintenance (af6be0f)
@@ -49,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: Add focus parameter to !!!! command for targeted Copilot analysis (3d11453)
 - docs: Update documentation for formatting UI and duplication detection features (018ee66)
 - feat: Add duplication detection to daily maintenance workflow (1224134)
-- fix: Remove duplication bug from .gitignore file (a452813)
 - feat: Add professional formatting configuration UI to setup wizard (6cb2c67)
 - docs(phase3): create phase 3 completion report (8690114)
 - docs(phase3): complete and document final review (027a487)
@@ -74,20 +45,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs(phase3): integrate infrastructure satellite cross-references (16e90ca)
 - docs(phase3): iteration 1 complete - 3 enterprise satellites created (1,284 lines) (256431d)
 - feat(phase3): create infrastructure operations satellite - iac, terraform, cloud resources (450 lines) (d1fa598)
-- fix(phase3): improve markdown formatting - fix URL syntax and list formatting (6a9f5bd)
 - feat(phase3): create ci/cd & deployment satellite - pipelines, staging, production, rollback (419 lines) (43e0c49)
 - feat(phase3): create github operations satellite - PR/issue management, actions, releases (415 lines) (0c41b24)
-- chore(phase3): improve markdown formatting - blanks around lists and headings (2961e38)
 - docs(phase3): branch setup complete - feature branch ready for development (9b79339)
 - docs(phase3): comprehensive implementation plan - 5 iterations, 3 satellites, enterprise infrastructure (22fcad6)
-- chore: improve markdown formatting in audit summary (9e385c4)
 - audit: final sign-off - phase 1 & 2 complete and verified, system production ready, phase 3 roadmap approved (b91028c)
 - docs(phase3): comprehensive roadmap for extended satellite coverage - github, ci/cd, infrastructure domains plus advanced features (b14f1bb)
 - audit(phase1-2): comprehensive audit report - all checks pass, system production ready, proceed to phase 3 (1b89b99)
-- docs: improve markdown formatting in phase 2 completion report - add proper blank lines for lists (253867a)
-- docs: system operational summary - phase 1 & 2 complete with 5 satellites operational (3008e32)
 - docs(phase2): complete satellite system with all 5 operational domains (29f4b74)
-- docs: fix markdown linting issues in satellite instructions (3568f8e)
 - docs: complete Phase 1 satellite implementation with completion report (aa93118)
 - docs(phase1): implement core operational satellite instructions (5a3ca95)
 - docs: add directory assessment policy and implementation analysis (1448057)
@@ -97,7 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: Restore credential management implementation documents (8b8796c)
 - docs: Add CLI command enhancement to development resumption plan (4e11f77)
 - docs: Create development resumption plan based on sprint testing feedback (ae32609)
-- refactor: Clean up repository and fix version consistency (970251a)
 - docs: Add secure credentials development plan and roadmap for Phase 1 implementation (56ec996)
 - feat: Initialize secure credentials framework branch with strategy documentation (ed5e33c)
 - security: Add comprehensive 2025 secure credentials handling strategy - enterprise security framework (f1614bc)
@@ -105,14 +69,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - security: Add comprehensive credentials security audit and configuration guide (3b86968)
 - security: Add .pypirc token security documentation and .gitignore protection (41e04fe)
 - docs: Record v1.0.3 successful PyPI publication - live at <https://pypi.org/project/codesentinel/1.0.3/> (ec6160e)
-- chore: Update version to 1.0.3 production release - ready for PyPI publication (9659b4b)
 - docs: Add low-level situational awareness directive - permanent memory for build/distribution state management (fa4f813)
 - docs: Add low-level distribution strategy directive - PyPI credentials and tracking workflow (725ee3e)
 - docs: Add v1.0.3 official publication summary (65b6003)
+
+### Changed
+
+- refactor: remove non-policy emojis from CLI output and fix sys import issue (8676932)
+- fix: Remove duplication bug from .gitignore file (a452813)
+- chore(phase3): improve markdown formatting - blanks around lists and headings (2961e38)
+- chore: improve markdown formatting in audit summary (9e385c4)
+- docs: improve markdown formatting in phase 2 completion report - add proper blank lines for lists (253867a)
+- docs: system operational summary - phase 1 & 2 complete with 5 satellites operational (3008e32)
+- docs: fix markdown linting issues in satellite instructions (3568f8e)
+- refactor: Clean up repository and fix version consistency (970251a)
 - chore: Finalize v1.0.3 publication - format release documentation and stage for production (4c52590)
-- docs: Final v1.0.3 release completion report and sign-off (f6705f1)
-- docs: Add v1.0.3 release deployment summary and verification checklist (c01af5c)
-- docs: Add v1.0.3 official release notes (bda5d60)
+- chore: Update version to 1.0.3 production release - ready for PyPI publication (9659b4b)
+- fix(phase3): improve markdown formatting - fix URL syntax and list formatting (6a9f5bd)
+
+### Fixed
+
+- Synchronized version metadata across all configuration files for v1.1.3.b1 release
+
+## [v1.1.2] - 2025-11-11
+
+- Initial release for this version.
+
+## [1.1.1] - 2025-11-11
+
+### Added
+
+- Added `dist/` directory to ALLOWED_ROOT_DIRS for packaging workflow support
+- Created ORACL™ lesson for version promotion workflow (confidence: 0.95)
+
+### Changed
+
+- Promoted version from 1.1.1.b1 to 1.1.1 (official release)
+- Updated version metadata across `__init__.py`, `setup.py`, and `pyproject.toml`
+- Updated intelligence report with v1.1.1 release status and completion metrics
+
+### Fixed
+
+- Synchronized version metadata across all configuration files
+- Resolved version inconsistency in package builds
 
 ## [1.0.3] - 2025-11-06
 

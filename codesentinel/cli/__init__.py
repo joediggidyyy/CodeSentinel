@@ -2678,6 +2678,10 @@ except KeyboardInterrupt:
             
             return
 
+    except KeyboardInterrupt:
+        print("\n\n[!] Operation interrupted by user (Ctrl+C)")
+        print("[OK] Exiting gracefully...")
+        sys.exit(0)
     except Exception as e:
         import traceback
         if str(e):

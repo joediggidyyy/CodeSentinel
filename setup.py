@@ -23,11 +23,11 @@ except UnicodeDecodeError:
 def get_version():
     """Get version from package."""
     # Read version directly to avoid import issues during build
-    return "1.1.1"
+    return "1.1.3.b1"
 
 setup(
     name="codesentinel",
-    version="1.1.2",  # Hardcoded to match pyproject.toml and __init__.py
+    version="1.1.3.b1",  # Hardcoded to match pyproject.toml and __init__.py
     author="joediggidyyy",
     author_email="",
     description="Automated Maintenance & Security Monitoring",

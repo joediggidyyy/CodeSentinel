@@ -76,11 +76,15 @@ def run_agent_enabled_command(
     
     if manual_review_count > 0:
         print(f"\n[!] {manual_review_count} issue(s) require manual review")
-        response = input("\nLaunch interactive review mode? (y/N): ").strip().lower()
-        if response == 'y':
-            # Import here to avoid circular dependency
-            from codesentinel.cli.dev_audit_review import run_interactive_review
-            run_interactive_review(context)
+        try:
+            response = input("\nLaunch interactive review mode? (y/N): ").strip().lower()
+            if response == 'y':
+                # Import here to avoid circular dependency
+                from codesentinel.cli.dev_audit_review import run_interactive_review
+                run_interactive_review(context)
+        except (KeyboardInterrupt, EOFError):
+            print("\n\n[!] Review prompt interrupted by user")
+            print("[OK] Skipping interactive review...")
 
     return {
         "mode": "agent",
