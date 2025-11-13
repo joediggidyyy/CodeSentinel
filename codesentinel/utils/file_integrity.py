@@ -123,6 +123,20 @@ class FileIntegrityValidator:
         rel_path = file_path.relative_to(self.workspace_root)
         return str(rel_path) in self.critical_files
     
+    def _track_security_event(self, event_type: str, severity: str, description: str, metadata: Optional[Dict] = None):
+        """Track security-related events to metrics."""
+        try:
+            from .metrics_wrapper import track_security_event
+            track_security_event(
+                event_type=event_type,
+                severity=severity,
+                description=description,
+                metadata=metadata or {}
+            )
+        except Exception:
+            # Don't fail operations if metrics tracking fails
+            pass
+    
     def generate_baseline(self, patterns: Optional[List[str]] = None, max_files: int = 10000) -> Dict[str, Any]:
         """
         Generate baseline hashes for workspace files.
@@ -367,6 +381,17 @@ class FileIntegrityValidator:
                         "message": f"Unauthorized file not in baseline: {rel_path}"
                     })
                     results["statistics"]["files_unauthorized"] += 1
+                    
+                    # Track security event
+                    self._track_security_event(
+                        event_type='integrity_violation',
+                        severity='high',
+                        description=f"Unauthorized file detected: {rel_path}",
+                        metadata={
+                            'violation_type': 'unauthorized_file',
+                            'file_path': rel_path
+                        }
+                    )
                 continue
             
             # Verify hash
@@ -389,6 +414,20 @@ class FileIntegrityValidator:
                 
                 if baseline_info.get("is_critical"):
                     results["statistics"]["critical_violations"] += 1
+                
+                # Track security event
+                self._track_security_event(
+                    event_type='integrity_violation',
+                    severity=severity,
+                    description=f"File modification detected: {rel_path}",
+                    metadata={
+                        'violation_type': 'modified_file',
+                        'file_path': rel_path,
+                        'is_critical': baseline_info.get("is_critical", False),
+                        'expected_hash': baseline_info["hash"][:16] + "...",
+                        'actual_hash': current_hash[:16] + "..."
+                    }
+                )
             else:
                 results["statistics"]["files_passed"] += 1
         

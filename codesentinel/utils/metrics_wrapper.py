@@ -72,6 +72,9 @@ def track_cli_command(command_name: str):
                     error=error,
                     metadata=metadata
                 )
+                
+                # Flush buffer to ensure data is written before command exits
+                metrics._flush_buffer()
         
         return wrapper
     return decorator

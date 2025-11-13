@@ -29,6 +29,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Performance classification thresholds (in milliseconds)
+PERFORMANCE_THRESHOLDS = {
+    'normal': 1000,      # < 1s = normal performance
+    'slow': 3000,        # 1-3s = slow (investigate)
+    'very_slow': 10000,  # 3-10s = very slow (high priority)
+    'hang': 30000        # > 30s = potential hang (critical)
+}
+
 
 class AgentMetrics:
     """
@@ -39,6 +47,7 @@ class AgentMetrics:
     - Security events tagged but always logged
     - Append-only for audit trail
     - Aggregation for reporting
+    - Automatic hang/slow command detection
     """
     
     def __init__(self, workspace_root: Optional[Path] = None):
@@ -57,6 +66,12 @@ class AgentMetrics:
         self.session_id = datetime.now().strftime("%Y%m%d%H%M%S")
         self.session_start = time.time()
         
+        # Buffering to reduce file I/O overhead
+        self._buffer = defaultdict(list)
+        self._buffer_size = 10  # Flush after N records
+        self._last_flush = time.time()
+        self._flush_interval = 5.0  # Flush every 5 seconds
+        
     def log_cli_command(
         self,
         command: str,
@@ -67,7 +82,7 @@ class AgentMetrics:
         metadata: Optional[Dict[str, Any]] = None
     ) -> None:
         """
-        Log CLI command execution.
+        Log CLI command execution with automatic performance classification.
         
         Args:
             command: Command name (e.g., 'clean', 'update', 'memory')
@@ -77,6 +92,20 @@ class AgentMetrics:
             error: Error message if failed
             metadata: Additional context (files processed, items found, etc.)
         """
+        # Classify performance based on duration
+        if duration_ms > PERFORMANCE_THRESHOLDS['hang']:
+            classification = 'hang'
+            severity = 'critical'
+        elif duration_ms > PERFORMANCE_THRESHOLDS['very_slow']:
+            classification = 'very_slow'
+            severity = 'high'
+        elif duration_ms > PERFORMANCE_THRESHOLDS['slow']:
+            classification = 'slow'
+            severity = 'medium'
+        else:
+            classification = 'normal'
+            severity = 'low'
+        
         record = {
             'timestamp': datetime.now().isoformat(),
             'session_id': self.session_id,
@@ -85,11 +114,28 @@ class AgentMetrics:
             'args': args,
             'success': success,
             'duration_ms': round(duration_ms, 2),
+            'performance_classification': classification,
+            'severity': severity,
             'error': error,
             'metadata': metadata or {}
         }
         
         self._append_to_log(self.operations_log, record)
+        
+        # Alert on performance degradation (hang or very_slow)
+        if classification in ['hang', 'very_slow']:
+            self.log_security_event(
+                event_type='performance_degradation',
+                severity=severity,
+                description=f"Command '{command}' took {duration_ms:.0f}ms ({classification})",
+                metadata={
+                    'command': command,
+                    'duration_ms': duration_ms,
+                    'classification': classification,
+                    'args': args
+                },
+                threshold='low'  # Always log performance issues
+            )
         
         # If error, also log to error patterns
         if not success and error:
@@ -275,12 +321,69 @@ class AgentMetrics:
         self._append_to_log(self.operations_log, record)
     
     def _append_to_log(self, log_file: Path, record: Dict[str, Any]) -> None:
-        """Append record to JSONL log file."""
+        """Append record to JSONL log file with buffering to reduce I/O."""
         try:
-            with open(log_file, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(record) + '\n')
+            # Ensure all values are JSON serializable
+            def make_serializable(obj):
+                """Convert non-serializable objects to strings."""
+                if isinstance(obj, dict):
+                    return {k: make_serializable(v) for k, v in obj.items()}
+                elif isinstance(obj, (list, tuple)):
+                    return [make_serializable(item) for item in obj]
+                elif hasattr(obj, '__dict__'):
+                    # Object with attributes - convert to string
+                    return str(obj)
+                elif isinstance(obj, (str, int, float, bool, type(None))):
+                    return obj
+                else:
+                    # Anything else - convert to string
+                    return str(obj)
+            
+            serializable_record = make_serializable(record)
+            
+            # Add to buffer instead of immediate write
+            self._buffer[str(log_file)].append(serializable_record)
+            
+            # Flush if buffer is full or time threshold reached
+            buffer_full = len(self._buffer[str(log_file)]) >= self._buffer_size
+            time_elapsed = (time.time() - self._last_flush) >= self._flush_interval
+            
+            if buffer_full or time_elapsed:
+                self._flush_buffer(log_file)
+                
+        except Exception as e:
+            logger.error(f"Failed to buffer record for {log_file}: {e}")
+    
+    def _flush_buffer(self, log_file: Optional[Path] = None) -> None:
+        """Flush buffered records to disk."""
+        try:
+            files_to_flush = [str(log_file)] if log_file else list(self._buffer.keys())
+            
+            for file_path_str in files_to_flush:
+                if file_path_str not in self._buffer or not self._buffer[file_path_str]:
+                    continue
+                
+                records = self._buffer[file_path_str]
+                file_path = Path(file_path_str)
+                
+                with open(file_path, 'a', encoding='utf-8') as f:
+                    for record in records:
+                        f.write(json.dumps(record) + '\n')
+                
+                # Clear buffer for this file
+                self._buffer[file_path_str] = []
+            
+            self._last_flush = time.time()
+            
         except IOError as e:
-            logger.error(f"Failed to write to {log_file}: {e}")
+            logger.error(f"Failed to flush buffer: {e}")
+    
+    def __del__(self):
+        """Ensure buffer is flushed on object destruction."""
+        try:
+            self._flush_buffer()
+        except Exception:
+            pass
     
     def generate_performance_report(self, days: int = 7) -> Dict[str, Any]:
         """

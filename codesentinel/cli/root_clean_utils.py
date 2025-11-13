@@ -9,9 +9,24 @@ Following SEAM Protection™: Security, Efficiency, And Minimalism
 """
 
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import shutil
 from datetime import datetime
+
+
+def _track_security_event(event_type: str, severity: str, description: str, metadata: Optional[Dict] = None):
+    """Track security-related events to metrics."""
+    try:
+        from ..utils.metrics_wrapper import track_security_event
+        track_security_event(
+            event_type=event_type,
+            severity=severity,
+            description=description,
+            metadata=metadata or {}
+        )
+    except Exception:
+        # Don't fail operations if metrics tracking fails
+        pass
 
 
 def suggest_action_for_file(item: Path) -> Tuple[str, str, str]:
@@ -252,6 +267,19 @@ def execute_cleanup_actions(
                 print(f"  ✓ Archived: {violation['name']} → quarantine_legacy_archive/")
                 success_count += 1
                 outcome_success = True
+                
+                # Track security event for successful remediation
+                _track_security_event(
+                    event_type='policy_remediation',
+                    severity='low',
+                    description=f"Successfully archived policy violation: {violation['name']}",
+                    metadata={
+                        'violation_type': violation['type'],
+                        'item_name': violation['name'],
+                        'action': 'archive',
+                        'outcome': 'success'
+                    }
+                )
             
             elif violation['action'] == 'move':
                 target_dir = workspace_root / violation['target']
@@ -272,6 +300,20 @@ def execute_cleanup_actions(
                 print(f"  ✓ Moved: {violation['name']} → {violation['target']}")
                 success_count += 1
                 outcome_success = True
+                
+                # Track security event for successful move
+                _track_security_event(
+                    event_type='policy_remediation',
+                    severity='low',
+                    description=f"Successfully moved policy violation: {violation['name']}",
+                    metadata={
+                        'violation_type': violation['type'],
+                        'item_name': violation['name'],
+                        'action': 'move',
+                        'target': violation['target'],
+                        'outcome': 'success'
+                    }
+                )
             
             # Report success to ORACL
             if oracl_provider and outcome_success:
@@ -289,6 +331,20 @@ def execute_cleanup_actions(
         
         except Exception as e:
             print(f"  ✗ Failed: {violation['name']} - {e}")
+            
+            # Track security event for failed remediation
+            _track_security_event(
+                event_type='policy_remediation_failure',
+                severity='medium',
+                description=f"Failed to remediate policy violation: {violation['name']}",
+                metadata={
+                    'violation_type': violation['type'],
+                    'item_name': violation['name'],
+                    'action': action_taken,
+                    'error': str(e),
+                    'outcome': 'failure'
+                }
+            )
             
             # Report failure to ORACL
             if oracl_provider:
@@ -342,6 +398,19 @@ def scan_root_for_violations(workspace_root: Path, verbose: bool = False) -> Lis
                     'action': action,
                     'suggestion': f"{action.title()} to {target}"
                 })
+                
+                # Track security event for unauthorized directory
+                _track_security_event(
+                    event_type='policy_violation',
+                    severity='medium',
+                    description=f"Unauthorized directory in root: {item.name}",
+                    metadata={
+                        'violation_type': 'unauthorized_directory',
+                        'item_name': item.name,
+                        'suggested_action': action,
+                        'reason': reason
+                    }
+                )
         else:
             # Check if file is allowed
             if item.name not in ALLOWED_ROOT_FILES:
@@ -356,5 +425,18 @@ def scan_root_for_violations(workspace_root: Path, verbose: bool = False) -> Lis
                     'action': action,
                     'suggestion': f"{action.title()} to {target}"
                 })
+                
+                # Track security event for unauthorized file
+                _track_security_event(
+                    event_type='policy_violation',
+                    severity='medium',
+                    description=f"Unauthorized file in root: {item.name}",
+                    metadata={
+                        'violation_type': 'unauthorized_file',
+                        'item_name': item.name,
+                        'suggested_action': action,
+                        'reason': reason
+                    }
+                )
     
     return policy_violations

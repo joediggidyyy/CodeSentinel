@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any, Set
 import signal
 import threading
+import time
 
 from .agent_utils import AgentContext, RemediationOpportunity
 from .alert_utils import handle_alert_config, handle_alert_send
@@ -25,6 +26,7 @@ from .test_utils import handle_test_command
 from .update_utils import perform_update
 from ..core import CodeSentinel
 from ..utils.process_monitor import start_monitor, stop_monitor
+from ..utils.metrics_wrapper import track_cli_command
 
 
 class TimeoutError(Exception):
@@ -852,6 +854,86 @@ def _build_scan_context(results: Dict[str, Any]) -> AgentContext:
     return context
 
 
+def _track_command_execution(command_name: str, start_time: float, success: bool = True, error: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None, args_dict: Optional[Dict[str, Any]] = None):
+    """
+    Track CLI command execution for metrics.
+    
+    Args:
+        command_name: Name of the command executed
+        start_time: Time when command started (from time.time())
+        success: Whether command completed successfully
+        error: Error message if command failed
+        metadata: Additional metadata about the command
+        args_dict: Command arguments dictionary
+    """
+    try:
+        from ..utils.agent_metrics import get_metrics
+        
+        duration_ms = (time.time() - start_time) * 1000
+        
+        metrics = get_metrics()
+        metrics.log_cli_command(
+            command=command_name,
+            args=args_dict or {},
+            success=success,
+            duration_ms=duration_ms,
+            error=error,
+            metadata=metadata or {}
+        )
+    except Exception as e:
+        # Don't fail command execution if metrics tracking fails
+        print(f"Warning: Could not log metrics: {e}", file=sys.stderr)
+
+
+def _create_parser_with_error_logging():
+    """Create ArgumentParser with custom error handler for metrics logging."""
+    parser = argparse.ArgumentParser(
+        description="CodeSentinel - SEAM Protected™ Automated Maintenance & Security Monitoring",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  codesentinel status                                       # Show current status
+  codesentinel scan --all                                   # Run full security and bloat scan
+  codesentinel dev-audit !!!! --fix                         # Interactive audit with fixes
+  codesentinel update --check                               # Check for available updates
+  codesentinel integrity start --baseline latest            # Start integrity monitoring
+"""
+    )
+    
+    # Store original error method
+    original_error = parser.error
+    
+    # Create custom error handler
+    def custom_error(message: str):
+        """Override error handler to log CLI syntax failures."""
+        try:
+            from ..utils.agent_metrics import get_metrics
+            import json
+            metrics = get_metrics()
+            # Ensure argv is serializable
+            try:
+                argv_list = [str(arg) for arg in sys.argv[1:]]
+            except Exception:
+                argv_list = []
+            metrics.log_cli_command(
+                command='cli_syntax_error',
+                args={'argv': argv_list},
+                success=False,
+                duration_ms=0,
+                error=message,
+                metadata={'raw_args': argv_list}
+            )
+        except Exception as e:
+            # Don't let logging errors prevent error reporting
+            pass
+        # Call original error handler (will print and exit)
+        original_error(message)
+    
+    # Replace error method
+    parser.error = custom_error
+    return parser
+
+
 def main():
     """Main CLI entry point."""
     # Start low-cost process monitor daemon (checks every 60 seconds)
@@ -892,28 +974,9 @@ def main():
     # Replace sys.argv if we made changes
     if processed_argv != list(sys.argv):
         sys.argv = processed_argv
-    parser = argparse.ArgumentParser(
-        description="CodeSentinel - SEAM Protected™ Automated Maintenance & Security Monitoring",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-      epilog="""
-Examples:
-  codesentinel status                                       # Show current status
-  codesentinel scan                                         # Run security scan
-  codesentinel maintenance daily                            # Run daily maintenance
-  codesentinel alert "Test message"                         # Send test alert
-  codesentinel schedule start                               # Start maintenance scheduler
-  codesentinel schedule stop                                # Stop maintenance scheduler
-  codesentinel clean --all                                  # Clean everything (cache, temp, logs, etc.)
-  codesentinel clean --root                                 # Clean root directory violations
-  codesentinel clean --emojis --dry-run                     # Preview emoji removal (supports --include-gui)
-  codesentinel update docs                                  # Update repository documentation
-  codesentinel update changelog                             # Update CHANGELOG.md with recent commits
-  codesentinel update version --set-version 1.1.1.b1        # Set project version across all files
-  codesentinel integrate --new                              # Integrate new CLI commands into workflows
-  codesentinel integrate --all --dry-run                    # Preview all integration opportunities
-  codesentinel dev-audit                                    # Run interactive development audit
-        """
-    )
+    
+    # Create parser with error logging (instead of inline)
+    parser = _create_parser_with_error_logging()
 
     parser.add_argument(
         '--config',
@@ -1324,22 +1387,13 @@ Examples:
     
     # COORDINATION subcommands
     coordination_coord = process_subparsers.add_parser('coordinate', help='Enable inter-ORACL communication and coordination')
-    
-    # Legacy process monitor management (--status, --stop, --restart)
-    process_parser.add_argument(
-        '--status', action='store_true', help='[LEGACY] Show process monitor status (use: status subcommand)'
-    )
-    process_parser.add_argument(
-        '--stop', action='store_true', help='Stop the process monitor daemon'
-    )
-    process_parser.add_argument(
-        '--restart', action='store_true', help='Restart the process monitor daemon'
-    )
-    process_parser.add_argument(
-        '--interval', type=int, help='Set check interval in seconds (for restart)'
-    )
 
-    args = parser.parse_args()
+    # Parse arguments
+    try:
+        args = parser.parse_args()
+    except SystemExit as e:
+        # argparse calls sys.exit() on help or error - just re-raise
+        raise
 
     if not args.command:
         parser.print_help()
@@ -1347,6 +1401,7 @@ Examples:
 
     try:
         # Initialize CodeSentinel
+        cmd_start_time = time.time()
         config_path = Path(args.config) if args.config else None
         codesentinel = CodeSentinel(config_path)
 
@@ -1358,6 +1413,9 @@ Examples:
             print(f"  Config Loaded: {status['config_loaded']}")
             print(f"  Alert Channels: {', '.join(status['alert_channels'])}")
             print(f"  Scheduler Active: {status['scheduler_active']}")
+            
+            # Track command execution
+            _track_command_execution('status', cmd_start_time, success=True, args_dict=vars(args))
 
         elif args.command == 'scan':
             # Check if this is agent mode
@@ -1402,11 +1460,17 @@ Examples:
                     context_builder=_build_scan_context,
                     apply_safe_fn=None,  # No automated fixes for scan results yet
                 )
+                
+                # Track command execution
+                _track_command_execution('scan', cmd_start_time, success=True, args_dict=vars(args), metadata={'agent_mode': True})
             else:
                 # Standard mode: delegate to scan_utils
                 exit_code = handle_scan_command(args, codesentinel)
                 if exit_code != 0:
                     sys.exit(exit_code)
+                
+                # Track command execution
+                _track_command_execution('scan', cmd_start_time, success=True, args_dict=vars(args))
 
         elif args.command == 'maintenance':
             if args.dry_run:
@@ -1545,6 +1609,9 @@ except KeyboardInterrupt:
         elif args.command == 'update':
             # Delegate to update_utils for comprehensive update handling
             perform_update(args)
+            
+            # Track command execution
+            _track_command_execution('update', cmd_start_time, success=True, args_dict=vars(args))
 
         elif args.command == 'clean':
             """Handle clean command for repository cleanup."""
@@ -1999,18 +2066,22 @@ except KeyboardInterrupt:
                 print(f"  Emojis removed: {total_emojis_removed}")
             
             if errors:
-                print(f"\n⚠️  Encountered {len(errors)} archival errors:")
+                print(f"\n[WARN] Encountered {len(errors)} archival errors:")
                 for path, error in errors[:5]:
                     print(f"  {path.name}: {error}")
                 if len(errors) > 5:
                     print(f"  ... and {len(errors) - 5} more errors")
             
             if emoji_errors:
-                print(f"\n⚠️  Encountered {len(emoji_errors)} emoji cleaning errors:")
+                print(f"\n[WARN] Encountered {len(emoji_errors)} emoji cleaning errors:")
                 for path, error in emoji_errors[:5]:
                     print(f"  {path.name}: {error}")
                 if len(emoji_errors) > 5:
                     print(f"  ... and {len(emoji_errors) - 5} more errors")
+            
+            # Track command execution
+            metadata = {'archived_count': archived_count, 'emojis_cleaned': emoji_cleaned_count}
+            _track_command_execution('clean', cmd_start_time, success=len(errors) == 0, args_dict=vars(args), metadata=metadata)
 
         elif args.command == 'integrate':
             """Handle integrate command for automated workflow integration."""
@@ -2953,7 +3024,7 @@ except KeyboardInterrupt:
                 handle_memory_tasks(args, session_memory)
             elif memory_action == 'process':
                 # Handle process monitor management and multi-instance features
-                from ..utils.process_monitor import get_monitor, stop_monitor, start_monitor
+                from ..utils.process_monitor import get_monitor
                 from .process_utils import (
                     handle_lifecycle_status,
                     handle_lifecycle_history,
@@ -2976,52 +3047,31 @@ except KeyboardInterrupt:
                     handle_intelligence_info(args)
                 elif args.process_subcommand == 'coordinate':
                     handle_coordination_coordinate(args)
-                elif args.status or (not args.stop and not args.restart and not args.process_subcommand):
-                    # Show status (default action or --status legacy flag)
-                    try:
-                        monitor = get_monitor()
-                        status = monitor.get_status()
-                        
-                        print("\n" + "="*60)
-                        print("Process Monitor Status")
-                        print("="*60)
-                        print(f"Enabled:         {status['enabled']}")
-                        print(f"Running:         {status['running']}")
-                        print(f"Parent PID:      {status['parent_pid']}")
-                        print(f"Check Interval:  {status['check_interval']} seconds")
-                        print(f"Tracked PIDs:    {status['tracked_count']}")
-                        if status['tracked_pids']:
-                            print(f"PIDs:            {', '.join(map(str, status['tracked_pids']))}")
-                        print("="*60 + "\n")
-                    except Exception as e:
-                        print(f"[FAIL] Could not get process monitor status: {e}")
-                
-                elif args.stop:
-                    # Stop the monitor
-                    try:
-                        stop_monitor()
-                        print("[OK] Process monitor stopped")
-                    except Exception as e:
-                        print(f"[FAIL] Could not stop process monitor: {e}")
-                
-                elif args.restart:
-                    # Restart with optional new interval
-                    interval = args.interval if args.interval else 60
-                    try:
-                        stop_monitor()
-                        monitor = start_monitor(check_interval=interval, enabled=True)
-                        print(f"[OK] Process monitor restarted (interval: {interval}s)")
-                    except Exception as e:
-                        print(f"[FAIL] Could not restart process monitor: {e}")
+                else:
+                    # No subcommand provided - show help
+                    print("Usage: codesentinel memory process <subcommand>")
+                    print("\nAvailable subcommands:")
+                    print("  status      - Show processes tracked by current instance")
+                    print("  history     - Show orphan cleanup history")
+                    print("  instances   - Show all detected CodeSentinel instances")
+                    print("  system      - Show top system processes by memory")
+                    print("  info        - Full instance diagnostics and monitor status")
+                    print("  coordinate  - Enable inter-ORACL communication and coordination")
+                    print("\nFor more information: codesentinel memory process <subcommand> --help")
             else:
                 # Default to show if no action specified
                 handle_memory_show(args, session_memory)
             
+            # Track command execution
+            _track_command_execution('memory', cmd_start_time, success=True, args_dict=vars(args))
             return
 
         elif args.command == 'test':
             # Delegate to test_utils handler
             handle_test_command(args, codesentinel)
+            
+            # Track command execution
+            _track_command_execution('test', cmd_start_time, success=True, args_dict=vars(args))
             return
 
         elif args.command == 'setup':

@@ -337,6 +337,139 @@ RECOMMENDED APPROACH:
             # Alerts should never crash the process
             pass
 
+    def _track_security_event(self, event_type: str, severity: str, description: str, metadata: Optional[Dict] = None):
+        """Track security-related events to metrics."""
+        try:
+            from ..utils.metrics_wrapper import track_security_event
+            track_security_event(
+                event_type=event_type,
+                severity=severity,
+                description=description,
+                metadata=metadata or {}
+            )
+        except Exception:
+            # Don't fail operations if metrics tracking fails
+            pass
+
+    def _classify_credential_pattern(self, pattern: re.Pattern) -> str:
+        """Classify what type of credential the pattern represents."""
+        pattern_str = pattern.pattern.lower()
+        if 'aws' in pattern_str or 'access' in pattern_str:
+            return 'aws_credentials'
+        elif 'private' in pattern_str or 'key' in pattern_str:
+            return 'private_key'
+        elif 'password' in pattern_str:
+            return 'password'
+        elif 'secret' in pattern_str:
+            return 'api_secret'
+        else:
+            return 'credential_pattern'
+
+    def _git_security_checks(self, root: Path) -> Dict[str, Any]:
+        """Check for unauthorized file changes in git repository."""
+        issues = []
+        
+        git_dir = root / ".git"
+        if not git_dir.exists():
+            # Not a git repository
+            return {
+                "unauthorized_files": issues,
+                "issues": 0,
+            }
+        
+        try:
+            import subprocess
+            
+            # Get list of modified files
+            try:
+                result = subprocess.run(
+                    ["git", "status", "--porcelain"],
+                    cwd=str(root),
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                if result.returncode != 0:
+                    return {"unauthorized_files": issues, "issues": 0}
+                
+                # Policy: Check for files that shouldn't be modified
+                policy_protected = {
+                    "pyproject.toml", "setup.py", "setup.cfg",
+                    "README.md", "LICENSE", "CONTRIBUTING.md",
+                    ".github/copilot-instructions.md"
+                }
+                
+                for line in result.stdout.strip().split('\n'):
+                    if not line:
+                        continue
+                    
+                    status = line[:2]
+                    file_path = line[3:]
+                    
+                    # Status codes:
+                    # M = modified, A = added, D = deleted, R = renamed, C = copied,
+                    # U = updated but unmerged, ?? = untracked
+                    
+                    # Track unauthorized modifications to critical files
+                    if status[0] in ('M', 'D', 'R'):  # Modified, deleted, renamed
+                        if any(critical in file_path for critical in policy_protected):
+                            issue = {
+                                "file": file_path,
+                                "status": status,
+                                "type": "policy_protected_file_modified"
+                            }
+                            issues.append(issue)
+                            
+                            # Track security event
+                            self._track_security_event(
+                                event_type='unauthorized_git_modification',
+                                severity='high',
+                                description=f"Policy-protected file modified: {file_path}",
+                                metadata={
+                                    'file': file_path,
+                                    'status': status,
+                                    'type': 'policy_protected_file_modified'
+                                }
+                            )
+                    
+                    # Track untracked files in sensitive directories
+                    if status == '??':
+                        if any(sensitive in file_path for sensitive in ['.codesentinel', 'node_modules', 'venv']):
+                            issue = {
+                                "file": file_path,
+                                "status": status,
+                                "type": "unauthorized_file_in_git_root"
+                            }
+                            issues.append(issue)
+                            
+                            # Track security event
+                            self._track_security_event(
+                                event_type='unauthorized_file_in_git',
+                                severity='medium',
+                                description=f"Untracked file in restricted directory: {file_path}",
+                                metadata={
+                                    'file': file_path,
+                                    'status': status,
+                                    'type': 'unauthorized_file_in_git_root'
+                                }
+                            )
+            
+            except subprocess.TimeoutExpired:
+                return {"unauthorized_files": issues, "issues": 0}
+            except FileNotFoundError:
+                # git command not found
+                return {"unauthorized_files": issues, "issues": 0}
+        
+        except Exception as e:
+            # Gracefully handle any git-related errors
+            pass
+        
+        return {
+            "unauthorized_files": issues,
+            "issues": len(issues),
+        }
+
     def _run_audit(self, detail_level: str = "full") -> Dict[str, Any]:
         prj = self.project_root
         repo_name = prj.name
@@ -347,6 +480,9 @@ RECOMMENDED APPROACH:
         
         # File integrity checks (if enabled)
         file_integrity = self._file_integrity_checks(prj)
+        
+        # Git security checks (unauthorized modifications and file pushes)
+        git_security = self._git_security_checks(prj)
         
         efficiency = self._efficiency_checks(metrics)
         minimalism = self._minimalism_checks(prj, metrics)
@@ -362,6 +498,7 @@ RECOMMENDED APPROACH:
             "metrics": metrics,
             "security": security,
             "file_integrity": file_integrity,
+            "git_security": git_security,
             "efficiency": efficiency,
             "minimalism": minimalism,
             "style_preservation": style,
@@ -450,8 +587,33 @@ RECOMMENDED APPROACH:
                             finding["verified_false_positive"] = True
                             finding["reason"] = fp_result["reason"]
                             verified_false_positives.append(finding)
+                            
+                            # Track as noted event (false positive)
+                            self._track_security_event(
+                                event_type='credential_pattern_detected',
+                                severity='low',
+                                description=f"Credential pattern detected but verified as false positive: {finding['file']}",
+                                metadata={
+                                    'file': finding['file'],
+                                    'pattern': finding['pattern'],
+                                    'reason': fp_result['reason'],
+                                    'verified_false_positive': True
+                                }
+                            )
                         else:
                             findings.append(finding)
+                            
+                            # Track as critical security event (real exposure)
+                            self._track_security_event(
+                                event_type='credential_exposure_detected',
+                                severity='critical',
+                                description=f"CRITICAL: Credential pattern detected in source code: {finding['file']}",
+                                metadata={
+                                    'file': finding['file'],
+                                    'pattern': finding['pattern'],
+                                    'pattern_type': self._classify_credential_pattern(pat)
+                                }
+                            )
                         
                         if len(findings) + len(verified_false_positives) >= max_hits:
                             break
