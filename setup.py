@@ -27,7 +27,7 @@ def get_version():
 
 setup(
     name="codesentinel",
-    version="1.1.1",  # Hardcoded to match pyproject.toml and __init__.py
+    version="1.1.2",  # Hardcoded to match pyproject.toml and __init__.py
     author="joediggidyyy",
     author_email="",
     description="Automated Maintenance & Security Monitoring",

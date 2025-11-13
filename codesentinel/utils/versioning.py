@@ -15,8 +15,6 @@ def set_project_version(project_root: Path, new_version: str):
         list[str]: A list of files that were successfully updated.
     """
     updated_files = []
-    
-    # --- File Paths ---
     pyproject_toml_path = project_root / "pyproject.toml"
     setup_py_path = project_root / "setup.py"
     init_py_path = project_root / "codesentinel" / "__init__.py"
@@ -26,8 +24,9 @@ def set_project_version(project_root: Path, new_version: str):
     security_path = project_root / "SECURITY.md"
 
     # --- Regex Patterns ---
-    pyproject_pattern = re.compile(r'(version\s*=\s*["\'])([^"\']+)(["\'])')
+    pyproject_pattern = re.compile(r'(^\s*version\s*=\s*["\'])([^"\']+)(["\'])', re.MULTILINE)
     setup_py_pattern = re.compile(r'(version\s*=\s*["\'])([^"\']+)(["\'])')
+    setup_return_pattern = re.compile(r'(return\s*["\'])([^"\']+)(["\'])')
     init_py_pattern = re.compile(r'(__version__\s*=\s*["\'])([^"\']+)(["\'])')
     instructions_pattern = re.compile(r'(CANONICAL_PROJECT_VERSION:\s*["\'])([^"\']+)(["\'])')
     readme_badge_pattern = re.compile(r'(badge/version-)([0-9]+\.[0-9]+\.[0-9]+(?:\.[a-zA-Z0-9]+)?)')
@@ -44,9 +43,20 @@ def set_project_version(project_root: Path, new_version: str):
     # 2. Update setup.py
     if setup_py_path.exists():
         content = setup_py_path.read_text(encoding='utf-8')
+        modified = False
+
         new_content, count = setup_py_pattern.subn(rf'\g<1>{new_version}\g<3>', content)
         if count > 0:
-            setup_py_path.write_text(new_content, encoding='utf-8')
+            content = new_content
+            modified = True
+
+        new_content, count = setup_return_pattern.subn(rf'\g<1>{new_version}\g<3>', content)
+        if count > 0:
+            content = new_content
+            modified = True
+
+        if modified:
+            setup_py_path.write_text(content, encoding='utf-8')
             updated_files.append(str(setup_py_path))
 
     # 3. Update codesentinel/__init__.py

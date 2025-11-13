@@ -57,6 +57,8 @@ class ProcessMonitor:
         self._monitor_thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
+        self.cleanup_history: list = []  # Track recent cleanups
+        self._max_history = 50  # Keep last 50 cleanup events
         
         logger.debug(f"ProcessMonitor initialized (parent PID: {self.parent_pid})")
     
@@ -81,6 +83,27 @@ class ProcessMonitor:
         with self._lock:
             self.tracked_pids.discard(pid)
             logger.debug(f"Stopped tracking PID {pid}")
+    
+    def _record_cleanup(self, pid: int, process_name: str, action: str) -> None:
+        """
+        Record a cleanup event in history.
+        
+        Args:
+            pid: Process ID that was cleaned up
+            process_name: Name of the process
+            action: Type of action ("terminated" or "force_killed")
+        """
+        with self._lock:
+            event = {
+                'timestamp': datetime.now(),
+                'pid': pid,
+                'name': process_name,
+                'action': action,
+            }
+            self.cleanup_history.append(event)
+            # Keep only last N events
+            if len(self.cleanup_history) > self._max_history:
+                self.cleanup_history.pop(0)
     
     def start(self) -> None:
         """Start the background monitoring daemon."""
@@ -161,10 +184,12 @@ class ProcessMonitor:
                             # Give it 5 seconds to terminate gracefully
                             proc.wait(timeout=5)
                             logger.info(f"Terminated orphaned process: PID {pid}")
+                            self._record_cleanup(pid, proc.name(), "terminated")
                         except psutil.TimeoutExpired:
                             # Force kill if it doesn't terminate
                             proc.kill()
                             logger.warning(f"Force killed orphaned process: PID {pid}")
+                            self._record_cleanup(pid, proc.name(), "force_killed")
                         except psutil.AccessDenied:
                             logger.error(f"Access denied terminating PID {pid}")
                         
@@ -216,6 +241,7 @@ class ProcessMonitor:
         """
         with self._lock:
             tracked = list(self.tracked_pids)
+            history = list(self.cleanup_history)
         
         return {
             'enabled': self.enabled,
@@ -224,6 +250,7 @@ class ProcessMonitor:
             'tracked_pids': tracked,
             'tracked_count': len(tracked),
             'check_interval': self.check_interval,
+            'cleanup_history': history,
         }
 
 

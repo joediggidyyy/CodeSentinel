@@ -36,6 +36,288 @@ def _get_relative_path(absolute_path):
         return str(absolute_path)
 
 
+def _get_installed_version(venv_path):
+    """
+    Get the version of CodeSentinel installed in a virtual environment.
+    
+    Args:
+        venv_path: Path to the virtual environment.
+        
+    Returns:
+        Version string (e.g., "1.1.2") or None if not found.
+    """
+    if sys.platform == "win32":
+        python_exec = Path(venv_path) / 'Scripts' / 'python.exe'
+    else:
+        python_exec = Path(venv_path) / 'bin' / 'python'
+    
+    try:
+        result = subprocess.run(
+            [str(python_exec), '-c', 'import codesentinel; print(codesentinel.__version__)'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    
+    return None
+
+
+def _view_session_reports(manager):
+    """
+    Display reports from the current session.
+    
+    Args:
+        manager: BetaTestingManager instance.
+    """
+    print("\n" + "=" * 70)
+    print("SESSION REPORTS")
+    print("=" * 70)
+    print()
+    
+    # Check for iteration reports
+    iteration_reports = sorted(manager.iterations_dir.glob('*.md'))
+    
+    # Check for consolidated report
+    consolidated_report = manager.consolidated_dir / f"consolidated_report_{manager.session_id}.md"
+    
+    # Check for session state
+    session_file = manager.sessions_dir / f"session_{manager.session_id}.json"
+    
+    if not iteration_reports and not consolidated_report.exists():
+        print("[INFO] No reports found for current session.")
+        print(f"  Session ID: {manager.session_id[-8:]}")
+        print(f"  Version: {manager.version}")
+        print()
+        print("Reports will be created as you run tests.")
+        print("=" * 70)
+        return
+    
+    print(f"Session ID: {manager.session_id}")
+    print(f"Version: {manager.version}")
+    print()
+    
+    # Display session state info
+    if session_file.exists():
+        try:
+            import json
+            with open(session_file, 'r') as f:
+                state = json.load(f)
+            print("Session State:")
+            print("-" * 70)
+            print(f"  File: {_get_relative_path(session_file)}")
+            print(f"  Tester: {state.get('tester_name', 'Unknown')}")
+            print(f"  Last Updated: {state.get('last_updated', 'Unknown')}")
+            print(f"  Iterations: {state.get('iteration_count', 0)}")
+            print("-" * 70)
+            print()
+        except Exception as e:
+            print(f"[WARN] Could not read session state: {e}")
+    
+    # Display iteration reports
+    if iteration_reports:
+        print(f"Iteration Reports: ({len(iteration_reports)})")
+        print("-" * 70)
+        for idx, report in enumerate(iteration_reports, 1):
+            print(f"  {idx}. {report.name}")
+            print(f"     {_get_relative_path(report)}")
+            print(f"     Full Path: {report}")
+        print("-" * 70)
+        print()
+    
+    # Display consolidated report
+    if consolidated_report.exists():
+        print("Consolidated Report:")
+        print("-" * 70)
+        print(f"  File: {consolidated_report.name}")
+        print(f"  {_get_relative_path(consolidated_report)}")
+        print(f"  Full Path: {consolidated_report}")
+        print("-" * 70)
+        print()
+        
+        # Ask if user wants to preview
+        preview = input("Preview consolidated report? (y/n): ").strip().lower()
+        if preview == 'y':
+            try:
+                with open(consolidated_report, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                print()
+                print("=" * 70)
+                print("REPORT PREVIEW")
+                print("=" * 70)
+                lines = content.split('\n')
+                for idx, line in enumerate(lines[:30], 1):  # Show first 30 lines
+                    print(f"{idx:3}| {line}")
+                if len(lines) > 30:
+                    print(f"     ... ({len(lines) - 30} more lines)")
+                print("=" * 70)
+            except Exception as e:
+                print(f"[FAIL] Could not read report: {e}")
+    
+    print()
+    input("Press Enter to continue...")
+
+
+def _view_all_session_reports(manager, active_sessions):
+    """
+    Display reports from all saved sessions for the current version.
+    
+    Args:
+        manager: BetaTestingManager instance.
+        active_sessions: List of tuples (session_id, session_file, last_updated).
+    """
+    import json
+    
+    print("\n" + "=" * 70)
+    print(f"ALL SESSION REPORTS - {manager.version}")
+    print("=" * 70)
+    print()
+    
+    if not active_sessions:
+        print("[INFO] No saved sessions found.")
+        print("=" * 70)
+        input("Press Enter to continue...")
+        return
+    
+    for idx, (session_id, session_file, last_updated) in enumerate(active_sessions, 1):
+        print(f"\nSession {idx}: {session_id[-8:]}")
+        print("-" * 70)
+        
+        # Load session state
+        try:
+            with open(session_file, 'r') as f:
+                state = json.load(f)
+            
+            print(f"  Tester: {state.get('tester_name', 'Unknown')}")
+            print(f"  Last Updated: {last_updated}")
+            print(f"  Iterations: {state.get('iteration_count', 0)}")
+            
+            # Check for reports
+            session_test_root = manager.workspace_root / 'tests' / 'beta_testing' / manager.version
+            session_iterations_dir = session_test_root / 'iterations'
+            session_consolidated_dir = session_test_root / 'consolidated'
+            
+            # Find iteration reports for this session (files contain session ID)
+            iteration_reports = []
+            if session_iterations_dir.exists():
+                # Since we don't have session-specific filtering, show all for now
+                all_reports = list(session_iterations_dir.glob('*.md'))
+                if all_reports:
+                    print(f"  Iteration Reports: {len(all_reports)} total in version directory")
+            
+            # Check for consolidated report
+            consolidated_report = session_consolidated_dir / f"consolidated_report_{session_id}.md"
+            if consolidated_report.exists():
+                print(f"  Consolidated Report: {_get_relative_path(consolidated_report)}")
+            else:
+                print(f"  Consolidated Report: Not yet generated")
+                
+        except Exception as e:
+            print(f"  [WARN] Could not load session details: {e}")
+        
+        print("-" * 70)
+    
+    print()
+    print("To view detailed reports, resume a session and use option 'W'")
+    print("=" * 70)
+    input("Press Enter to continue...")
+
+
+def _delete_sessions_menu(manager, active_sessions):
+    """
+    Interactive menu for removing sessions from the active list.
+    
+    NOTE: This only removes the session state file to hide the session from the list.
+    All iteration reports and consolidated reports are preserved for reference.
+    
+    Args:
+        manager: BetaTestingManager instance.
+        active_sessions: List of tuples (session_id, session_file, last_updated).
+    """
+    import shutil
+    
+    print("\n" + "=" * 70)
+    print("REMOVE SESSIONS FROM LIST")
+    print("=" * 70)
+    print("\nThis removes sessions from the active sessions list.")
+    print("All reports and test artifacts will be preserved.")
+    print()
+    
+    for idx, (session_id, session_file, last_updated) in enumerate(active_sessions, 1):
+        print(f"  {idx}. {session_id[-8:]} (Last: {last_updated})")
+    
+    print()
+    print("Options:")
+    print("  - Enter number(s) separated by commas to remove specific sessions")
+    print("  - ALL to remove all sessions from list")
+    print("  - C to cancel")
+    print()
+    
+    choice = input("Your choice: ").strip().upper()
+    
+    if choice == 'C':
+        print("Cancelled.")
+        return
+    
+    if choice == 'ALL':
+        confirm = input(f"Remove all {len(active_sessions)} session(s) from list? (yes/no): ").strip().lower()
+        if confirm == 'yes':
+            for session_id, session_file, _ in active_sessions:
+                try:
+                    # Delete ONLY the session state file
+                    Path(session_file).unlink()
+                    print(f"[OK] Removed session from list: {session_id[-8:]}")
+                    print(f"     Reports preserved in tests/beta_testing/{manager.version}/")
+                except Exception as e:
+                    print(f"[FAIL] Error removing {session_id[-8:]}: {e}")
+            print(f"\n[OK] Removed all sessions from active list")
+            print("[INFO] All reports have been preserved")
+        else:
+            print("Cancelled.")
+        return
+    
+    # Parse comma-separated numbers
+    try:
+        selections = [int(x.strip()) for x in choice.split(',')]
+        sessions_to_remove = []
+        
+        for sel in selections:
+            if 1 <= sel <= len(active_sessions):
+                sessions_to_remove.append(active_sessions[sel - 1])
+            else:
+                print(f"[WARN]  Invalid number: {sel} (skipping)")
+        
+        if not sessions_to_remove:
+            print("No valid selections. Cancelled.")
+            return
+        
+        # Show what will be removed
+        print(f"\nWill remove {len(sessions_to_remove)} session(s) from active list:")
+        for session_id, session_file, last_updated in sessions_to_remove:
+            print(f"  - {session_id[-8:]} (Last: {last_updated})")
+        print("\nReports will be preserved in the beta_testing directory.")
+        
+        confirm = input("\nConfirm removal? (yes/no): ").strip().lower()
+        if confirm == 'yes':
+            for session_id, session_file, _ in sessions_to_remove:
+                try:
+                    # Delete ONLY the session state file
+                    Path(session_file).unlink()
+                    print(f"[OK] Removed session from list: {session_id[-8:]}")
+                except Exception as e:
+                    print(f"[FAIL] Error removing {session_id[-8:]}: {e}")
+            print(f"\n[OK] Removed {len(sessions_to_remove)} session(s) from list")
+            print("[INFO] All reports have been preserved")
+        else:
+            print("Cancelled.")
+    
+    except ValueError:
+        print("[FAIL] Invalid input. Please enter comma-separated numbers or 'ALL'.")
+
+
 def _select_python_executable():
     """
     Smart Python executable selection.
@@ -60,8 +342,8 @@ def _select_python_executable():
         version_output = "Unknown version"
     
     print(f"\nDetected Python interpreter:")
-    print(f"  🐍 {version_output}")
-    print(f"  📁 {current_python}")
+    print(f"  Python: {version_output}")
+    print(f"  Path: {current_python}")
     
     choice = input("\nUse this Python interpreter? (y/n): ").strip().lower()
     
@@ -88,13 +370,13 @@ def _select_python_executable():
             stderr=subprocess.STDOUT,
             text=True
         ).strip()
-        print(f"✓ Found: {test_output}")
+        print(f"[OK] Found: {test_output}")
         return custom_path
     except FileNotFoundError:
-        print(f"❌ Python executable not found: {custom_path}")
+        print(f"[FAIL] Python executable not found: {custom_path}")
         return None
     except Exception as e:
-        print(f"❌ Error validating Python executable: {e}")
+        print(f"[FAIL] Error validating Python executable: {e}")
         return None
 
 
@@ -111,7 +393,7 @@ def _select_wheel_file():
     dist_dir = Path.cwd() / 'dist'
     
     if not dist_dir.exists():
-        print(f"❌ Distribution directory not found: {dist_dir}")
+        print(f"[FAIL] Distribution directory not found: {dist_dir}")
         print("Please build the package first (e.g., python -m build)")
         return None
     
@@ -119,7 +401,7 @@ def _select_wheel_file():
     wheel_files = list(dist_dir.glob('*.whl'))
     
     if not wheel_files:
-        print(f"❌ No wheel files found in: {dist_dir}")
+        print(f"[FAIL] No wheel files found in: {dist_dir}")
         print("Please build the package first (e.g., python -m build)")
         return None
     
@@ -140,8 +422,8 @@ def _select_wheel_file():
     
     # Suggest the latest version
     print(f"\nMost recent wheel file found:")
-    print(f"  📦 {latest_wheel.name}")
-    print(f"  📁 {latest_wheel}")
+    print(f"  File: {latest_wheel.name}")
+    print(f"  Path: {latest_wheel}")
     
     choice = input("\nUse this file? (y/n): ").strip().lower()
     
@@ -170,15 +452,40 @@ def _select_wheel_file():
             
             if 1 <= selection <= len(wheel_files):
                 selected_wheel = wheel_files[selection - 1]
-                print(f"✓ Selected: {selected_wheel.name}")
+                print(f"[OK] Selected: {selected_wheel.name}")
                 return str(selected_wheel)
             else:
-                print(f"❌ Invalid selection. Please enter a number between 0 and {len(wheel_files)}.")
+                print(f"[FAIL] Invalid selection. Please enter a number between 0 and {len(wheel_files)}.")
         except ValueError:
-            print("❌ Invalid input. Please enter a number.")
+            print("[FAIL] Invalid input. Please enter a number.")
         except KeyboardInterrupt:
             print("\nCancelled.")
             return None
+
+
+def _get_package_version():
+    """
+    Get the current CodeSentinel package version from source.
+    
+    Returns:
+        Version string (e.g., "1.1.2")
+    """
+    try:
+        # First try to read from __init__.py in source tree
+        init_file = Path(__file__).parent.parent / "__init__.py"
+        if init_file.exists():
+            with open(init_file, 'r') as f:
+                for line in f:
+                    if line.startswith('__version__'):
+                        # Extract version: __version__ = "1.1.2"
+                        version = line.split('=')[1].strip().strip('"').strip("'")
+                        return version
+        
+        # Fallback to import (for installed package)
+        from codesentinel import __version__
+        return __version__
+    except Exception:
+        return "unknown"
 
 
 def add_test_parser(subparsers):
@@ -191,6 +498,9 @@ def add_test_parser(subparsers):
     Returns:
         The test parser object.
     """
+    current_version = _get_package_version()
+    default_test_version = f'v{current_version}-beta.1' if current_version != "unknown" else 'v1.1.2-beta.1'
+    
     test_parser = subparsers.add_parser(
         'test',
         help='Run beta testing workflow'
@@ -198,8 +508,8 @@ def add_test_parser(subparsers):
     test_parser.add_argument(
         '--version',
         type=str,
-        default='v1.1.0-beta.1',
-        help='Version to test (default: v1.1.0-beta.1)'
+        default=default_test_version,
+        help=f'Version to test (default: {default_test_version})'
     )
     test_parser.add_argument(
         '--interactive',
@@ -230,7 +540,7 @@ def handle_test_command(args, codesentinel=None):
     tests_path = workspace_root / 'tests' / 'beta_testing'
     
     if not tests_path.exists():
-        print(f"❌ Beta testing directory not found: {tests_path}")
+        print(f"[FAIL] Beta testing directory not found: {tests_path}")
         print("Please ensure you're running from the CodeSentinel workspace root.")
         sys.exit(1)
     
@@ -240,31 +550,54 @@ def handle_test_command(args, codesentinel=None):
     try:
         from beta_testing.beta_testing_suite import BetaTestingManager
     except ImportError as e:
-        print(f"❌ Could not import BetaTestingManager: {e}")
+        print(f"[FAIL] Could not import BetaTestingManager: {e}")
         print(f"Tried to import from: {tests_path.parent} and {tests_path}")
         sys.exit(1)
     
+    # Get current version for display
+    current_version = _get_package_version()
+    
     print("=" * 70)
-    print("CodeSentinel Beta Testing Workflow")
+    print(f"CodeSentinel Beta Testing Workflow - v{current_version}")
     print("=" * 70)
-    print(f"Version: {args.version}")
+    print(f"Test Version: {args.version}")
     print(f"Mode: {'Automated' if args.automated else 'Interactive'}")
     print()
     
     # Initialize the beta testing manager
     manager = BetaTestingManager(version=args.version)
     
-    if args.automated:
-        print("Running automated beta testing pipeline...")
-        run_automated_workflow(manager)
-    else:
-        print("Running interactive beta testing pipeline...")
-        run_interactive_workflow(manager)
+    try:
+        if args.automated:
+            print("Running automated beta testing pipeline...")
+            run_automated_workflow(manager)
+        else:
+            print("Running interactive beta testing pipeline...")
+            run_interactive_workflow(manager)
+    except KeyboardInterrupt:
+        print("\n\n[INFO] Operation cancelled by user (Ctrl+C)")
+        print("Exiting gracefully...")
+        sys.exit(0)
 
 
 def run_interactive_workflow(manager):
     """
     Run the interactive beta testing workflow with menu-driven test suite.
+    
+    Args:
+        manager: BetaTestingManager instance.
+    """
+    try:
+        _run_interactive_workflow_impl(manager)
+    except KeyboardInterrupt:
+        print("\n\n[INFO] Operation cancelled by user (Ctrl+C)")
+        print("Exiting gracefully...")
+        return
+
+
+def _run_interactive_workflow_impl(manager):
+    """
+    Implementation of interactive workflow with session management.
     
     Args:
         manager: BetaTestingManager instance.
@@ -281,38 +614,101 @@ def run_interactive_workflow(manager):
     if active_sessions:
         print(f"Found {len(active_sessions)} active session(s):")
         for idx, (session_id, session_file, last_updated) in enumerate(active_sessions, 1):
-            print(f"  {idx}. {session_id[-5:]} (Last: {last_updated})")
+            print(f"  {idx}. {session_id[-8:]} (Last: {last_updated})")
         print()
-        choice = input("Resume a session? (Enter number, last 5 chars, or N for new): ").strip()
+        print("Options:")
+        print("  - Enter number or last 8 chars to resume")
+        print("  - N for new session")
+        print("  - V to view reports from saved sessions")
+        print("  - D to remove sessions from list (reports preserved)")
+        print("  - X to exit")
+        print()
+        choice = input("Your choice: ").strip()
+        
+        # Handle exit
+        if choice.upper() == 'X':
+            print("Exiting.")
+            return
+        
+        # Handle view reports
+        if choice.upper() == 'V':
+            _view_all_session_reports(manager, active_sessions)
+            # Re-prompt after viewing
+            print("\nReturning to session selection...")
+            print()
+            choice = input("Resume a session? (Enter number, last 8 chars, N for new, or X to exit): ").strip()
+            if choice.upper() == 'X':
+                print("Exiting.")
+                return
+            elif choice.upper() == 'N':
+                print("[OK] Starting new session...")
+            else:
+                # Fall through to selection logic below
+                pass
+        
+        # Handle delete sessions
+        if choice.upper() == 'D':
+            _delete_sessions_menu(manager, active_sessions)
+            # Refresh active sessions list after deletion
+            active_sessions = manager.__class__.find_active_sessions(manager.version)
+            if not active_sessions:
+                print("No sessions remaining. Starting new session...")
+            else:
+                # Re-prompt
+                print("\nRemaining sessions:")
+                for idx, (session_id, session_file, last_updated) in enumerate(active_sessions, 1):
+                    print(f"  {idx}. {session_id[-8:]} (Last: {last_updated})")
+                print()
+                choice = input("Resume a session? (Enter number, last 8 chars, N for new, or X to exit): ").strip()
+                if choice.upper() == 'X':
+                    print("Exiting.")
+                    return
+                elif choice.upper() == 'N':
+                    print("[OK] Starting new session...")
+                else:
+                    # Try to match by number or ID
+                    if choice.isdigit() and 1 <= int(choice) <= len(active_sessions):
+                        selected_session = active_sessions[int(choice) - 1]
+                        manager.session_id = selected_session[0]
+                        resume_session = True
+                        print(f"[OK] Resuming session: {manager.session_id[-8:]}...")
+                    else:
+                        matched_sessions = [s for s in active_sessions if s[0].endswith(choice)]
+                        if len(matched_sessions) == 1:
+                            manager.session_id = matched_sessions[0][0]
+                            resume_session = True
+                            print(f"[OK] Resuming session: {manager.session_id[-8:]}...")
+                        else:
+                            print("[FAIL] Invalid selection. Starting new session...")
         
         # Try to match by number first
-        if choice.upper() == 'N':
-            print("✓ Starting new session...")
+        elif choice.upper() == 'N':
+            print("[OK] Starting new session...")
         elif choice.isdigit() and 1 <= int(choice) <= len(active_sessions):
             selected_session = active_sessions[int(choice) - 1]
             manager.session_id = selected_session[0]
             resume_session = True
-            print(f"✓ Resuming session: {manager.session_id[-5:]}...")
+            print(f"[OK] Resuming session: {manager.session_id[-8:]}...")
         else:
-            # Try to match by partial session ID (last 5 chars)
+            # Try to match by partial session ID (last 8 chars)
             matched_sessions = [s for s in active_sessions if s[0].endswith(choice)]
             if len(matched_sessions) == 1:
                 manager.session_id = matched_sessions[0][0]
                 resume_session = True
-                print(f"✓ Resuming session: {manager.session_id[-5:]}...")
+                print(f"[OK] Resuming session: {manager.session_id[-8:]}...")
             elif len(matched_sessions) > 1:
-                print(f"❌ Ambiguous session ID. Multiple matches found.")
-                print("✓ Starting new session...")
+                print(f"[FAIL] Ambiguous session ID. Multiple matches found.")
+                print("[OK] Starting new session...")
             else:
-                print(f"❌ No session found matching '{choice}'")
-                print("✓ Starting new session...")
+                print(f"[FAIL] No session found matching '{choice}'")
+                print("[OK] Starting new session...")
     
     if resume_session:
         # Load session state
         tests, tester_name, venv_path = _load_session_state(manager)
         
         if tests and tester_name and venv_path:
-            print(f"✓ Session restored!")
+            print(f"[OK] Session restored!")
             print(f"  Tester: {tester_name}")
             print(f"  Environment: {_get_relative_path(venv_path)}")
             print(f"  Tests completed: {sum(1 for t in tests if t.get('completed', False))}/{len(tests)}")
@@ -320,7 +716,7 @@ def run_interactive_workflow(manager):
             
             # Verify venv still exists
             if not Path(venv_path).exists():
-                print("⚠️  Virtual environment not found. Recreating...")
+                print("[WARN]  Virtual environment not found. Recreating...")
                 venv_path = manager.create_isolated_env(manager.python_executable or sys.executable)
                 manager.install_beta_version(venv_path, manager.wheel_file)
                 manager.venv_path = venv_path
@@ -329,8 +725,16 @@ def run_interactive_workflow(manager):
             _run_test_menu(manager, venv_path, tester_name, installation_complete=tests[0].get('completed', False))
             return
         else:
-            print("⚠️  Could not restore session. Starting fresh...")
+            print("[WARN]  Could not restore session. Starting fresh...")
             resume_session = False
+    
+    # Early exit option before starting new session
+    if not resume_session:
+        print("\nStarting new testing session...")
+        choice = input("Continue? (y/n): ").strip().lower()
+        if choice != 'y':
+            print("Exiting.")
+            return
     
     # New session - continue with normal workflow
     # Auto-detect Python and wheel
@@ -341,7 +745,7 @@ def run_interactive_workflow(manager):
             stderr=subprocess.STDOUT,
             text=True
         ).strip()
-        print(f"Detected Python: {python_version} ✓")
+        print(f"Detected Python: {python_version} [OK]")
     except Exception:
         print(f"Detected Python: {python_exec}")
     
@@ -361,9 +765,9 @@ def run_interactive_workflow(manager):
         
         wheel_files.sort(key=extract_version, reverse=True)
         latest_wheel = wheel_files[0]
-        print(f"Latest wheel: {latest_wheel.name} ✓")
+        print(f"Latest wheel: {latest_wheel.name} [OK]")
     else:
-        print("⚠️  No wheel files found in dist/")
+        print("[WARN]  No wheel files found in dist/")
         print("Please build the package first (e.g., python -m build)")
         return
     
@@ -385,7 +789,7 @@ def run_interactive_workflow(manager):
     print("Setting up isolated environment...")
     venv_path = manager.create_isolated_env(python_exec)
     if not venv_path:
-        print("❌ Failed to create environment.")
+        print("[FAIL] Failed to create environment.")
         return
     
     print("Installing CodeSentinel beta...")
@@ -400,9 +804,9 @@ def run_interactive_workflow(manager):
     
     try:
         subprocess.run([str(pip_exec), 'install', 'pytest'], check=True, capture_output=True)
-        print("✓ Test dependencies installed")
+        print("[OK] Test dependencies installed")
     except Exception as e:
-        print(f"⚠️  Could not install pytest: {e}")
+        print(f"[WARN]  Could not install pytest: {e}")
     
     print()
     
@@ -412,10 +816,10 @@ def run_interactive_workflow(manager):
     # Start test iteration
     iteration_path = manager.start_test_iteration(tester_name)
     if not iteration_path:
-        print("❌ Failed to start test iteration.")
+        print("[FAIL] Failed to start test iteration.")
         return
     
-    print(f"✓ Test iteration ready!")
+    print(f"[OK] Test iteration ready!")
     print(f"  Report: {_get_relative_path(iteration_path)}")
     print()
     
@@ -459,7 +863,7 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
         
         for test in tests:
             if test["completed"]:
-                status = "✓"
+                status = "[OK]"
             elif test.get("failed", False):
                 status = "✗"
             else:
@@ -478,6 +882,12 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
         # Show complete session option only after tests have been run
         if any_test_run:
             print("  C. Complete Session (Save & Generate Final Report)")
+        
+        # Show view reports option
+        print("  W. View Session Reports")
+        
+        # Show remove sessions option
+        print("  D. Remove Sessions from List (reports preserved)")
         
         print("  X. Exit Without Saving")
         
@@ -517,7 +927,7 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
         elif choice == 'R':
             # Reload version - reinstall from updated wheel
             if not any_test_run:
-                print("\n❌ Reload Version option not available yet.")
+                print("\n[FAIL] Reload Version option not available yet.")
                 print("   Run at least one test before reloading to a new version.")
                 continue
             
@@ -534,7 +944,8 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
             # Select new wheel
             new_wheel = _select_wheel_file()
             if new_wheel:
-                print(f"\nReinstalling from: {new_wheel.name if hasattr(new_wheel, 'name') else str(new_wheel)}")
+                wheel_path = Path(new_wheel) if isinstance(new_wheel, str) else new_wheel
+                print(f"\nReinstalling from: {wheel_path.name}")
                 try:
                     # Uninstall current version
                     if sys.platform == "win32":
@@ -544,11 +955,17 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
                     
                     subprocess.run([str(pip_exec), 'uninstall', 'codesentinel', '-y'], 
                                    check=True, capture_output=True)
-                    print("✓ Uninstalled previous version")
+                    print("[OK] Uninstalled previous version")
                     
                     # Install new version
                     manager.install_beta_version(venv_path, str(new_wheel))
-                    print("✓ Installed updated version")
+                    
+                    # Get the newly installed version
+                    new_version = _get_installed_version(venv_path)
+                    if new_version:
+                        print(f"[OK] Installed updated version: {new_version}")
+                    else:
+                        print("[OK] Installed updated version")
                     
                     # Update manager state
                     manager.wheel_file = str(new_wheel)
@@ -558,73 +975,138 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
                     _save_session_state(manager, tests, tester_name)
                     
                 except Exception as e:
-                    print(f"❌ Error reloading version: {e}")
+                    print(f"[FAIL] Error reloading version: {e}")
             else:
-                print("❌ No wheel file selected")
+                print("[FAIL] No wheel file selected")
         
         elif choice == 'S':
             # Save and exit (resume later)
-            print("\nSaving session state...")
+            print("\n" + "=" * 70)
+            print("SAVING SESSION")
+            print("=" * 70)
             session_file = _save_session_state(manager, tests, tester_name)
-            print(f"\n✓ Session saved!")
-            print(f"  Resume with: codesentinel test --resume {manager.session_id[-5:]}")
+            
+            # Get iteration reports
+            iteration_reports = list(manager.iterations_dir.glob('*.md'))
+            
+            print(f"\n[OK] Session saved successfully!")
             print()
-            print("Session preserved. Use 'C' option when ready to complete.")
+            print("Session Information:")
+            print("-" * 70)
+            print(f"  Session ID:       {manager.session_id}")
+            print(f"  Short ID:         {manager.session_id[-8:]}")
+            print(f"  Version:          {manager.version}")
+            print(f"  Tester:           {tester_name}")
+            print(f"  Tests Completed:  {sum(1 for t in tests if t.get('completed', False))}/{len(tests)}")
+            print("-" * 70)
+            print()
+            print("Saved Files:")
+            print("-" * 70)
+            print(f"  Session State:")
+            print(f"    {_get_relative_path(session_file)}")
+            if iteration_reports:
+                print(f"  Iteration Reports: ({len(iteration_reports)})")
+                for report in sorted(iteration_reports)[-3:]:  # Show last 3
+                    print(f"    {_get_relative_path(report)}")
+                if len(iteration_reports) > 3:
+                    print(f"    ... and {len(iteration_reports) - 3} more")
+            print("-" * 70)
+            print()
+            print("To Resume:")
+            print(f"  codesentinel test --version {manager.version}")
+            print(f"  Then select session: {manager.session_id[-8:]}")
+            print()
+            print("Session preserved. Use option 'C' when ready to complete.")
+            print("=" * 70)
             break
         
         elif choice == 'C':
             # Complete session - save and generate final report
             if not any_test_run:
-                print("\n❌ Complete Session option not available yet.")
+                print("\n[FAIL] Complete Session option not available yet.")
                 print("   Run at least one test before completing the session.")
                 continue
             
-            print("\nCompleting session...")
+            print("\n" + "=" * 70)
+            print("COMPLETING SESSION")
+            print("=" * 70)
+            print("Saving session state...")
             _save_session_state(manager, tests, tester_name)
+            
+            print("Generating consolidated report...")
             final_report = _generate_final_report(manager, tester_name)
+            
+            # Get iteration reports
+            iteration_reports = list(manager.iterations_dir.glob('*.md'))
             
             # Display session summary
             print()
             print("=" * 70)
-            print("Beta Testing Session Complete!")
+            print("BETA TESTING SESSION COMPLETE")
             print("=" * 70)
+            print()
+            print("Session Summary:")
+            print("-" * 70)
+            print(f"  Session ID:       {manager.session_id}")
+            print(f"  Version:          {manager.version}")
+            print(f"  Tester:           {tester_name}")
+            print(f"  Tests Completed:  {sum(1 for t in tests if t.get('completed', False))}/{len(tests)}")
+            print(f"  Tests Failed:     {sum(1 for t in tests if t.get('failed', False))}")
+            print(f"  Iterations:       {len(iteration_reports)}")
+            print("-" * 70)
+            print()
             
             if final_report and final_report.exists():
-                print(f"Final Report: {_get_relative_path(final_report)}")
+                print("Generated Reports:")
+                print("-" * 70)
+                print(f"  Consolidated Report:")
+                print(f"    {_get_relative_path(final_report)}")
+                print(f"    Full Path: {final_report}")
+                print()
                 
-                # Display summary
+                if iteration_reports:
+                    print(f"  Iteration Reports: ({len(iteration_reports)})")
+                    for report in sorted(iteration_reports):
+                        print(f"    {_get_relative_path(report)}")
+                print("-" * 70)
+                print()
+                
+                # Display report content preview
                 try:
                     with open(final_report, 'r', encoding='utf-8') as f:
                         content = f.read()
                         
-                    # Extract key metrics from the report
-                    print()
-                    print("Session Summary:")
+                    print("Report Preview:")
                     print("-" * 70)
                     
-                    # Parse session ID
-                    if 'Session ID:' in content:
-                        session_line = [line for line in content.split('\n') if 'Session ID:' in line][0]
-                        print(f"  {session_line.strip()}")
-                    
-                    # Parse tester
-                    if 'Lead Tester:' in content:
-                        tester_line = [line for line in content.split('\n') if 'Lead Tester:' in line][0]
-                        print(f"  {tester_line.strip()}")
-                    
-                    # Parse total iterations
-                    if 'Total Iterations:' in content:
-                        iter_line = [line for line in content.split('\n') if 'Total Iterations:' in line][0]
-                        print(f"  {iter_line.strip()}")
+                    # Show first 15 lines of report
+                    lines = content.split('\n')[:15]
+                    for line in lines:
+                        print(f"  {line}")
+                    if len(content.split('\n')) > 15:
+                        print(f"  ... ({len(content.split('\n')) - 15} more lines)")
                         
                     print("-" * 70)
                 except Exception as e:
-                    print(f"⚠️  Could not read report summary: {e}")
+                    print(f"[WARN] Could not preview report: {e}")
             
+            print()
             print("=" * 70)
             
             _cleanup_session(manager, venv_path)
             break
+        
+        elif choice.upper() == 'W':
+            # View session reports
+            _view_session_reports(manager)
+        
+        elif choice.upper() == 'D':
+            # Delete saved sessions
+            active_sessions = manager.__class__.find_active_sessions(manager.version)
+            if active_sessions:
+                _delete_sessions_menu(manager, active_sessions)
+            else:
+                print(f"\n[INFO] No saved sessions found for version {manager.version}")
         
         elif choice == 'X':
             # Exit without saving
@@ -646,11 +1128,11 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
                 # Auto-save after each test
                 _save_session_state(manager, tests, tester_name)
             else:
-                print(f"❌ Invalid test number: {test_id}")
+                print(f"[FAIL] Invalid test number: {test_id}")
         
         elif choice == 'P' and not any_test_run:
             # Change Python interpreter (only before tests run)
-            print("\n⚠️  Changing Python will require reinstalling the environment.")
+            print("\n[WARN]  Changing Python will require reinstalling the environment.")
             confirm = input("Continue? (y/n): ").strip().lower()
             if confirm == 'y':
                 new_python = _select_python_executable()
@@ -658,12 +1140,12 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
                     print("\nRecreating environment with new Python...")
                     _cleanup_session(manager, venv_path)
                     # This would need to return and restart the workflow
-                    print("⚠️  Please restart the test workflow to use the new Python interpreter.")
+                    print("[WARN]  Please restart the test workflow to use the new Python interpreter.")
                     break
         
         elif choice == 'V' and not any_test_run:
             # Change version/wheel (only before tests run)
-            print("\n⚠️  Changing version will require reinstalling the environment.")
+            print("\n[WARN]  Changing version will require reinstalling the environment.")
             confirm = input("Continue? (y/n): ").strip().lower()
             if confirm == 'y':
                 new_wheel = _select_wheel_file()
@@ -682,15 +1164,15 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
                         # Install new version
                         subprocess.run([str(pip_exec), 'install', new_wheel], 
                                      check=True, capture_output=True)
-                        print("✓ New version installed successfully")
+                        print("[OK] New version installed successfully")
                     except Exception as e:
-                        print(f"❌ Error reinstalling: {e}")
+                        print(f"[FAIL] Error reinstalling: {e}")
         
         else:
             if choice in ['P', 'V'] and any_test_run:
-                print(f"❌ Cannot change configuration after tests have been run")
+                print(f"[FAIL] Cannot change configuration after tests have been run")
             else:
-                print(f"❌ Invalid option: {choice}")
+                print(f"[FAIL] Invalid option: {choice}")
 
 
 def _run_single_test(manager, venv_path, test):
@@ -716,7 +1198,7 @@ def _run_single_test(manager, venv_path, test):
     test_file = Path.cwd() / 'tests' / test['script']
     
     if not test_file.exists():
-        print(f"⚠️  Test file not found: {test_file}")
+        print(f"[WARN]  Test file not found: {test_file}")
         print(f"   Skipping {test['name']}")
         test['completed'] = False
         print('─' * 70)
@@ -741,13 +1223,13 @@ def _run_single_test(manager, venv_path, test):
         print()  # Blank line for separation
         print("=" * 70)
         if result.returncode == 0:
-            print(f"✅✅✅ {test['name']} PASSED ✅✅✅")
+            print(f"[PASS][PASS][PASS] {test['name']} PASSED [PASS][PASS][PASS]")
             print(f"Status: ALL TESTS SUCCESSFUL")
             print(f"Return Code: {result.returncode}")
             test['completed'] = True
             test['failed'] = False
         else:
-            print(f"❌❌❌ {test['name']} FAILED ❌❌❌")
+            print(f"[FAIL][FAIL][FAIL] {test['name']} FAILED [FAIL][FAIL][FAIL]")
             print(f"Status: TEST FAILURES DETECTED")
             print(f"Return Code: {result.returncode}")
             
@@ -766,19 +1248,19 @@ def _run_single_test(manager, venv_path, test):
                 failed_tests = re.findall(r'FAILED (.*?)(?:\s-|\s\[|$)', combined_output)
                 if failed_tests:
                     for failed_test in failed_tests:
-                        print(f"  • {failed_test.strip()}")
+                        print(f"  * {failed_test.strip()}")
                 else:
-                    print("  • See output above for details")
+                    print("  * See output above for details")
             else:
-                print("  • See output above for details")
+                print("  * See output above for details")
             
             # Check for common error patterns
             if "ModuleNotFoundError" in combined_output or "ImportError" in combined_output:
-                print("  • Missing dependencies detected")
+                print("  * Missing dependencies detected")
             if "AssertionError" in combined_output:
-                print("  • Assertion failures detected")
+                print("  * Assertion failures detected")
             if "AttributeError" in combined_output:
-                print("  • Attribute/method errors detected")
+                print("  * Attribute/method errors detected")
             
             print("-" * 70)
             
@@ -787,11 +1269,11 @@ def _run_single_test(manager, venv_path, test):
         print("=" * 70)
     
     except subprocess.TimeoutExpired:
-        print(f"❌ {test['name']} TIMEOUT (exceeded 60s)")
+        print(f"[FAIL] {test['name']} TIMEOUT (exceeded 60s)")
         test['completed'] = False
         test['failed'] = True
     except Exception as e:
-        print(f"❌ {test['name']} ERROR: {e}")
+        print(f"[FAIL] {test['name']} ERROR: {e}")
         test['completed'] = False
         test['failed'] = True
     
@@ -880,13 +1362,13 @@ def _generate_final_report(manager, tester_name):
         consolidated_path = manager.consolidated_dir / f"consolidated_report_{manager.session_id}.md"
         
         if consolidated_path.exists():
-            print(f"✓ Consolidated report: {_get_relative_path(consolidated_path)}")
+            print(f"[OK] Consolidated report: {_get_relative_path(consolidated_path)}")
             return consolidated_path
         else:
-            print("⚠️  Report file not found after generation")
+            print("[WARN]  Report file not found after generation")
             return None
     except Exception as e:
-        print(f"❌ Error generating report: {e}")
+        print(f"[FAIL] Error generating report: {e}")
         return None
 
 
@@ -904,11 +1386,11 @@ def _cleanup_session(manager, venv_path):
         if Path(venv_path).exists():
             import shutil
             shutil.rmtree(venv_path)
-            print(f"✓ Removed virtual environment: {_get_relative_path(venv_path)}")
+            print(f"[OK] Removed virtual environment: {_get_relative_path(venv_path)}")
     except Exception as e:
-        print(f"⚠️  Could not remove venv: {e}")
+        print(f"[WARN]  Could not remove venv: {e}")
     
-    print("✓ Cleanup complete")
+    print("[OK] Cleanup complete")
 
 
 def run_automated_workflow(manager):
@@ -918,6 +1400,6 @@ def run_automated_workflow(manager):
     Args:
         manager: BetaTestingManager instance.
     """
-    print("⚠️  Automated workflow not yet fully implemented.")
+    print("[WARN]  Automated workflow not yet fully implemented.")
     print("This will be enhanced in future releases.")
     print("\nPlease use interactive mode (default) for now.")

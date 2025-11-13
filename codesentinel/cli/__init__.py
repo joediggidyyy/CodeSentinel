@@ -1296,6 +1296,48 @@ Examples:
         'tasks',
         help='Display tracked tasks'
     )
+    
+    # Memory -> Process Monitor
+    process_parser = memory_subparsers.add_parser(
+        'process',
+        help='Manage orphan process monitor daemon and view CodeSentinel instances'
+    )
+    
+    # Create process subcommands
+    process_subparsers = process_parser.add_subparsers(dest='process_subcommand', help='Process management subcommands')
+    
+    # LIFECYCLE subcommands
+    lifecycle_status = process_subparsers.add_parser('status', help='Show processes tracked by current instance')
+    
+    lifecycle_history = process_subparsers.add_parser('history', help='Show orphan cleanup history')
+    lifecycle_history.add_argument('--limit', type=int, default=20, help='Number of recent cleanups to show (default: 20)')
+    
+    # DISCOVERY subcommands
+    discovery_instances = process_subparsers.add_parser('instances', help='Show all detected CodeSentinel instances')
+    discovery_instances.add_argument('-v', '--verbose', action='store_true', help='Show full command lines')
+    
+    discovery_system = process_subparsers.add_parser('system', help='Show top system processes by memory')
+    discovery_system.add_argument('--limit', type=int, default=15, help='Number of processes to show (default: 15)')
+    
+    # INTELLIGENCE subcommands
+    intelligence_info = process_subparsers.add_parser('info', help='Full instance diagnostics and monitor status')
+    
+    # COORDINATION subcommands
+    coordination_coord = process_subparsers.add_parser('coordinate', help='Enable inter-ORACL communication and coordination')
+    
+    # Legacy process monitor management (--status, --stop, --restart)
+    process_parser.add_argument(
+        '--status', action='store_true', help='[LEGACY] Show process monitor status (use: status subcommand)'
+    )
+    process_parser.add_argument(
+        '--stop', action='store_true', help='Stop the process monitor daemon'
+    )
+    process_parser.add_argument(
+        '--restart', action='store_true', help='Restart the process monitor daemon'
+    )
+    process_parser.add_argument(
+        '--interval', type=int, help='Set check interval in seconds (for restart)'
+    )
 
     args = parser.parse_args()
 
@@ -2909,6 +2951,68 @@ except KeyboardInterrupt:
                 handle_memory_clear(args, session_memory)
             elif memory_action == 'tasks':
                 handle_memory_tasks(args, session_memory)
+            elif memory_action == 'process':
+                # Handle process monitor management and multi-instance features
+                from ..utils.process_monitor import get_monitor, stop_monitor, start_monitor
+                from .process_utils import (
+                    handle_lifecycle_status,
+                    handle_lifecycle_history,
+                    handle_discovery_instances,
+                    handle_discovery_system,
+                    handle_intelligence_info,
+                    handle_coordination_coordinate
+                )
+                
+                # Route to appropriate handler based on subcommand
+                if args.process_subcommand == 'status':
+                    handle_lifecycle_status(args)
+                elif args.process_subcommand == 'history':
+                    handle_lifecycle_history(args)
+                elif args.process_subcommand == 'instances':
+                    handle_discovery_instances(args)
+                elif args.process_subcommand == 'system':
+                    handle_discovery_system(args)
+                elif args.process_subcommand == 'info':
+                    handle_intelligence_info(args)
+                elif args.process_subcommand == 'coordinate':
+                    handle_coordination_coordinate(args)
+                elif args.status or (not args.stop and not args.restart and not args.process_subcommand):
+                    # Show status (default action or --status legacy flag)
+                    try:
+                        monitor = get_monitor()
+                        status = monitor.get_status()
+                        
+                        print("\n" + "="*60)
+                        print("Process Monitor Status")
+                        print("="*60)
+                        print(f"Enabled:         {status['enabled']}")
+                        print(f"Running:         {status['running']}")
+                        print(f"Parent PID:      {status['parent_pid']}")
+                        print(f"Check Interval:  {status['check_interval']} seconds")
+                        print(f"Tracked PIDs:    {status['tracked_count']}")
+                        if status['tracked_pids']:
+                            print(f"PIDs:            {', '.join(map(str, status['tracked_pids']))}")
+                        print("="*60 + "\n")
+                    except Exception as e:
+                        print(f"[FAIL] Could not get process monitor status: {e}")
+                
+                elif args.stop:
+                    # Stop the monitor
+                    try:
+                        stop_monitor()
+                        print("[OK] Process monitor stopped")
+                    except Exception as e:
+                        print(f"[FAIL] Could not stop process monitor: {e}")
+                
+                elif args.restart:
+                    # Restart with optional new interval
+                    interval = args.interval if args.interval else 60
+                    try:
+                        stop_monitor()
+                        monitor = start_monitor(check_interval=interval, enabled=True)
+                        print(f"[OK] Process monitor restarted (interval: {interval}s)")
+                    except Exception as e:
+                        print(f"[FAIL] Could not restart process monitor: {e}")
             else:
                 # Default to show if no action specified
                 handle_memory_show(args, session_memory)

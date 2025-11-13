@@ -98,3 +98,19 @@ The agent will query the appropriate tier based on the context of its needs, ens
 - **Tier 3**: The existing ORACL™ modules will be used as-is. The `archive_enrichment_pipeline`'s configuration will be updated to use Tier 2 as a data source.
 
 This architecture provides a clear and scalable path for evolving the agent's intelligence, building from immediate operational memory to deep, strategic wisdom.
+
+---
+
+## 6. Validation Governance (Beta Directive)
+
+**Directive ID**: ORACL-T1-VALIDATION-20251111-BETA  
+**Scope**: Tier 0, Tier 1, Tier 2 artifacts (critical release, governance, and policy documents)  
+**Status**: Active beta (monitored for efficacy)
+
+To reduce the risk of silent regressions in foundational artifacts, every edit that touches Tier 0-2 content must execute **redundant validation** immediately after the change. Redundant validation means running at least two complementary verification steps covering formatting, policy compliance, and behavioral integrity. Examples include:
+
+- Running `codesentinel update docs --validate` followed by targeted pytest modules (e.g., `tests/test_docs_formatting.py`).
+- Running policy enforcement scripts (root cleanup, governance linters) in tandem with unit or integration tests that cover the modified surface area.
+- Executing documentation format checks together with SEAM Protection compliance scans.
+
+Agents must log the validation pair used in the session report so ORACL™ can track adherence and success metrics. During the beta window, deviations require explicit justification and are flagged for review during weekly Tier 2 promotions. Once the directive proves effective, it will be promoted to permanent Tier 0 governance policy.
