@@ -139,7 +139,7 @@ def export_agent_context(
     resolved_path.write_text(context.to_json(indent=2), encoding="utf-8")
     if verbose:
         rel = _format_relative(resolved_path)
-        print(f"✓ Agent context exported: {rel}")
+        print(f"[OK] Agent context exported: {rel}")
     return resolved_path
 
 
@@ -175,7 +175,7 @@ def display_agent_context(context: AgentContext, *, verbose: bool = False) -> No
             print(f"    Proposed     : {opp.proposed_action}")
             if opp.suggested_actions:
                 for suggestion in opp.suggested_actions:
-                    print(f"      → {suggestion}")
+                    print(f"      -> {suggestion}")
             print(f"    Requires decision: {opp.agent_decision_required}")
             print(f"    Safe to automate : {opp.safe_to_automate}")
 

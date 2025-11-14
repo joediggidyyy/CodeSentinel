@@ -114,3 +114,36 @@ Adherence to this framework ensures that decisions are data-driven and that the 
   - **Procedure Failure Rate**: Which procedures have the highest failure rates? This could indicate the procedure is unclear, incorrect, or too complex.
   - **Agent Task Speed**: Track the average time-to-completion for common tasks to measure efficiency gains over time.
 - **Feedback Loop**: A command will be available for agents to provide direct feedback on a procedure's clarity and usefulness, which will be tracked and reviewed quarterly.
+
+---
+
+## 6. Process Intelligence & Calamum Readiness (T2)
+
+**Objective**: Extend the "memory process" pipeline with SEAM-tight observability, remediation, and archival hooks that directly feed the analytics stack and prepare the ground for the upcoming `calamum test --target ...` security harness.
+
+### 6.1 Process Telemetry Commands
+
+The following subcommands are now available under `codesentinel memory process` and emit structured records into `SessionMemory.log_domain_activity` (consumable by ORACL and the archive index stream):
+
+| Command | Purpose | Key Metadata |
+|---------|---------|--------------|
+| `detail --pid <PID> [-v]` | Single-process inspection (CPU, memory, runtime, ancestry, optional IO/thread data). | `pid`, `verbose_mode`, runtime/resource snapshot |
+| `kill --pid <PID> [--force] [--yes] [--reason ...]` | SEAM-compliant termination with confirmation prompts, optional force kill, and justification logging. | `pid`, `force`, `reason`, outcome |
+| `anomalies [--cpu-threshold --memory-threshold --min-runtime --limit] [-v]` | Detects processes exceeding configurable CPU/memory/runtime thresholds; verbose mode exposes usernames and command lines. | Thresholds, hit count, trigger list |
+| `tree --pid <PID> [--depth N]` | Displays parent/child context to prevent accidental termination of critical ancestors/descendants. | `pid`, traversal depth |
+| `watch --pid <PID> [--interval N] [--duration N] [-v]` | Short-lived sampling loop showing CPU/memory/thread trends, optionally echoing command lines per sample. | `pid`, interval, duration |
+| `snapshot [--filter TERM] [--limit N] [--output PATH] [-v]` | Writes a JSONL snapshot (default `docs/metrics/process_snapshot_YYYYMMDD_HHMMSS.jsonl`) for downstream analytics or forensic replay. | output file, record count, filter term |
+| `system --limit N [-v]` (updated) | Top memory consumers with optional verbose command-line view for anomaly triage. | total scanned, limit, `verbose_mode` |
+
+Each command adheres to ASCII-only console output, repo-relative path reporting, and non-destructive logging. The JSONL snapshots double as feedstock for the archive index model described in Section 4, reinforcing the "tree-backed key–value store" view of the process landscape.
+
+### 6.2 Calamum Mini Pen-Test Harness
+
+- **Placeholder Command**: `calamum test --target <identifier>` will become the entry point for a security-heavy regression suite that stress-tests process orchestration, kill safety, and anomaly detection. The name intentionally references the Latin *calamum* (“reed/pen”), framing the effort as a lightweight but sharp pen-test.
+- **Integration Plan**:
+  1. Use `snapshot` outputs as baseline data for the Calamum harness.
+  2. Trigger `watch` sessions under fault injection (CPU/memory spikes) to validate alerting signal quality.
+  3. Log every Calamum run into `docs/metrics/calamum_sessions.jsonl`, referencing both the archive index and anomaly reports for cross-correlation.
+  4. Provide a `--report <path>` option that composes a SEAM-compliant summary suitable for the governance timeline reports.
+
+This staged rollout keeps the process pipeline auditable today while giving us a clear path to heavier security testing tomorrow.

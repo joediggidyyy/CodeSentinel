@@ -4,15 +4,15 @@ Welcome to CodeSentinel documentation. This folder contains comprehensive guides
 
 ## Quick Navigation
 
-###  [Installation](installation/)
+### [Installation](installation/)
 
 How to install CodeSentinel on Windows, macOS, and Linux. Includes GUI installers and Python package installation.
 
-###  [Header/Footer Management](HEADER_FOOTER_GUIDE.md)
+### [Header/Footer Management](HEADER_FOOTER_GUIDE.md)
 
 Comprehensive guide for managing documentation headers and footers with intelligent project detection. Includes template library, interactive editing, and branding integration.
 
-###  [Guides](guides/)
+### [Guides](guides/)
 
 Step-by-step guides for common tasks and deployment:
 
@@ -23,7 +23,7 @@ Step-by-step guides for common tasks and deployment:
 - Contributing to the project
 - Legacy feature mapping
 
-###  [Architecture](architecture/)
+### [Architecture](architecture/)
 
 System design and policy documentation:
 
@@ -32,7 +32,7 @@ System design and policy documentation:
 - Packaging and design rationale
 - Component specifications
 
-###  [Legacy](legacy/)
+### [Legacy](legacy/)
 
 Information about deprecated and archived code:
 
@@ -40,7 +40,25 @@ Information about deprecated and archived code:
 - Feature mapping for old versions
 - Legacy code status
 
-###  [Publication Logs](publication_logs/)
+### [Publication Logs](publication_logs/)
+
+### [Planning](planning/)
+
+Key strategic and design planning documents:
+
+- ORACALL / ORACode briefs, feasibility studies, and grant proposals.
+- Phase-level roadmaps and implementation plans (PHASE_PLANS).
+- Secure credentials strategy and development plans.
+- ORACL / corporate philosophy and meta-strategy documents.
+
+### [Reports](reports/)
+
+Execution and status reports organized for faster navigation:
+
+- Phase-level completion reports (PHASE_REPORTS).
+- Measurement and metrics-oriented reports (MEASUREMENT_REPORTS).
+- Test case completion reports (TEST_CASE_REPORTS).
+- Incident reports (INCIDENT_REPORTS).
 
 Version-specific publication records and release documentation. Each version (v1.0.3_beta, etc.) has its own folder with publication logs and validation reports.
 

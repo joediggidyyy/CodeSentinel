@@ -299,3 +299,5 @@ Failure modes and fallbacks
 - Missing sources: emit unknown attribution with rationale "source-unavailable".
 - Clock skew: widen correlation window adaptively up to a max (e.g., 30 minutes).
 - Ambiguous signals: return the top hypothesis only if above threshold; else unknown.
+
+**A Polymath Project** | [joediggidyyy](https://github.com/joediggidyyy/CodeSentinel)

@@ -33,6 +33,9 @@ codesentinel.json
 # Archive
 quarantine_legacy_archive/
 
+# Sensitive documentation (not tracked in git; referenced via ORACall/ORACode only)
+docs/sensitive/
+
 # Agent Session Data
 .agent_session/
 .codesentinel/

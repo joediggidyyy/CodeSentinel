@@ -110,7 +110,7 @@ def handle_memory_clear(args, session_memory) -> None:
     
     try:
         session_memory.cleanup()
-        print("✓ Session memory cache cleared")
+        print("[OK] Session memory cache cleared")
     except Exception as e:
         print(f"❌ Failed to clear cache: {e}", file=sys.stderr)
         sys.exit(1)

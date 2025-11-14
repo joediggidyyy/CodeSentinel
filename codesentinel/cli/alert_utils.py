@@ -58,7 +58,7 @@ def handle_alert_config(args, config_manager):
         changes_made = True
     
     if changes_made:
-        print("\n✓ Alert configuration updated successfully")
+        print("\n[OK] Alert configuration updated successfully")
         _show_alert_config(config_manager)
     elif not args.show:
         print("❌ No configuration changes specified")
@@ -89,7 +89,7 @@ def _show_alert_config(config_manager):
         if not isinstance(channel_config, dict):
             continue
             
-        status = "✓ ENABLED" if channel_config.get('enabled', False) else "✗ DISABLED"
+        status = "[OK] ENABLED" if channel_config.get('enabled', False) else "[FAIL] DISABLED"
         print(f"  {status:12} {channel_name}")
         
         # Show channel-specific settings
@@ -120,35 +120,35 @@ def _enable_channel(config_manager, channel):
     """Enable an alert channel."""
     key = f'alerts.{channel}.enabled'
     config_manager.set(key, True)
-    print(f"✓ Enabled {channel} channel")
+    print(f"[OK] Enabled {channel} channel")
 
 
 def _disable_channel(config_manager, channel):
     """Disable an alert channel."""
     key = f'alerts.{channel}.enabled'
     config_manager.set(key, False)
-    print(f"✓ Disabled {channel} channel")
+    print(f"[OK] Disabled {channel} channel")
 
 
 def _set_email_config(config_manager, setting, value):
     """Set email configuration."""
     key = f'alerts.email.{setting}'
     config_manager.set(key, value)
-    print(f"✓ Set email {setting}: {value}")
+    print(f"[OK] Set email {setting}: {value}")
 
 
 def _set_slack_config(config_manager, webhook_url):
     """Set Slack webhook URL."""
     key = 'alerts.slack.webhook_url'
     config_manager.set(key, webhook_url)
-    print(f"✓ Set Slack webhook URL")
+    print(f"[OK] Set Slack webhook URL")
 
 
 def _set_severity_filter(config_manager, severity):
     """Set minimum severity filter."""
     key = 'alerts.severity_filter'
     config_manager.set(key, severity)
-    print(f"✓ Set minimum severity to: {severity.upper()}")
+    print(f"[OK] Set minimum severity to: {severity.upper()}")
 
 
 def handle_alert_send(args, config_manager):
@@ -187,6 +187,6 @@ def handle_alert_send(args, config_manager):
             severity=severity,
             channels=channels
         )
-        print("✓ Alert sent successfully")
+        print("[OK] Alert sent successfully")
     except Exception as e:
         print(f"❌ Failed to send alert: {e}")

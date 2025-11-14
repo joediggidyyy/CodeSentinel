@@ -51,7 +51,7 @@ def run_interactive_review(context: AgentContext) -> None:
         
         print("\nSuggested Actions:")
         for action in item.suggested_actions:
-            print(f"  • {action}")
+            print(f"  * {action}")
         
         print("\n" + "-" * 70)
         print("What would you like to do?")
@@ -150,9 +150,9 @@ def _guide_minimalism_remediation(item: 'RemediationOpportunity', workspace_root
     if 'legacy' in title or 'archive' in description:
         print("\nThis relates to the quarantine_legacy_archive/ directory.")
         print("\nThe archive is important for:")
-        print("  • Code archaeology and reference")
-        print("  • Rollback capability if needed")
-        print("  • Understanding evolution of the codebase")
+        print("  * Code archaeology and reference")
+        print("  * Rollback capability if needed")
+        print("  * Understanding evolution of the codebase")
         print("\nRecommended approach:")
         print("1. Verify all needed features have been ported from archived code")
         print("2. Create a compressed tarball: tar -czf legacy_archive_YYYYMMDD.tar.gz quarantine_legacy_archive/")

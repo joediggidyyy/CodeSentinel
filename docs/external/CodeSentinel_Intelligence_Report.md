@@ -6,7 +6,7 @@
 **A Polymath Project** | [joediggidyyy](https://github.com/joediggidyyy/CodeSentinel)
 
 **Publication Date:** November 12, 2025
-[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-1.1.2-brightgreen.svg)](https://github.com/joediggidyyy/CodeSentinel)
 [![PyPI](https://img.shields.io/badge/PyPI-1.1.2-blue.svg)](https://pypi.org/project/codesentinel/)

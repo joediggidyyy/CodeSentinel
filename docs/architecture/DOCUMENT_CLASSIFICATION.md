@@ -258,6 +258,50 @@ Tier 1 documents are part of the core CodeSentinel package. Infrastructure and p
 - Deletion (user-requested): Requires user verification before execution
 - Archival: By classification level (4a/4b/4c)
 
+---
+
+## INTERNAL / EXTERNAL VISIBILITY AND SENSITIVITY TAGS
+
+In addition to tier classification, each document must be tagged along two axes:
+
+- **Visibility**:
+  - `internal`  not intended for external distribution.
+  - `external`  safe for investors, customers, or public use.
+
+- **Sensitivity**:
+  - `trackable`  safe to store in git and ORACall / ORACode archives.
+  - `sensitive`  must not be stored in git or long-term archives; only minimal metadata may be tracked.
+
+This yields four combinations:
+
+- `internal/trackable` – internal planning, policies, architecture docs.
+- `internal/sensitive` – raw incident notes, PII-bearing logs, embargoed findings.
+- `external/trackable` – published briefs, user-facing guides, marketing collateral.
+- `external/sensitive` – rare; generally discouraged. Treat like internal/sensitive unless explicitly justified.
+
+### Storage Conventions
+
+- `docs/sensitive/` – reserved for `internal/sensitive` documents. This directory is not git-tracked and may be referenced only via logical identifiers in ORACall events (for example, `sensitive://incidents/2025-11-14-incident-042`).
+- `docs/external/` – reserved for `external/trackable` documents. Safe for publication.
+- Other `docs/**` subdirectories (planning, architecture, audit, etc.) – default to `internal/trackable` unless explicitly annotated otherwise.
+
+### ORACall / ORACode Integration
+
+All document-related ORACall events (creation, modification, redaction, archival) should include:
+
+- `visibility` field: `internal` or `external`.
+- `sensitivity` field: `trackable` or `sensitive`.
+- `tier` field: Based on this policy (0–4).
+- Optional `sensitive_ref` field for `internal/sensitive` documents (for example, `sensitive://incidents/...`).
+
+ORACode semantics must annotate:
+
+- `doc.classification/internal` or `doc.classification/external`.
+- `doc.sensitivity/trackable` or `doc.sensitivity/sensitive`.
+- `doc.use/guidance` for agent instruction documents.
+
+Guidance documents (Tier 4 agent docs, classification policies, corporate philosophy) should be indexed in ORACL with summaries and key rules so that agent decisions can be traced back to the underlying documentation.
+
 **Branding**: Determined by classification level
 
 ---
