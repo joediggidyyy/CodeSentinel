@@ -22,6 +22,7 @@ import subprocess
 import shutil
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, Optional
 import argparse
 import uuid
 
@@ -29,7 +30,7 @@ import uuid
 class BetaTestingManager:
     """Manages isolated beta testing environments for CodeSentinel."""
 
-    def __init__(self, version: str, session_id: str | None = None):
+    def __init__(self, version: str, session_id: Optional[str] = None):
         """
         Initialize the beta testing manager.
 
@@ -309,7 +310,7 @@ class BetaTestingManager:
             print(f"[FAIL] Error creating consolidated report: {e}")
             return None
 
-    def save_session_state(self, test_results: dict | None = None):
+    def save_session_state(self, test_results: Optional[Dict[str, Any]] = None):
         """
         Save the current session state to enable resume capability.
         

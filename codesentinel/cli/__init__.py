@@ -590,12 +590,47 @@ def main():
     
     discovery_system = process_subparsers.add_parser('system', help='Show top system processes by memory')
     discovery_system.add_argument('--limit', type=int, default=15, help='Number of processes to show (default: 15)')
+    discovery_system.add_argument('-v', '--verbose', action='store_true', help='Show command lines for each process')
     
     # INTELLIGENCE subcommands
     intelligence_info = process_subparsers.add_parser('info', help='Full instance diagnostics and monitor status')
     
     # COORDINATION subcommands
     coordination_coord = process_subparsers.add_parser('coordinate', help='Enable inter-ORACL communication and coordination')
+
+    # INSPECTION subcommands
+    detail_parser = process_subparsers.add_parser('detail', help='Show detailed information about a PID')
+    detail_parser.add_argument('--pid', type=int, required=True, help='Process ID to inspect')
+    detail_parser.add_argument('-v', '--verbose', action='store_true', help='Show extended fields (threads, IO, cwd)')
+
+    kill_parser = process_subparsers.add_parser('kill', help='Terminate a process safely')
+    kill_parser.add_argument('--pid', type=int, required=True, help='Process ID to terminate')
+    kill_parser.add_argument('--force', action='store_true', help='Send strong kill signal immediately')
+    kill_parser.add_argument('--yes', action='store_true', help='Skip confirmation prompt')
+    kill_parser.add_argument('--reason', type=str, default='manual', help='Reason for termination (logged)')
+
+    anomalies_parser = process_subparsers.add_parser('anomalies', help='Detect processes exceeding safety thresholds')
+    anomalies_parser.add_argument('--cpu-threshold', type=float, default=50.0, help='CPU percentage threshold (default: 50)')
+    anomalies_parser.add_argument('--memory-threshold', type=float, default=512.0, help='Memory threshold in MB (default: 512)')
+    anomalies_parser.add_argument('--min-runtime', type=int, default=600, help='Runtime threshold in seconds (default: 600)')
+    anomalies_parser.add_argument('--limit', type=int, default=25, help='Maximum rows to display (default: 25)')
+    anomalies_parser.add_argument('-v', '--verbose', action='store_true', help='Show usernames and commands for each hit')
+
+    tree_parser = process_subparsers.add_parser('tree', help='Display parent/child relationships for a PID')
+    tree_parser.add_argument('--pid', type=int, required=True, help='Process ID to analyze')
+    tree_parser.add_argument('--depth', type=int, default=2, help='Child depth to traverse (default: 2)')
+
+    watch_parser = process_subparsers.add_parser('watch', help='Observe a process over time')
+    watch_parser.add_argument('--pid', type=int, required=True, help='Process ID to monitor')
+    watch_parser.add_argument('--interval', type=int, default=5, help='Sampling interval in seconds (default: 5)')
+    watch_parser.add_argument('--duration', type=int, default=30, help='Total duration in seconds (default: 30)')
+    watch_parser.add_argument('-v', '--verbose', action='store_true', help='Show command line during watch output')
+
+    snapshot_parser = process_subparsers.add_parser('snapshot', help='Export current process state to JSONL')
+    snapshot_parser.add_argument('--filter', type=str, help='Only include processes whose name/command contains this term')
+    snapshot_parser.add_argument('--limit', type=int, default=0, help='Cap number of records written (0 = no limit)')
+    snapshot_parser.add_argument('--output', type=str, help='Output path (default: docs/metrics/process_snapshot_<timestamp>.jsonl)')
+    snapshot_parser.add_argument('-v', '--verbose', action='store_true', help='Show sample record after writing file')
 
     # Parse arguments
     try:
@@ -1047,8 +1082,8 @@ except KeyboardInterrupt:
                     flags=re.UNICODE
                 )
                 
-                # Policy-allowed emojis: checkmark and X
-                allowed_emojis = {'✓', '✔', '✅', '❌', '✗', '❎'}
+                # Policy-allowed emojis: none for console output (ASCII-only policy)
+                allowed_emojis = set()
                 
                 # Allowed emoji contexts (user-facing messages)
                 # These patterns indicate legitimate emoji usage in user output
@@ -1164,7 +1199,7 @@ except KeyboardInterrupt:
                             import subprocess
                             subprocess.run(['git', 'gc', '--auto'], check=False, 
                                          capture_output=not verbose)
-                            print("  ✓ Git garbage collection completed")
+                            print("  [OK] Git garbage collection completed")
                         except Exception as e:
                             print(f"  Git optimization failed: {e}")
                     else:
@@ -1226,11 +1261,11 @@ except KeyboardInterrupt:
                     shutil.move(str(path), str(archive_path))
                     archived_count += 1
                     if verbose:
-                        print(f"  ✓ Archived: {path.relative_to(workspace_root)} → cleanup session")
+                        print(f"  [OK] Archived: {path.relative_to(workspace_root)} -> cleanup session")
                 except Exception as e:
                     errors.append((path, str(e)))
                     if verbose:
-                        print(f"  ✗ Failed: {path.relative_to(workspace_root)} - {e}")
+                        print(f"  [FAIL] Failed: {path.relative_to(workspace_root)} - {e}")
             
             # Git optimization if requested
             if clean_targets['git']:
@@ -1240,11 +1275,11 @@ except KeyboardInterrupt:
                     result = subprocess.run(['git', 'gc', '--auto'], 
                                           capture_output=not verbose, text=True)
                     if result.returncode == 0:
-                        print("  ✓ Git garbage collection completed")
+                        print("  [OK] Git garbage collection completed")
                     else:
                         print(f"  ⚠️  Git gc returned code {result.returncode}")
                 except Exception as e:
-                    print(f"  ✗ Git optimization failed: {e}")
+                    print(f"  [FAIL] Git optimization failed: {e}")
             
             # Clean emojis from files
             emoji_cleaned_count = 0
@@ -1257,11 +1292,11 @@ except KeyboardInterrupt:
                         file_info['path'].write_text(file_info['cleaned'], encoding='utf-8')
                         emoji_cleaned_count += 1
                         if verbose:
-                            print(f"  ✓ Cleaned: {file_info['path'].relative_to(workspace_root)} ({file_info['emoji_count']} emojis removed)")
+                            print(f"  [OK] Cleaned: {file_info['path'].relative_to(workspace_root)} ({file_info['emoji_count']} emojis removed)")
                     except Exception as e:
                         emoji_errors.append((file_info['path'], str(e)))
                         if verbose:
-                            print(f"  ✗ Failed: {file_info['path'].relative_to(workspace_root)} - {e}")
+                            print(f"  [FAIL] Failed: {file_info['path'].relative_to(workspace_root)} - {e}")
             
             # Final summary
             print(f"\n✨ Cleanup complete!")
@@ -1457,13 +1492,13 @@ except KeyboardInterrupt:
             if orphaned_modules:
                 print(f"\n⚠️  Found {len(orphaned_modules)} orphaned module(s):")
                 for item in orphaned_modules:
-                    print(f"  • {item['type']}: {item['module_name']} ({item['path'].name})")
+                    print(f"  * {item['type']}: {item['module_name']} ({item['path'].name})")
                     if item['command_name']:
-                        print(f"    → Suggested command: 'codesentinel {item['command_name']}'")
+                        print(f"    -> Suggested command: 'codesentinel {item['command_name']}'")
                 print("\n💡 These modules are implemented but not integrated into the CLI.")
                 print("   Run with --force to see integration suggestions.")
             else:
-                print("  ✓ No orphaned modules detected")
+                print("  [OK] No orphaned modules detected")
             
             # Create backup if requested
             if backup and not dry_run:
@@ -1483,7 +1518,7 @@ except KeyboardInterrupt:
                         dst.parent.mkdir(parents=True, exist_ok=True)
                         import shutil
                         shutil.copy2(src, dst)
-                        print(f"  ✓ Backed up: {file_path}")
+                        print(f"  [OK] Backed up: {file_path}")
             
             # Analyze available CLI commands
             print("\n🔍 Analyzing available CLI commands...")
@@ -1499,7 +1534,7 @@ except KeyboardInterrupt:
                     available_commands['clean'] = [
                         'cache', 'temp', 'logs', 'build', 'test', 'root', 'emojis'
                     ]
-                    print("  ✓ Clean command: available with multiple targets")
+                    print("  [OK] Clean command: available with multiple targets")
                 else:
                     print("  ⚠️  Clean command: not available or incomplete")
             except Exception as e:
@@ -1515,7 +1550,7 @@ except KeyboardInterrupt:
                     available_commands['update'] = [
                         'docs', 'changelog', 'readme', 'version', 'dependencies', 'api-docs'
                     ]
-                    print("  ✓ Update command: available with multiple targets")
+                    print("  [OK] Update command: available with multiple targets")
                 else:
                     print("  ⚠️  Update command: not available or incomplete")
             except Exception as e:
@@ -1538,7 +1573,7 @@ except KeyboardInterrupt:
                     
                     # Check daily tasks
                     if "_run_daily_tasks" in content:
-                        print("  ✓ Daily tasks method found")
+                        print("  [OK] Daily tasks method found")
                         
                         # Check for existing integrations
                         existing_integrations = []
@@ -1550,7 +1585,7 @@ except KeyboardInterrupt:
                             existing_integrations.append("dependency check")
                         
                         if existing_integrations:
-                            print(f"  ✓ Existing integrations: {', '.join(existing_integrations)}")
+                            print(f"  [OK] Existing integrations: {', '.join(existing_integrations)}")
                         
                         # Find new opportunities
                         opportunities = []
@@ -1591,7 +1626,7 @@ except KeyboardInterrupt:
                             integration_opportunities.extend(opportunities)
                             print(f"  🔍 Found {len(opportunities)} integration opportunities")
                         else:
-                            print("  ✓ No new integration opportunities found")
+                            print("  [OK] No new integration opportunities found")
                     else:
                         print("  ⚠️  Daily tasks method not found")
                 else:
@@ -1601,7 +1636,7 @@ except KeyboardInterrupt:
             if integration_opportunities:
                 print(f"\n📋 Integration Plan ({len(integration_opportunities)} opportunities):")
                 for i, opp in enumerate(integration_opportunities, 1):
-                    print(f"  {i}. {opp['command']} → {opp['target'].replace('_', ' ')}")
+                    print(f"  {i}. {opp['command']} -> {opp['target'].replace('_', ' ')}")
                     print(f"     Benefit: {opp['benefit']}")
                 
                 if dry_run:
@@ -1748,7 +1783,7 @@ except KeyboardInterrupt:
                             success = integrate_into_daily_tasks(opp['command'], force)
                             if success:
                                 applied_count += 1
-                                print(f"  ✓ Integrated {opp['command']} into daily tasks")
+                                print(f"  [OK] Integrated {opp['command']} into daily tasks")
                             else:
                                 print(f"  ⚠️  Failed to integrate {opp['command']} into daily tasks")
                         
@@ -1757,7 +1792,7 @@ except KeyboardInterrupt:
                             success = integrate_into_weekly_tasks(opp['command'], force)
                             if success:
                                 applied_count += 1
-                                print(f"  ✓ Integrated {opp['command']} into weekly tasks")
+                                print(f"  [OK] Integrated {opp['command']} into weekly tasks")
                             else:
                                 print(f"  ⚠️  Failed to integrate {opp['command']} into weekly tasks")
                     
@@ -1852,7 +1887,7 @@ except KeyboardInterrupt:
                                 import shutil
                                 archive_path = archive_dir / item['path'].name
                                 shutil.move(str(item['path']), str(archive_path))
-                                print(f"  ✓ Archived to: {archive_path}")
+                                print(f"  [OK] Archived to: {archive_path}")
                             
                             elif action == 'k':
                                 # Mark as internal (would need configuration file)
@@ -1907,7 +1942,7 @@ except KeyboardInterrupt:
                                     existing_tasks.append(task_entry)
                                     task_file.write_text(json.dumps(existing_tasks, indent=2), encoding='utf-8')
                                     display_path = f"{repo_name}/agent_integration_requests/{task_file.name}"
-                                    print(f"  ✓ Agent integration task recorded → {display_path}")
+                                    print(f"  [OK] Agent integration task recorded -> {display_path}")
                                 else:
                                     print("  ℹ️  Agent integration task already recorded for this module")
 
@@ -1915,7 +1950,7 @@ except KeyboardInterrupt:
                                 confirm = input(f"  ⚠️  DELETE {item['module_name']} permanently? (type 'DELETE' to confirm): ")
                                 if confirm == 'DELETE':
                                     item['path'].unlink()
-                                    print(f"  ✓ Deleted {item['path']}")
+                                    print(f"  [OK] Deleted {item['path']}")
                                 else:
                                     print("  Deletion cancelled")
                             
@@ -1933,7 +1968,7 @@ except KeyboardInterrupt:
                         for item in orphaned_modules:
                             archive_path = archive_dir / item['path'].name
                             shutil.move(str(item['path']), str(archive_path))
-                            print(f"  ✓ Archived: {item['module_name']} → {archive_path}")
+                            print(f"  [OK] Archived: {item['module_name']} -> {archive_path}")
                             archived_count += 1
                         
                         print(f"\n✨ Archived {archived_count} module(s) to quarantine_legacy_archive/orphaned_modules/")
@@ -1966,7 +2001,7 @@ except KeyboardInterrupt:
                                 import shutil
                                 archive_path = archive_dir / item['path'].name
                                 shutil.move(str(item['path']), str(archive_path))
-                                print(f"  ✓ Archived to: {archive_path}")
+                                print(f"  [OK] Archived to: {archive_path}")
                             
                             elif action == 'k':
                                 # Mark as internal (would need configuration file)
@@ -2021,7 +2056,7 @@ except KeyboardInterrupt:
                                     existing_tasks.append(task_entry)
                                     task_file.write_text(json.dumps(existing_tasks, indent=2), encoding='utf-8')
                                     display_path = f"{repo_name}/agent_integration_requests/{task_file.name}"
-                                    print(f"  ✓ Agent integration task recorded → {display_path}")
+                                    print(f"  [OK] Agent integration task recorded -> {display_path}")
                                 else:
                                     print("  ℹ️  Agent integration task already recorded for this module")
 
@@ -2029,7 +2064,7 @@ except KeyboardInterrupt:
                                 confirm = input(f"  ⚠️  DELETE {item['module_name']} permanently? (type 'DELETE' to confirm): ")
                                 if confirm == 'DELETE':
                                     item['path'].unlink()
-                                    print(f"  ✓ Deleted {item['path']}")
+                                    print(f"  [OK] Deleted {item['path']}")
                                 else:
                                     print("  Deletion cancelled")
                             
@@ -2047,7 +2082,7 @@ except KeyboardInterrupt:
                         for item in orphaned_modules:
                             archive_path = archive_dir / item['path'].name
                             shutil.move(str(item['path']), str(archive_path))
-                            print(f"  ✓ Archived: {item['module_name']} → {archive_path}")
+                            print(f"  [OK] Archived: {item['module_name']} -> {archive_path}")
                             archived_count += 1
                         
                         print(f"\n✨ Archived {archived_count} module(s) to quarantine_legacy_archive/orphaned_modules/")
@@ -2070,7 +2105,7 @@ except KeyboardInterrupt:
                             report_content += "\n"
                         
                         report_path.write_text(report_content, encoding='utf-8')
-                        print(f"\n✓ Report saved to: {report_path}")
+                        print(f"\n[OK] Report saved to: {report_path}")
                     
                     else:
                         print("\nSkipped orphaned module resolution.")
@@ -2240,7 +2275,13 @@ except KeyboardInterrupt:
                     handle_discovery_instances,
                     handle_discovery_system,
                     handle_intelligence_info,
-                    handle_coordination_coordinate
+                    handle_coordination_coordinate,
+                    handle_process_detail,
+                    handle_process_kill,
+                    handle_process_anomalies,
+                    handle_process_tree,
+                    handle_process_watch,
+                    handle_process_snapshot
                 )
                 
                 # Route to appropriate handler based on subcommand
@@ -2256,6 +2297,18 @@ except KeyboardInterrupt:
                     handle_intelligence_info(args)
                 elif args.process_subcommand == 'coordinate':
                     handle_coordination_coordinate(args)
+                elif args.process_subcommand == 'detail':
+                    handle_process_detail(args)
+                elif args.process_subcommand == 'kill':
+                    handle_process_kill(args)
+                elif args.process_subcommand == 'anomalies':
+                    handle_process_anomalies(args)
+                elif args.process_subcommand == 'tree':
+                    handle_process_tree(args)
+                elif args.process_subcommand == 'watch':
+                    handle_process_watch(args)
+                elif args.process_subcommand == 'snapshot':
+                    handle_process_snapshot(args)
                 else:
                     # No subcommand provided - show help
                     print("Usage: codesentinel memory process <subcommand>")
@@ -2493,7 +2546,7 @@ except KeyboardInterrupt:
                 }
                 save_integrity_state(state)
                 
-                print("\n✓ Integrity monitoring ENABLED")
+                print("\n[OK] Integrity monitoring ENABLED")
                 print(f"  Baseline: {baseline_path.name}")
                 if watch_enabled:
                     print(f"  Real-time monitoring: Active")
@@ -2515,7 +2568,7 @@ except KeyboardInterrupt:
                 state['monitoring'] = False
                 save_integrity_state(state)
                 
-                print("\n✓ Integrity monitoring DISABLED")
+                print("\n[OK] Integrity monitoring DISABLED")
                 print("  Files will not be checked during maintenance cycles.")
                 print("  Use 'codesentinel integrity start' to re-enable.\n")
             
@@ -2542,7 +2595,7 @@ except KeyboardInterrupt:
                     if baseline_file.exists():
                         baseline_file.unlink()
                 
-                print("\n✓ Integrity state RESET")
+                print("\n[OK] Integrity state RESET")
                 print("  All baselines and monitoring state cleared.")
                 print("  Generate a new baseline to resume monitoring.")
                 print("  Command: codesentinel integrity config baseline\n")
@@ -2586,7 +2639,7 @@ except KeyboardInterrupt:
                     
                     print("\nRun 'codesentinel !!!! --agent' for AI-assisted remediation.")
                 else:
-                    print("\n✓ All files passed integrity check!")
+                    print("\n[OK] All files passed integrity check!")
             
             elif args.integrity_action == 'config':
                 """Manage integrity configuration."""
@@ -2631,7 +2684,7 @@ except KeyboardInterrupt:
                     output_path = Path(args.output) if args.output else None
                     saved_path = validator.save_baseline(output_path)
                     
-                    print(f"\n✓ Baseline generated successfully!")
+                    print(f"\n[OK] Baseline generated successfully!")
                     print(f"Saved to: {saved_path}")
                     print(f"\nStatistics:")
                     stats = baseline['statistics']
@@ -2687,6 +2740,10 @@ except KeyboardInterrupt:
             
             return
 
+    except KeyboardInterrupt:
+        print("\n\n[!] Operation interrupted by user (Ctrl+C)")
+        print("[OK] Exiting gracefully...")
+        sys.exit(0)
     except Exception as e:
         import traceback
         if str(e):

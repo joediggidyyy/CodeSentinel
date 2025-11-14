@@ -364,7 +364,7 @@ def verify_and_fix_documentation_pipeline(file_paths: List[Path], dry_run: bool 
                         doc_file.write_text(normalized, encoding='utf-8')
                         fixes_applied = True
                         if verbose:
-                            print(f"  ✓ Fixed (whitespace): {doc_file.name}")
+                            print(f"  [OK] Fixed (whitespace): {doc_file.name}")
                     except Exception as e:
                         results['errors'].append(f"{doc_file.name}: Could not fix whitespace")
                         continue
@@ -381,7 +381,7 @@ def verify_and_fix_documentation_pipeline(file_paths: List[Path], dry_run: bool 
                 if success:
                     fixes_applied = True
                     if verbose:
-                        print(f"  ✓ Fixed (branding): {doc_file.name}")
+                        print(f"  [OK] Fixed (branding): {doc_file.name}")
         
         # 4. Verify headers/footers (markdown only)
         is_hf_compliant = True
@@ -398,13 +398,13 @@ def verify_and_fix_documentation_pipeline(file_paths: List[Path], dry_run: bool 
                     if success:
                         fixes_applied = True
                         if verbose:
-                            print(f"  ✓ Fixed (header/footer): {doc_file.name}")
+                            print(f"  [OK] Fixed (header/footer): {doc_file.name}")
         
         # Summary for this file
         if not file_issues:
             results['verified'].append(doc_file.name)
             if verbose:
-                print(f"  ✓ Full compliance: {doc_file.name}")
+                print(f"  [OK] Full compliance: {doc_file.name}")
         elif fixes_applied:
             results['fixed'].append(doc_file.name)
         elif dry_run and file_issues:

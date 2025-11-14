@@ -262,7 +262,7 @@ def parse_markdown_to_elements(md_content, doc_title="CodeSentinel Document"):
             )
 
             for item in list_items:
-                elements.append(Paragraph(f"• {item}", bullet_style))
+                elements.append(Paragraph(f"* {item}", bullet_style))
 
         # Numbered lists
         elif re.match(r'^\d+\.\s', line):

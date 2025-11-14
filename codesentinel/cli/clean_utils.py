@@ -117,7 +117,7 @@ def _handle_root_policy_cleanup(
                 print(f"  Found (policy violation): {item.name} [{reason}]")
 
     if not policy_violations:
-        print("  ✓ No policy violations found in root directory.")
+        print("  [OK] No policy violations found in root directory.")
         return True
 
     print(f"\n⚠️  Found {len(policy_violations)} policy violations:")
@@ -153,11 +153,11 @@ def _handle_root_policy_cleanup(
             shutil.move(str(violation['path']), str(target_path))
             archived_count += 1
             if verbose:
-                print(f"  ✓ Archived: {violation['name']} → quarantine_legacy_archive/")
+                print(f"  [OK] Archived: {violation['name']} -> quarantine_legacy_archive/")
         except Exception as e:
             print(f"   Failed to archive {violation['name']}: {e}")
     
-    print(f"\n✓ Successfully archived {archived_count}/{len(policy_violations)} items")
+    print(f"\n[OK] Successfully archived {archived_count}/{len(policy_violations)} items")
     print("  Items are preserved in quarantine_legacy_archive/ for review")
     return True
 
@@ -181,7 +181,7 @@ def _handle_emoji_cleanup(workspace_root: Path, dry_run: bool, verbose: bool, in
     )
     
     # Define allowed emojis
-    ALLOWED_EMOJIS = {'✓', '❌', '⚠️', '🔍', '🧹', '✨', '⚙️', '📄', '🔖', '⭐', '➡️'}
+    ALLOWED_EMOJIS = set()
     
     # Exclude directories
     exclude_dirs = {'.git', '.github', '__pycache__', 'build', 'dist', 'docs/assets'}
@@ -325,7 +325,7 @@ def perform_cleanup(args):
             
             archived_count += 1
             if verbose:
-                print(f"  ✓ Archived: {path.name}")
+                print(f"  [OK] Archived: {path.name}")
         except Exception as e:
             print(f"   Failed to archive {path.name}: {e}")
 

@@ -5,25 +5,35 @@ from codesentinel.utils.metrics_wrapper import track_cli_command
 import time
 import json
 
+
 @track_cli_command('test_error')
-def test_func():
-    """Function that will raise an error."""
+def _test_error_function():
+    """Function that will raise an error for metrics logging."""
     time.sleep(0.05)
     raise ValueError('Test error for logging')
 
-# Run test
-try:
-    test_func()
-except ValueError:
-    pass
 
-# Check the log
-print("Error logged. Verifying...")
-with open('docs/metrics/agent_operations.jsonl') as f:
-    lines = f.readlines()
+def test_error_is_logged():
+    """Verify that a failing command is still logged by the metrics system.
+
+    This is a pytest-style test function so that failures are reported
+    through pytest instead of raising at import time.
+    """
+
+    # Run the instrumented function and swallow the expected error
+    try:
+        _test_error_function()
+    except ValueError:
+        pass
+
+    # Check the last metrics record
+    with open('docs/metrics/agent_operations.jsonl') as f:
+        lines = f.readlines()
+
+    assert lines, "Expected at least one metrics record to be present"
+
     last_record = json.loads(lines[-1])
-    print(f"\nLast command logged:")
-    print(f"  Command: {last_record['command']}")
-    print(f"  Success: {last_record['success']}")
-    print(f"  Error: {last_record.get('error', 'None')}")
-    print(f"  Duration: {last_record['duration_ms']:.2f}ms")
+    assert last_record['command'] == 'test_error'
+    assert last_record['success'] is False
+    # Error field may vary, but it should be present for failing command
+    assert 'error' in last_record

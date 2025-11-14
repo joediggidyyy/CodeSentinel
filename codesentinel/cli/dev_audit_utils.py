@@ -101,8 +101,8 @@ def configure_workspace_tools():
             json.dump(existing_settings, f, indent=2)
         
         print()
-        print("✓ Workspace configuration created successfully!")
-        print(f"✓ File: {settings_path.relative_to(workspace_root)}")
+        print("[OK] Workspace configuration created successfully!")
+        print(f"[OK] File: {settings_path.relative_to(workspace_root)}")
         print()
         print("Configuration applied:")
         print("  - Enabled: pylance, github-pull-request")
@@ -175,9 +175,9 @@ def run_tool_audit():
 
     print("-" * 35)
     if not issues_found:
-        print("✓ Tool configuration audit passed. No issues found.")
+        print("[OK] Tool configuration audit passed. No issues found.")
     else:
-        print("✗ Tool configuration audit failed. Please address the issues above.")
+        print("[FAIL] Tool configuration audit failed. Please address the issues above.")
         print("  Refer to 'docs/TOOL_MANAGEMENT_POLICY.md' for guidance.")
 
 def perform_dev_audit(args, codesentinel):
@@ -391,7 +391,7 @@ def apply_automated_fixes(codesentinel, dry_run=True):
         safe_actions.append(('minimalism', hint))
     
     if not safe_actions:
-        print("✓ No safe automated actions found")
+        print("[OK] No safe automated actions found")
         print("  All issues require manual review or agent decision")
         print()
         return {"status": "success", "fixes_applied": 0, "message": "No safe automated actions available"}
@@ -425,7 +425,7 @@ def apply_automated_fixes(codesentinel, dry_run=True):
                     for pycache_dir in workspace_root.rglob("__pycache__"):
                         if pycache_dir.is_dir():
                             shutil.rmtree(pycache_dir)
-                    print("  ✓ Removed __pycache__ directories")
+                    print("  [OK] Removed __pycache__ directories")
                     applied = True
                 except Exception as e:
                     print(f"  ❌ Failed: {e}")
@@ -455,10 +455,10 @@ def apply_automated_fixes(codesentinel, dry_run=True):
                             f.write("\\n# Auto-added by dev-audit --fix\\n")
                             for pattern in new_entries:
                                 f.write(f"{pattern}\\n")
-                        print(f"  ✓ Added {len(new_entries)} patterns to .gitignore")
+                        print(f"  [OK] Added {len(new_entries)} patterns to .gitignore")
                         applied = True
                     else:
-                        print("  ✓ Patterns already in .gitignore")
+                        print("  [OK] Patterns already in .gitignore")
                         applied = True
                 except Exception as e:
                     print(f"  ❌ Failed: {e}")

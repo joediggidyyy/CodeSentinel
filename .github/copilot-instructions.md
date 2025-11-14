@@ -3,7 +3,7 @@ This file is auto-organized by the instruction defragmentation utility.
 Last organized: 2025-11-13 (Updated by agent analysis)
 -->
 
-CANONICAL_PROJECT_VERSION: "1.1.2"
+CANONICAL_PROJECT_VERSION: "1.1.3.b1"
 
 ````instructions
 # CodeSentinel AI Agent Instructions

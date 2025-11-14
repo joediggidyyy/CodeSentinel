@@ -79,7 +79,7 @@ class FormattingCLI:
             print(f"File: {file_path}")
             print(f"Scheme: {scheme}")
             print(f"Status: {'Modified' if metadata['changes'] else 'No changes'}")
-            print(f"Lines: {metadata['lines_original']} → {metadata['lines_formatted']}")
+            print(f"Lines: {metadata['lines_original']} -> {metadata['lines_formatted']}")
             print(f"{'='*60}\n")
 
             if metadata['changes']:
@@ -96,7 +96,7 @@ class FormattingCLI:
                     with open(file_path_obj, 'w', encoding='utf-8') as f:
                         f.write(formatted_content)
                     self.logger.info(f"File formatted and written: {file_path}")
-                    print("✓ Changes applied to file")
+                    print("[OK] Changes applied to file")
 
                 else:
                     print("Use --write to apply changes or --dry-run for preview")
@@ -326,7 +326,7 @@ class FormattingCLI:
 
         formatter = DocumentFormatter()
         for rule_name, rule_config in formatter.STYLE_RULES.items():
-            status = "✓ Enabled" if rule_config.get('enabled') else " Disabled"
+            status = "[OK] Enabled" if rule_config.get('enabled') else " Disabled"
             severity = rule_config.get('severity', 'N/A')
             desc = rule_config['description']
 

@@ -48,6 +48,7 @@ ALLOWED_ROOT_DIRS = {
     '.vscode',
     '.codesentinel',
     '.pytest_cache',
+    '.agent_session',  # Agent session cache (ignored via .gitignore)
     'archive',
     'codesentinel',
     'deployment',

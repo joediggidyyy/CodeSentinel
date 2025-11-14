@@ -324,7 +324,7 @@ def handle_scan_command(args, codesentinel) -> int:
             results['security'] = security_results
             
             if not args.json:
-                print(f"✓ Security scan completed. Found {security_results['summary']['total_vulnerabilities']} vulnerabilities.")
+                print(f"[OK] Security scan completed. Found {security_results['summary']['total_vulnerabilities']} vulnerabilities.")
         except Exception as e:
             print(f"⚠ Security scan failed: {e}")
             results['security'] = {'error': str(e)}
@@ -350,7 +350,7 @@ def handle_scan_command(args, codesentinel) -> int:
         if args.output:
             with open(args.output, 'w') as f:
                 f.write(output_data)
-            print(f"\n✓ Scan results saved to {args.output}")
+            print(f"\n[OK] Scan results saved to {args.output}")
         else:
             print(output_data)
     
@@ -406,7 +406,7 @@ def _print_bloat_results(results: Dict[str, Any], root: Path):
         if large['files']:
             print(f"  Top {min(5, len(large['files']))} largest:")
             for file in large['files'][:5]:
-                print(f"    • {file['path']} ({file['size_mb']} MB)")
+                print(f"    * {file['path']} ({file['size_mb']} MB)")
     
     # Documentation
     docs = results['documentation']

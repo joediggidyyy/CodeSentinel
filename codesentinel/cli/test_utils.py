@@ -862,7 +862,7 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
             if test["completed"]:
                 status = "[OK]"
             elif test.get("failed", False):
-                status = "✗"
+                status = "[FAIL]"
             else:
                 status = " "
             print(f"  [{status}] {test['id']}. {test['name']}")
@@ -1081,7 +1081,10 @@ def _run_test_menu(manager, venv_path, tester_name, installation_complete=False)
                     for line in lines:
                         print(f"  {line}")
                     if len(content.split('\n')) > 15:
-                        print(f"  ... ({len(content.split('\n')) - 15} more lines)")
+                        newline_char = '\n'
+                        total_lines = len(content.split(newline_char))
+                        remaining = total_lines - 15
+                        print(f"  ... ({remaining} more lines)")
                         
                     print("-" * 70)
                 except Exception as e:

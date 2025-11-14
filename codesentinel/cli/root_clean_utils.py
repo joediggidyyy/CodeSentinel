@@ -202,18 +202,18 @@ def interactive_item_review(policy_violations: List[Dict]) -> List[Dict]:
             continue
         elif item_choice == 'a':
             actions_to_take.append(violation)
-            print(f"  ✓ Will {violation['action']}: {violation['name']} → {violation['target']}")
+            print(f"  [OK] Will {violation['action']}: {violation['name']} -> {violation['target']}")
         elif item_choice == 'm':
             custom_target = input("  Enter destination directory: ").strip()
             violation['target'] = custom_target if custom_target else violation['target']
             violation['action'] = 'move'
             actions_to_take.append(violation)
-            print(f"  ✓ Will move: {violation['name']} → {violation['target']}")
+            print(f"  [OK] Will move: {violation['name']} -> {violation['target']}")
         elif item_choice == 'r':
             violation['action'] = 'archive'
             violation['target'] = 'quarantine_legacy_archive/'
             actions_to_take.append(violation)
-            print(f"  ✓ Will archive: {violation['name']}")
+            print(f"  [OK] Will archive: {violation['name']}")
     
     return actions_to_take
 
@@ -264,7 +264,7 @@ def execute_cleanup_actions(
                         target_path = archive_dir / f"{base_name}_{timestamp}"
                 
                 shutil.move(str(violation['path']), str(target_path))
-                print(f"  ✓ Archived: {violation['name']} → quarantine_legacy_archive/")
+                print(f"  [OK] Archived: {violation['name']} -> quarantine_legacy_archive/")
                 success_count += 1
                 outcome_success = True
                 
@@ -297,7 +297,7 @@ def execute_cleanup_actions(
                         target_path = target_dir / f"{base_name}_{timestamp}"
                 
                 shutil.move(str(violation['path']), str(target_path))
-                print(f"  ✓ Moved: {violation['name']} → {violation['target']}")
+                print(f"  [OK] Moved: {violation['name']} -> {violation['target']}")
                 success_count += 1
                 outcome_success = True
                 
@@ -330,7 +330,7 @@ def execute_cleanup_actions(
                 )
         
         except Exception as e:
-            print(f"  ✗ Failed: {violation['name']} - {e}")
+            print(f"  [FAIL] Failed: {violation['name']} - {e}")
             
             # Track security event for failed remediation
             _track_security_event(

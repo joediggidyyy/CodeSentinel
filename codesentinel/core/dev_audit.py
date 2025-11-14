@@ -882,8 +882,27 @@ RECOMMENDED APPROACH:
         # Check for legacy quarantine directories
         if (root / "quarantine").exists():
             violations.append("Legacy quarantine directory present; archive recommended")
+        
+        # Check if quarantine_legacy_archive is gitignored before flagging as violation
         if (root / "quarantine_legacy_archive").exists():
-            violations.append("Legacy archive directory still present (cleanup recommended after verification)")
+            gitignore_path = root / ".gitignore"
+            is_ignored = False
+            
+            if gitignore_path.exists():
+                try:
+                    gitignore_content = gitignore_path.read_text(errors="ignore")
+                    # Check for quarantine_legacy_archive/ in gitignore
+                    if "quarantine_legacy_archive/" in gitignore_content or "quarantine_legacy_archive" in gitignore_content:
+                        is_ignored = True
+                        verified_false_positives.append({
+                            "violation": "Legacy archive directory still present",
+                            "reason": "Archive is properly gitignored and excluded from version control"
+                        })
+                except Exception:
+                    pass
+            
+            if not is_ignored:
+                violations.append("Legacy archive directory still present (cleanup recommended after verification)")
 
         return {
             "violations": violations,
