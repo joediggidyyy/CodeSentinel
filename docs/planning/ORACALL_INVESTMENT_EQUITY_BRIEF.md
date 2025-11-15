@@ -49,4 +49,5 @@ No equity allocations or ROI-linked equity grants are defined in existing planni
 1. Finance + Legal to propose equity pool sizes aligned with each tier and update this brief.  
 2. Update `MARKET_NEEDS_COSTS_AND_ADOPTION_ESTIMATES.md` Section 5 with any approved non-salary allowances.  
 3. Maintain linkage to `PLACEHOLDER_REGISTRY.md (PL-006)` so agents know equity decisions remain outstanding.  
-4. Once equity allocations are defined, add a “Compensation & Equity” appendix to the multi-level grant proposal for complete traceability.
+4. Once equity allocations are defined, add a “Compensation & Equity” appendix to the multi-level grant proposal for complete traceability.  
+5. Reference `docs/checkpoints/.checkpoint_oracl_integration_complete.md` for the current merge-ready status and outstanding actions tied to PL-006.

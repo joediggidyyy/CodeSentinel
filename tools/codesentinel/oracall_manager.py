@@ -33,6 +33,34 @@ CACHE_EXPIRY_HOURS = {
 
 SEVERITY_ORDER = ['low', 'medium', 'high', 'critical']
 
+NAV_LINKS = [
+    {
+        'title': 'Placeholder Registry (PL-001–PL-006)',
+        'path': Path('docs/planning/PLACEHOLDER_REGISTRY.md'),
+        'description': 'Authoritative list of inactive scaffolding and activation criteria.'
+    },
+    {
+        'title': 'ORACall Implementation Proposal',
+        'path': Path('docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md'),
+        'description': 'Execution blueprint for scaffolding, SLA enforcement, and feeds.'
+    },
+    {
+        'title': 'ORACall Investment & Equity Brief',
+        'path': Path('docs/planning/ORACALL_INVESTMENT_EQUITY_BRIEF.md'),
+        'description': 'Financial context and placeholder PL-006 owner actions.'
+    },
+    {
+        'title': 'ORACall Checkpoint (Merge Ready)',
+        'path': Path('docs/checkpoints/.checkpoint_oracl_integration_complete.md'),
+        'description': 'Latest merge-ready snapshot tying all placeholders to validation steps.'
+    },
+    {
+        'title': 'ORACall Templates README',
+        'path': Path('docs/reports/README.md'),
+        'description': 'Explains metadata headers, feed locations, and report flows.'
+    }
+]
+
 
 class OracallManager:
     """Coordinates ORACall scaffolding, SLA tracking, and feeds."""
@@ -57,6 +85,21 @@ class OracallManager:
         self.job_dir.mkdir(parents=True, exist_ok=True)
 
         self.adapter: IncidentSyncAdapter = self._build_adapter()
+        self.navigation_links = self._build_navigation_links()
+
+    def _build_navigation_links(self) -> List[Dict[str, Any]]:
+        links: List[Dict[str, Any]] = []
+        for entry in NAV_LINKS:
+            rel_path = entry['path']
+            abs_path = self.workspace_root / rel_path
+            exists = abs_path.exists()
+            links.append({
+                'title': entry['title'],
+                'path': self._relative_path(abs_path) if exists else rel_path.as_posix(),
+                'description': entry['description'],
+                'exists': exists
+            })
+        return links
 
     def _build_adapter(self) -> IncidentSyncAdapter:
         integrations = self.config_manager.get('integrations', {}) or {}
@@ -334,6 +377,19 @@ class OracallManager:
         except ValueError:
             return False
 
+    def navigation_map(self) -> List[Dict[str, Any]]:
+        """Return navigation metadata for agents and docs."""
+        # Refresh to capture newly created files without reinstantiating the manager
+        self.navigation_links = self._build_navigation_links()
+        return self.navigation_links
+
+    def render_navigation_text(self) -> str:
+        lines = ["ORACall Navigation Map"]
+        for link in self.navigation_map():
+            status = 'available' if link['exists'] else 'missing'
+            lines.append(f"- {link['title']} ({status}): {link['path']}\n  {link['description']}")
+        return '\n'.join(lines)
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='ORACall management utilities')
@@ -356,6 +412,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     feed = subparsers.add_parser('feed', help='Inspect the ORACall JSONL feed')
     feed.add_argument('--tail', type=int, default=5, help='Number of entries to display from the end')
+
+    guide = subparsers.add_parser('guide', help='Show navigation references for ORACall artifacts')
+    guide.add_argument('--format', choices=['text', 'json'], default='text',
+                      help='Output format for navigation map')
 
     return parser
 
@@ -386,6 +446,11 @@ def main() -> None:
             with open(manager.feed_path, 'r', encoding='utf-8') as handle:
                 entries = [json.loads(line) for line in handle if line.strip()]
         print(json.dumps(entries[-tail:], indent=2))
+    elif args.command == 'guide':
+        if args.format == 'json':
+            print(json.dumps(manager.navigation_map(), indent=2))
+        else:
+            print(manager.render_navigation_text())
 
 
 if __name__ == '__main__':

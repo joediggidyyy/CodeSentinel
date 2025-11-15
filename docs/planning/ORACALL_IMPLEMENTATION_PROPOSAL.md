@@ -83,4 +83,5 @@ All scaffolding and inactive infrastructure referenced above (adapters, config t
 
 1. Confirm plan acceptance with ORACL Operations lead.  
 2. Kick off Workstream 1 immediately; log progress in SessionMemory for traceability.  
-3. After Workstream 1 PR merges, proceed sequentially through Workstreams 2 and 3, updating this file with status notes.
+3. After Workstream 1 PR merges, proceed sequentially through Workstreams 2 and 3, updating this file with status notes.  
+4. For the authoritative status snapshot, see `docs/checkpoints/.checkpoint_oracl_integration_complete.md` (captures the merge-ready state as of 2025-11-14).
