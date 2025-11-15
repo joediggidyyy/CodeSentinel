@@ -97,5 +97,18 @@
       "enabled": true,
       "schedule": "last 16:00"
     }
+  },
+  "integrations": {
+    "severity_sync_threshold": "high",
+    "jira": {
+      "enabled": false,
+      "project_key": "",
+      "issue_type": "Incident"
+    },
+    "servicenow": {
+      "enabled": false,
+      "instance_url": "",
+      "table": "incident"
+    }
   }
 }

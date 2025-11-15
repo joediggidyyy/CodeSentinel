@@ -19,6 +19,7 @@ The CodeSentinel Reporting System provides automated, scheduled report generatio
 - **Dependency Security** (Markdown) - Package vulnerabilities and update recommendations
 - **Performance Trends** (JSON) - Week-over-week performance analysis
 - **Root Compliance** (Markdown) - Root directory policy adherence
+- **ORACL Weekly Engineer** (Markdown) - Tier-2 engineer compliance + incentive snapshot stored under `MEASUREMENT_REPORTS/weekly`
 
 ### Bi-Weekly Reports (Friday 5:00 PM)
 
@@ -31,6 +32,10 @@ The CodeSentinel Reporting System provides automated, scheduled report generatio
 
 - **System Health Overview** (Markdown) - 30-day performance trends and reliability metrics
 - **Codebase Metrics** (JSON) - Lines of code, complexity analysis, maintainability scores
+
+### Quarterly Reports (Quarterly 5:00 PM)
+
+- **ORACL Quarterly Engineer** (Markdown) - Tier-2 engineer performance review stored under `MEASUREMENT_REPORTS/quarterly`
 
 ### Release-Triggered Reports
 
@@ -104,14 +109,20 @@ Location: `codesentinel.json`
 
 ## Directory Structure
 
-```
+```text
 docs/reports/
 ├── daily/              # Daily report outputs
 ├── weekly/             # Weekly report outputs
 ├── biweekly/           # Bi-weekly report outputs
 ├── monthly/            # Monthly report outputs
+├── quarterly/          # Quarterly schedule outputs
 ├── releases/           # Release-specific reports
 ├── features/           # Feature-specific reports
+├── INCIDENT_REPORTS/   # ORACL incident reports
+├── PHASE_REPORTS/      # ORACL job completion reports
+├── MEASUREMENT_REPORTS/
+│   ├── weekly/         # ORACL weekly engineer reports
+│   └── quarterly/      # ORACL quarterly engineer reviews
 ├── templates/          # Report templates (Markdown & JSON)
 └── archive/            # Archived reports (retention policy)
 ```
@@ -129,8 +140,17 @@ python tools/codesentinel/report_workflow.py daily
 # Generate all weekly reports
 python tools/codesentinel/report_workflow.py weekly
 
+# Generate quarterly ORACL engineer review
+python tools/codesentinel/report_workflow.py quarterly
+
 # Generate specific report type
 python tools/codesentinel/report_workflow.py single --report-type security_scan
+
+# Generate ORACL incident shell
+python tools/codesentinel/report_workflow.py single --report-type oracl_incident_report
+
+# Generate ORACL job completion summary
+python tools/codesentinel/report_workflow.py single --report-type oracl_job_completion
 
 # Generate release report
 python tools/codesentinel/report_workflow.py single --report-type pre_release_testing --version 1.2.0
@@ -192,6 +212,36 @@ codesentinel scheduler run biweekly
 codesentinel scheduler run monthly
 ```
 
+## ORACall Automation
+
+Use `tools/codesentinel/oracall_manager.py` to scaffold Tier-2 ORACall dual reports, enforce SLAs, and populate the partner feed.
+
+```bash
+# Create analytic + action stubs for a critical event
+python tools/codesentinel/oracall_manager.py scaffold --title "Cache Poisoning" --engineer "oracl.ops" --severity critical
+
+# Evaluate SLA windows without firing alerts
+python tools/codesentinel/oracall_manager.py sla-check --warn-only
+
+# Mark the analytic report complete after review
+python tools/codesentinel/oracall_manager.py complete ORACALL-20251114-001 --report analytic
+
+# Inspect the latest feed entries that satellites will ingest
+python tools/codesentinel/oracall_manager.py feed --tail 3
+```
+
+Key directories/files:
+
+- `docs/reports/oracall/events/` — JSON metadata for every event (SLA targets, distribution level, report status)
+- `docs/reports/INCIDENT_REPORTS/`, `docs/reports/PHASE_REPORTS/` — Markdown stubs generated from ORACL templates with severity + due markers
+- `docs/reports/feeds/oracall_feed.jsonl` — Append-only JSONL stream (schema: `docs/planning/oracall_feed_schema.json`) used for partner ingestion
+
+Future Jira/ServiceNow pushes can be toggled later via `codesentinel.json` → `integrations.*`; until then the manager routes events through a null adapter while preserving payload structure.
+
+Every generated Markdown document now includes ASCII metadata headers (`distribution_level`, `cache_expiry_hours`, `feed_id`, `severity`, and SLA targets) to keep file-drop consumers aligned with the JSONL feed.
+
+> Placeholder tracking: see `docs/planning/PLACEHOLDER_REGISTRY.md` (entries PL-001–PL-005) for the current inactive adapters, signing hooks, and metadata headers that support this workflow.
+
 ## Report Retention Policy
 
 ### Automatic Cleanup
@@ -227,6 +277,19 @@ Example Markdown template:
 {{ details }}
 ```
 
+### ORACL Internal Templates
+
+The following Tier-2 templates ship with this repository for ORACL-run reviews:
+
+| Template | Purpose | Storage Target |
+|----------|---------|----------------|
+| `templates/oracl_incident_report.md` | Policy or execution incident timeline, corrective actions, compliance loopback | `docs/reports/INCIDENT_REPORTS/INC-YYYYMMDD-###.md` |
+| `templates/oracl_job_completion.md` | Task bundle completion summary, hallucination ledger, compliance checklist | `docs/reports/PHASE_REPORTS/JOB-YYYYMMDD-###.md` |
+| `templates/oracl_weekly_engineer.md` | Weekly engineer check-in (mode usage, metrics, risks) | `docs/reports/MEASUREMENT_REPORTS/weekly/YYYY-W##-name.md` |
+| `templates/oracl_quarterly_engineer.md` | Quarterly engineer performance + reward/punishment log | `docs/reports/MEASUREMENT_REPORTS/quarterly/YYYY-Q#-name.md` |
+
+Each template includes Tier metadata, compliance checklist, and placeholders for collaboration index plus Advise/Mode levels. Reference them directly or extend per the process above.
+
 ### Adding New Report Types
 
 1. Edit `tools/config/reporting.json`:
@@ -237,13 +300,16 @@ Example Markdown template:
     "custom_report": {
       "type": "markdown",
       "template": "templates/custom_report.md",
-      "description": "Description of custom report"
+      "description": "Description of custom report",
+      "output_subdir": "INCIDENT_REPORTS"
     }
   }
 }
 ```
 
-2. Add generator method in `tools/codesentinel/report_generator.py`:
+> `output_subdir` is optional. When omitted, the workflow stores the report under the schedule directory (daily/weekly/etc.).
+
+1. Add generator method in `tools/codesentinel/report_generator.py`:
 
 ```python
 def _generate_custom_report(self, **kwargs) -> Dict[str, Any]:
@@ -255,7 +321,7 @@ def _generate_custom_report(self, **kwargs) -> Dict[str, Any]:
     }
 ```
 
-3. Register in `_generate_report_data()` method:
+1. Register in `_generate_report_data()` method:
 
 ```python
 generators = {
@@ -321,6 +387,7 @@ Located in `tools/codesentinel/report_workflow.py`
 - `generate_weekly_reports()` - Generate all weekly reports
 - `generate_biweekly_reports()` - Generate all bi-weekly reports
 - `generate_monthly_reports()` - Generate all monthly reports
+- `generate_quarterly_reports()` - Generate all quarterly reports (ORACL engineer reviews)
 - `generate_single_report(report_type, **kwargs)` - Generate specific report
 - `cleanup_old_reports()` - Clean up according to retention policy
 - `list_available_reports()` - List all available report types

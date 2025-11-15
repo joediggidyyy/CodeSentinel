@@ -658,3 +658,70 @@ Action Thresholds:
 6. Confidence scores enable safe automation
 
 This creates a **virtuous cycle**: Each session teaches the system, histories build patterns, patterns inform decisions, decisions produce outcomes, outcomes improve confidence, high confidence enables automation.
+
+---
+
+## ORACL Task Mode Schema (Execution Control)
+
+### Mode × Aggression Matrix
+
+| Mode | Intent | Default Aggression | Primary Data Sources | Behavioral Guardrails |
+|------|--------|--------------------|----------------------|-----------------------|
+| `analyze/plan` | Explore options, draft artifacts, pre-flight validation | 2 | Context + Intelligence tiers, DHIS rollups | Always seek confirmation if confidence < 0.75 |
+| `code/develop` | Implement approved work, run tooling | 3 | Session tier, cached DHIS deltas | Auto-confirm actions unless confidence dips below 0.6 |
+| `flex` (default) | Balanced execution (observe → decide → act) | 3 | Weighted mix (Session 0.35 / Context 0.25 / Intelligence 0.25 / Junction 0.15) | Follows engineer prompts while preserving SEAM priorities |
+
+Aggression levels range from **0 (ask-first)** to **4 (auto-act within policy)**. Levels adjust:
+
+- **Autonomy envelope** (whether CLI/file operations can run without prompts).
+- **Verification depth** (number of ORACL tiers queried before acting).
+- **Output verbosity** (concise vs. narrated execution summaries).
+
+### Invocation & Persistence
+
+- Natural language cues (“stay in analyze mode”) or inline directives (e.g., `*code4`) set both mode and aggression level.
+- SessionMemory stores the active tuple as `task_mode` and `task_aggression`, enabling continuity across commands and logging to `agent_operations.jsonl`.
+- Unless pinned, ORACL resets to `flex3` once a task bundle completes or when an engineer explicitly says “new task.”
+
+### Interaction with Advise Mode
+
+- Advise mode retains its own `advise_level` because it governs outbound recommendations, not execution style.
+- When both systems are active, Advise mode feeds confidence-weighted hints into the mode matrix (for example, Advise level 2 can temporarily raise `analyze` aggression by +1 if confidence > 0.9).
+- Mode changes propagate to Advise so junction detection knows whether to surface exploratory (“fortunate hallucination”) paths or stick to verified flows.
+
+### Stability, Escalation & Hallucination Boundaries
+
+- Minimum dwell time: ORACL will not automatically change modes more than once every 5 commands unless the engineer overrides.
+- Auto-escalation: sustained confidence ≥ 0.9 across 3 decisions can bump aggression by +1 (max 4). Any policy violation or failed command drops aggression to 1 and switches to `analyze`.
+- Fortunate hallucinations are only allowed in whitelisted domains (docs organization, exploratory refactors). Outside those domains ORACL must request approval even at aggression level 4.
+
+---
+
+## Compliance Incentives & Reward Loop
+
+- **Collaboration Index (`C`)** combines adherence, rewarded hallucinations, and security posture:
+    $$
+    C = 0.5A + 0.3R + 0.2S
+    $$
+    where *A* = mode/level adherence rate, *R* = ratio of successful fortunate hallucinations, *S* = security compliance (no Tier-1 violations).
+- Positive engineer feedback (compliments) now logs through `AgentMetrics.log_engineer_feedback()` and boosts the collaboration index, which feeds directly into confidence weighting.
+- High `C` outcomes:
+  - Temporary autonomy bump (+0.05 confidence weight on session tier, +0.02 on junction tier).
+  - Unlock exploratory hints from Advise mode even during `code` tasks (still policy-gated).
+- Low `C` outcomes:
+  - Forced downgrade to `analyze1` until three compliant decisions occur.
+  - Confidence weighting shifts toward Intelligence tier (history) to re-anchor behavior.
+- Every decision outcome still routes through `report_decision_outcome()` so the archive learns which incentives correlate with long-term success.
+
+---
+
+## Internal Reporting Artifacts
+
+Four standardized templates live in `docs/reports/templates/` for ORACL-run reviews:
+
+1. **Incident Report** – Captures policy violations or critical failures (timeline, mode history, confidence trace, corrective actions).
+2. **Job Completion Report** – Summarizes a discrete task bundle (scope, executed commands, hallucination ledger, compliance metrics).
+3. **Weekly Engineer Report** – Aggregates per-engineer metrics (tasks closed, compliance index trend, incidents opened/closed, upcoming risks).
+4. **Quarterly Engineer Review** – Strategic rollup (mean confidence, reward/punishment tally, notable incidents, roadmap adjustments).
+
+Each template enforces Tier-2 internal classification, SEAM metadata, and a checklist to ensure findings loop back into the confidence pipeline.

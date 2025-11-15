@@ -71,13 +71,19 @@ class ReportGenerator:
             timestamp = datetime.now().strftime('%Y-%m-%d')
             filename = f"{report_type}_{timestamp}"
 
+            output_subdir = report_config.get('output_subdir')
+            if output_subdir:
+                target_dir = Path(output_subdir)
+            else:
+                target_dir = Path(self._get_schedule_type(report_type))
+
             if report_config['type'] == 'json':
                 filename += '.json'
-                filepath = self.base_path / self._get_schedule_type(report_type) / filename
+                filepath = self.base_path / target_dir / filename
                 self._write_json_report(filepath, report_data)
             else:  # markdown
                 filename += '.md'
-                filepath = self.base_path / self._get_schedule_type(report_type) / filename
+                filepath = self.base_path / target_dir / filename
                 self._write_markdown_report(filepath, report_data, report_type)
 
             self.logger.info(f"Generated report: {filepath}")
@@ -125,6 +131,10 @@ class ReportGenerator:
             'implementation_docs': self._generate_implementation_docs,
             'code_review_summary': self._generate_code_review_summary,
             'integration_impact': self._generate_integration_impact,
+            'oracl_incident_report': self._generate_oracl_incident_report,
+            'oracl_job_completion': self._generate_oracl_job_completion,
+            'oracl_weekly_engineer': self._generate_oracl_weekly_engineer,
+            'oracl_quarterly_engineer': self._generate_oracl_quarterly_engineer,
         }
 
         generator = generators.get(report_type)
@@ -402,6 +412,121 @@ class ReportGenerator:
             "integration_points": [],
             "risk_assessment": "low"
         }
+
+    def _generate_oracl_incident_report(self, **kwargs) -> Dict[str, Any]:
+        """Generate ORACL incident report metadata."""
+        now = datetime.now()
+        start_time = kwargs.get('start_time', now.strftime('%Y-%m-%d %H:%M'))
+        end_time = kwargs.get('end_time', start_time)
+        collab_before = float(kwargs.get('collaboration_before', 1.00))
+        collab_after = float(kwargs.get('collaboration_after', collab_before))
+        confidence = float(kwargs.get('confidence_at_detection', 0.92))
+
+        return {
+            "timestamp": now.isoformat(),
+            "incident_id": kwargs.get('incident_id', now.strftime('INC-%Y%m%d-%H%M')),
+            "time_range": f"{start_time} to {end_time}",
+            "primary_engineer": kwargs.get('primary_engineer', 'Unassigned'),
+            "active_mode": kwargs.get('active_mode', 'flex3'),
+            "aggression_level": kwargs.get('aggression_level', '2'),
+            "advise_level": kwargs.get('advise_level', '2'),
+            "confidence_at_detection": f"{confidence:.2f}",
+            "trigger": kwargs.get('trigger', 'security_event'),
+            "affected_assets": self._stringify_sequence(kwargs.get('affected_assets', [])),
+            "observed_impact": kwargs.get('observed_impact', 'No automated impact recorded.'),
+            "hallucination_flag": kwargs.get('hallucination_flag', 'no (auto-generated)'),
+            "collaboration_shift": f"{collab_before:.2f} -> {collab_after:.2f}",
+            "reward_action": kwargs.get('reward_action', 'None recorded'),
+            "report_filed_by": kwargs.get('report_filed_by', 'ORACL Workflow'),
+            "report_approved_by": kwargs.get('report_approved_by', 'Pending')
+        }
+
+    def _generate_oracl_job_completion(self, **kwargs) -> Dict[str, Any]:
+        """Generate ORACL job completion metadata."""
+        now = datetime.now()
+        start_time = kwargs.get('start_time', now.strftime('%Y-%m-%d %H:%M'))
+        end_time = kwargs.get('end_time', start_time)
+        engineers = kwargs.get('engineers', ['Unassigned'])
+
+        return {
+            "timestamp": now.isoformat(),
+            "job_id": kwargs.get('job_id', now.strftime('JOB-%Y%m%d-%H%M')),
+            "timeframe": f"{start_time} -> {end_time}",
+            "engineers": self._stringify_sequence(engineers),
+            "requested_mode": kwargs.get('requested_mode', 'flex3'),
+            "mode_timeline": kwargs.get('mode_timeline', 'flex3 (start) -> flex3 (end)'),
+            "aggression_range": kwargs.get('aggression_range', '1-3'),
+            "deliverable_notes": kwargs.get('deliverable_notes', 'Pending engineer input.'),
+            "decision_summary": kwargs.get('decision_summary', 'Ledger entries pending.'),
+            "reports_updated": self._stringify_sequence(kwargs.get('reports_updated', [])),
+            "tests_run": self._stringify_sequence(kwargs.get('tests_run', [])),
+            "seam_status": kwargs.get('seam_status', 'All priorities satisfied automatically.'),
+            "collaboration_index": f"{float(kwargs.get('collaboration_index', 1.00)):.2f}",
+            "compliments_logged": kwargs.get('compliments_logged', '0 (auto)'),
+            "rewards_applied": kwargs.get('rewards_applied', 'None yet'),
+            "follow_on_tasks": self._stringify_sequence(kwargs.get('follow_on_tasks', []), separator='\n') or 'None'
+        }
+
+    def _generate_oracl_weekly_engineer(self, **kwargs) -> Dict[str, Any]:
+        """Generate ORACL weekly engineer snapshot."""
+        now = datetime.now()
+
+        return {
+            "timestamp": now.isoformat(),
+            "week_number": kwargs.get('week_number', now.strftime('%Y-W%W')),
+            "engineer": kwargs.get('engineer', 'Unassigned'),
+            "primary_domains": self._stringify_sequence(kwargs.get('primary_domains', [])),
+            "dominant_mode": kwargs.get('dominant_mode', 'flex3'),
+            "avg_collaboration_index": f"{float(kwargs.get('avg_collaboration_index', 1.00)):.2f}",
+            "compliments_logged": kwargs.get('compliments_logged', '0'),
+            "rewards_granted": self._stringify_sequence(kwargs.get('rewards_granted', [])),
+            "punishments_applied": self._stringify_sequence(kwargs.get('punishments_applied', [])),
+            "incidents_delta": kwargs.get('incidents_delta', '0 opened / 0 closed'),
+            "oracl_queries": kwargs.get('oracl_queries', '0 (0% cache hits)'),
+            "tests_executed": kwargs.get('tests_executed', '0'),
+            "fortunate_hallucinations": kwargs.get('fortunate_hallucinations', '0 / 0'),
+            "documentation_updates": self._stringify_sequence(kwargs.get('documentation_updates', [])),
+            "emerging_risks": self._stringify_sequence(kwargs.get('emerging_risks', [])),
+            "mode_adjustments": kwargs.get('mode_adjustments', 'None requested'),
+            "planned_deliverables": self._stringify_sequence(kwargs.get('planned_deliverables', []))
+        }
+
+    def _generate_oracl_quarterly_engineer(self, **kwargs) -> Dict[str, Any]:
+        """Generate ORACL quarterly engineer review snapshot."""
+        now = datetime.now()
+
+        return {
+            "timestamp": now.isoformat(),
+            "quarter": kwargs.get('quarter', f"{now.year}-Q{((now.month - 1) // 3) + 1}"),
+            "engineer": kwargs.get('engineer', 'Unassigned'),
+            "primary_mission": kwargs.get('primary_mission', 'Stabilize and harden infrastructure.'),
+            "average_mode_mix": kwargs.get('average_mode_mix', 'analyze 40% / code 35% / flex 25%'),
+            "collaboration_index_range": kwargs.get('collaboration_index_range', '0.90 -> 1.05'),
+            "compliment_count": kwargs.get('compliment_count', '0'),
+            "autonomy_boosts": self._stringify_sequence(kwargs.get('autonomy_boosts', [])),
+            "downgrades_applied": self._stringify_sequence(kwargs.get('downgrades_applied', [])),
+            "corrective_actions": self._stringify_sequence(kwargs.get('corrective_actions', [])),
+            "highlight_one": kwargs.get('highlight_one', 'Stood up ORACL automation templates.'),
+            "highlight_two": kwargs.get('highlight_two', 'Maintained zero incidents during beta.'),
+            "lesson_learned": kwargs.get('lesson_learned', 'Documented incentives earlier improves morale.'),
+            "mode_strategy": kwargs.get('mode_strategy', 'Maintain flex3 default, escalate only with approval.'),
+            "training_focus": self._stringify_sequence(kwargs.get('training_focus', ['Memory architecture research'])),
+            "monitoring_hooks": self._stringify_sequence(kwargs.get('monitoring_hooks', ['ORACL dashboards', 'codesentinel !!!!'])),
+            "approval_chain": kwargs.get('approval_chain', 'Engineering Leadership (pending signature)')
+        }
+
+    @staticmethod
+    def _stringify_sequence(value: Optional[Any], separator: str = ', ') -> str:
+        """Join list-like values into a readable string."""
+        if value is None:
+            return 'None'
+        if isinstance(value, str):
+            return value
+        if isinstance(value, (list, tuple, set)):
+            if not value:
+                return 'None'
+            return separator.join(str(item) for item in value)
+        return str(value)
 
     def _write_json_report(self, filepath: Path, data: Dict[str, Any]):
         """Write JSON report to file."""

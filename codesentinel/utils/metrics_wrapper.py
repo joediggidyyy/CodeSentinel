@@ -213,3 +213,19 @@ def track_performance_metric(
         improvement_pct=improvement_pct,
         metadata=metadata
     )
+
+
+def log_engineer_feedback(
+    feedback_type: str,
+    message: str,
+    intensity: float = 1.0,
+    metadata: Optional[Dict[str, Any]] = None
+) -> None:
+    """Record engineer feedback and propagate collaboration boosts."""
+    metrics = get_metrics()
+    metrics.log_engineer_feedback(
+        feedback_type=feedback_type,
+        message=message,
+        intensity=intensity,
+        metadata=metadata
+    )

@@ -8,6 +8,7 @@
       "weekly": 26,
       "biweekly": 26,
       "monthly": -1,
+      "quarterly": -1,
       "releases": -1,
       "features": -1
     },
@@ -35,7 +36,8 @@
         "code_quality_audit",
         "dependency_security",
         "performance_trends",
-        "root_compliance"
+        "root_compliance",
+        "oracl_weekly_engineer"
       ]
     },
     "biweekly": {
@@ -54,6 +56,13 @@
       "reports": [
         "system_health_overview",
         "codebase_metrics"
+      ]
+    },
+    "quarterly": {
+      "enabled": true,
+      "schedule": "Quarterly 17:00",
+      "reports": [
+        "oracl_quarterly_engineer"
       ]
     },
     "releases": {
@@ -181,6 +190,30 @@
       "type": "markdown",
       "template": "templates/integration_impact.md",
       "description": "Feature performance implications and dependency changes"
+    },
+    "oracl_incident_report": {
+      "type": "markdown",
+      "template": "templates/oracl_incident_report.md",
+      "description": "Tier-2 incident workflow log for ORACL operations",
+      "output_subdir": "INCIDENT_REPORTS"
+    },
+    "oracl_job_completion": {
+      "type": "markdown",
+      "template": "templates/oracl_job_completion.md",
+      "description": "Phase/charter completion summary with SEAM compliance checklist",
+      "output_subdir": "PHASE_REPORTS"
+    },
+    "oracl_weekly_engineer": {
+      "type": "markdown",
+      "template": "templates/oracl_weekly_engineer.md",
+      "description": "Engineer-level weekly status with compliance + incentive audit",
+      "output_subdir": "MEASUREMENT_REPORTS/weekly"
+    },
+    "oracl_quarterly_engineer": {
+      "type": "markdown",
+      "template": "templates/oracl_quarterly_engineer.md",
+      "description": "Quarterly Tier-2 engineer review snapshot",
+      "output_subdir": "MEASUREMENT_REPORTS/quarterly"
     }
   },
   "alerts": {

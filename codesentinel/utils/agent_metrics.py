@@ -65,6 +65,7 @@ class AgentMetrics:
         # Session tracking
         self.session_id = datetime.now().strftime("%Y%m%d%H%M%S")
         self.session_start = time.time()
+        self.collaboration_index = 1.0  # Boosted by engineer feedback
         
         # Buffering to reduce file I/O overhead
         self._buffer = defaultdict(list)
@@ -175,9 +176,43 @@ class AgentMetrics:
             'user_action': user_action,
             'confidence': round(confidence, 3),
             'outcome': outcome,
+            'collaboration_index': round(self.collaboration_index, 3),
             'metadata': metadata or {}
         }
         
+        self._append_to_log(self.operations_log, record)
+
+    def log_engineer_feedback(
+        self,
+        feedback_type: str,
+        message: str,
+        intensity: float = 1.0,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Log engineer feedback and adjust collaboration index."""
+        normalized = max(0.0, min(intensity, 5.0))
+        delta = round(0.02 * normalized, 3)
+        outcome = 'neutral'
+
+        if feedback_type == 'compliment':
+            self.collaboration_index = min(self.collaboration_index + delta, 1.5)
+            outcome = 'positive'
+        elif feedback_type in ['concern', 'correction']:
+            self.collaboration_index = max(self.collaboration_index - delta, 0.5)
+            outcome = 'negative'
+
+        record = {
+            'timestamp': datetime.now().isoformat(),
+            'session_id': self.session_id,
+            'event_type': 'engineer_feedback',
+            'feedback_type': feedback_type,
+            'message': message,
+            'intensity': normalized,
+            'outcome': outcome,
+            'collaboration_index': round(self.collaboration_index, 3),
+            'metadata': metadata or {}
+        }
+
         self._append_to_log(self.operations_log, record)
     
     def log_oracl_query(

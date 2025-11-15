@@ -115,6 +115,23 @@ class ReportWorkflow:
                 'error': str(e)
             }
 
+    def generate_quarterly_reports(self) -> Dict[str, Any]:
+        """Generate all quarterly reports."""
+        self.logger.info("Generating quarterly reports")
+        try:
+            reports = self.report_generator.generate_scheduled_reports('quarterly')
+            return {
+                'success': True,
+                'reports_generated': len(reports),
+                'report_paths': reports
+            }
+        except Exception as e:
+            self.logger.error(f"Quarterly report generation failed: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+
     def generate_single_report(self, report_type: str, **kwargs) -> Dict[str, Any]:
         """
         Generate a single report by type.
@@ -171,7 +188,7 @@ class ReportWorkflow:
 def main():
     """Main entry point for report workflow."""
     parser = argparse.ArgumentParser(description='CodeSentinel Report Workflow')
-    parser.add_argument('action', choices=['daily', 'weekly', 'biweekly', 'monthly', 'single', 'cleanup', 'list'],
+    parser.add_argument('action', choices=['daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'single', 'cleanup', 'list'],
                         help='Action to perform')
     parser.add_argument('--report-type', help='Specific report type to generate (for single action)')
     parser.add_argument('--version', help='Release version (for release reports)')
@@ -196,6 +213,10 @@ def main():
     elif args.action == 'monthly':
         result = workflow.generate_monthly_reports()
         print(f"Monthly reports: {result}")
+
+    elif args.action == 'quarterly':
+        result = workflow.generate_quarterly_reports()
+        print(f"Quarterly reports: {result}")
 
     elif args.action == 'single':
         if not args.report_type:

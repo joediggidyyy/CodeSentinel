@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ORACall Feed Entry",
+  "description": "Schema for docs/reports/feeds/oracall_feed.jsonl entries",
+  "type": "object",
+  "required": [
+    "feed_id",
+    "event_type",
+    "severity",
+    "timestamp",
+    "reports",
+    "status",
+    "analytic_due",
+    "action_due",
+    "content_hash",
+    "signature"
+  ],
+  "properties": {
+    "feed_id": {
+      "type": "string",
+      "pattern": "^ORACALL-[0-9]{8}-[0-9]{3}$"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": ["create", "update"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reports": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "analytic_due": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "action_due": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "distribution_level": {
+      "type": "string",
+      "default": "tier-2"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "signature": {
+      "type": "string",
+      "description": "Placeholder for Ed25519 signatures"
+    }
+  }
+}

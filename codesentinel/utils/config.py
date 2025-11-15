@@ -288,4 +288,10 @@ class ConfigManager:
             if not alerts['email'].get('smtp_server'):
                 errors.append("Email alerts enabled but 'smtp_server' missing")
 
+        integrations = cfg.get('integrations')
+        if isinstance(integrations, dict):
+            threshold = integrations.get('severity_sync_threshold')
+            if threshold and threshold.lower() not in {'critical', 'high', 'medium', 'low'}:
+                errors.append("integrations.severity_sync_threshold must be one of critical/high/medium/low")
+
         return len(errors) == 0, errors
