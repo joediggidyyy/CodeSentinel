@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from codesentinel.utils.alerts import AlertManager
 from codesentinel.utils.config import ConfigManager
 from codesentinel.utils.integrations import IncidentSyncAdapter, NullIncidentSyncAdapter
+from codesentinel.utils.session_memory import SessionMemory
 
 SEVERITY_WINDOWS = {
     'critical': {'analytic_hours': 2, 'action_hours': 4},
@@ -32,6 +33,8 @@ CACHE_EXPIRY_HOURS = {
 }
 
 SEVERITY_ORDER = ['low', 'medium', 'high', 'critical']
+
+PLACEHOLDER_MANIFEST = Path('docs/planning/placeholder_manifest.json')
 
 NAV_LINKS = [
     {
@@ -58,6 +61,11 @@ NAV_LINKS = [
         'title': 'ORACall Templates README',
         'path': Path('docs/reports/README.md'),
         'description': 'Explains metadata headers, feed locations, and report flows.'
+    },
+    {
+        'title': 'Placeholder Manifest (automation)',
+        'path': Path('docs/planning/placeholder_manifest.json'),
+        'description': 'Machine-readable placeholder metadata mirrored from the registry.'
     }
 ]
 
@@ -71,6 +79,7 @@ class OracallManager:
         self.config_manager = ConfigManager(config_path=self.workspace_root / 'codesentinel.json')
         self.config_manager.load_config()
         self.alert_manager = AlertManager(self.config_manager)
+        self.session_memory = SessionMemory(workspace_root=self.workspace_root)
 
         self.events_dir = self.workspace_root / 'docs' / 'reports' / 'oracall' / 'events'
         self.feed_path = self.workspace_root / 'docs' / 'reports' / 'feeds' / 'oracall_feed.jsonl'
@@ -86,6 +95,7 @@ class OracallManager:
 
         self.adapter: IncidentSyncAdapter = self._build_adapter()
         self.navigation_links = self._build_navigation_links()
+        self.placeholder_manifest: Dict[str, Any] = self._load_placeholder_manifest()
 
     def _build_navigation_links(self) -> List[Dict[str, Any]]:
         links: List[Dict[str, Any]] = []
@@ -187,6 +197,7 @@ class OracallManager:
 
         self._append_feed_entry(metadata)
         self._maybe_sync_external(metadata)
+        self._log_navigation_reference(context='scaffold', placeholder_ids=['PL-001', 'PL-002', 'PL-003', 'PL-004', 'PL-005'])
 
         self.logger.info("ORACall event scaffolded: %s", base_id)
         return metadata
@@ -228,6 +239,8 @@ class OracallManager:
                     findings.append({**finding, 'level': 'warning'})
                     if not warn_only:
                         self._send_sla_alert(event, report_key, ratio, critical=False)
+        if events:
+            self._log_navigation_reference(context='sla-check', placeholder_ids=['PL-001', 'PL-002', 'PL-003', 'PL-004', 'PL-005'])
         return findings
 
     def mark_complete(self, event_id: str, report: str) -> Dict[str, Any]:
@@ -247,6 +260,7 @@ class OracallManager:
             json.dump(metadata, handle, indent=2)
 
         self._append_feed_entry(metadata, event_type='update')
+        self._log_navigation_reference(context=f'mark-complete:{event_id}', placeholder_ids=['PL-001', 'PL-002', 'PL-003', 'PL-004', 'PL-005'])
         self.logger.info("Marked %s for %s as completed", report, event_id)
         return metadata
 
@@ -271,6 +285,7 @@ class OracallManager:
 
         with open(self.feed_path, 'a', encoding='utf-8') as handle:
             handle.write(json.dumps(feed_payload) + '\n')
+        self._log_navigation_reference(context=f'feed-entry:{metadata.get("event_id", "unknown")}', placeholder_ids=['PL-004', 'PL-005'])
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -377,18 +392,81 @@ class OracallManager:
         except ValueError:
             return False
 
+    def _load_placeholder_manifest(self) -> Dict[str, Any]:
+        manifest_path = self.workspace_root / PLACEHOLDER_MANIFEST
+        if not manifest_path.exists():
+            return {'placeholders': []}
+        try:
+            with open(manifest_path, 'r', encoding='utf-8') as handle:
+                return json.load(handle)
+        except Exception as exc:
+            self.logger.error("Failed to load placeholder manifest: %s", exc)
+            return {'placeholders': []}
+
+    def placeholder_entries(self, placeholder_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        entries = self.placeholder_manifest.get('placeholders', [])
+        if placeholder_id:
+            needle = placeholder_id.lower()
+            return [entry for entry in entries if entry.get('id', '').lower() == needle]
+        return entries
+
     def navigation_map(self) -> List[Dict[str, Any]]:
         """Return navigation metadata for agents and docs."""
         # Refresh to capture newly created files without reinstantiating the manager
         self.navigation_links = self._build_navigation_links()
         return self.navigation_links
 
-    def render_navigation_text(self) -> str:
-        lines = ["ORACall Navigation Map"]
+    def render_navigation_text(self, placeholder_id: Optional[str] = None) -> str:
+        lines = ["ORACall Navigation Map", "", "General References:"]
         for link in self.navigation_map():
             status = 'available' if link['exists'] else 'missing'
             lines.append(f"- {link['title']} ({status}): {link['path']}\n  {link['description']}")
+
+        entries = self.placeholder_entries(placeholder_id)
+        lines.append("")
+        header = "Placeholder Entries" if not placeholder_id else f"Placeholder Entries ({placeholder_id.upper()})"
+        lines.append(header + ":")
+        if not entries:
+            lines.append("- No placeholder entries found for the provided filter.")
+        else:
+            for entry in entries:
+                lines.append(f"- {entry['id']} {entry.get('name', '')}")
+                lines.append(f"  Status: {entry.get('status', 'unknown')}")
+                lines.append(f"  Description: {entry.get('description', 'n/a')}")
+                files = entry.get('files', [])
+                if files:
+                    lines.append("  Files:")
+                    for file_entry in files:
+                        lines.append(f"    - {file_entry.get('path')}: {file_entry.get('summary', '')}")
+                checkpoint = entry.get('checkpoint') or {}
+                if checkpoint:
+                    anchor = checkpoint.get('anchor')
+                    path = checkpoint.get('path')
+                    suffix = f"#{anchor}" if anchor else ''
+                    lines.append(f"  Checkpoint: {path}{suffix}")
         return '\n'.join(lines)
+
+    def _resolve_placeholder_links(self, placeholder_ids: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+        if placeholder_ids:
+            ids = {pid.lower() for pid in placeholder_ids}
+            return [entry for entry in self.placeholder_entries() if entry.get('id', '').lower() in ids]
+        return self.placeholder_entries()
+
+    def _log_navigation_reference(self, context: str, placeholder_ids: Optional[List[str]] = None) -> None:
+        try:
+            entries = self._resolve_placeholder_links(placeholder_ids)
+            payload = {
+                'context': context,
+                'placeholder_ids': [entry.get('id') for entry in entries],
+                'links': entries,
+                'documents': self.navigation_map()
+            }
+            self.session_memory.log_decision(
+                decision=f"ORACall navigation context: {context}",
+                rationale=json.dumps(payload, indent=2)
+            )
+        except Exception as exc:
+            self.logger.warning("Failed to log navigation context: %s", exc)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -416,6 +494,7 @@ def build_parser() -> argparse.ArgumentParser:
     guide = subparsers.add_parser('guide', help='Show navigation references for ORACall artifacts')
     guide.add_argument('--format', choices=['text', 'json'], default='text',
                       help='Output format for navigation map')
+    guide.add_argument('--placeholder', help='Filter to a specific placeholder ID (e.g., PL-004)')
 
     return parser
 
@@ -446,6 +525,22 @@ def main() -> None:
             with open(manager.feed_path, 'r', encoding='utf-8') as handle:
                 entries = [json.loads(line) for line in handle if line.strip()]
         print(json.dumps(entries[-tail:], indent=2))
+        manager._log_navigation_reference(context='feed-view', placeholder_ids=['PL-004', 'PL-005'])
+    elif args.command == 'guide':
+        placeholder = args.placeholder
+        if args.format == 'json':
+            payload = {
+                'documents': manager.navigation_map(),
+                'placeholders': manager.placeholder_entries(placeholder)
+            }
+            print(json.dumps(payload, indent=2))
+        else:
+            print(manager.render_navigation_text(placeholder_id=placeholder))
+
+        if placeholder:
+            manager._log_navigation_reference(context=f'guide:{placeholder}', placeholder_ids=[placeholder])
+        else:
+            manager._log_navigation_reference(context='guide:all', placeholder_ids=None)
     elif args.command == 'guide':
         if args.format == 'json':
             print(json.dumps(manager.navigation_map(), indent=2))

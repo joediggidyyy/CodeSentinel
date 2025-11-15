@@ -48,3 +48,9 @@
 - `docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md` — outlines how placeholders PL-001 through PL-005 support ORACall scaling.  
 - `docs/reports/README.md` — documents metadata headers and feed locations for ORACall exports.  
 - `docs/checkpoints/.checkpoint_oracl_integration_complete.md` — latest merge-ready snapshot confirming registry coverage (PL-001–PL-006) and activation priorities.
+
+---
+
+## Machine-Readable Manifest
+
+- `docs/planning/placeholder_manifest.json` — canonical source for automation. Each entry mirrors the table above (ID, files, decision docs, checkpoint anchor). Update the manifest whenever this registry changes so CLI tools and SessionMemory logs stay in sync.

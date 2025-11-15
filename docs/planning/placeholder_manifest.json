@@ -1,0 +1,143 @@
+{
+  "version": "1.0",
+  "updated": "2025-11-14",
+  "placeholders": [
+    {
+      "id": "PL-001",
+      "name": "IncidentSyncAdapter abstraction",
+      "status": "pending",
+      "description": "Abstract interface that defines outbound incident sync contract before Jira/ServiceNow connectors ship.",
+      "files": [
+        {
+          "path": "codesentinel/utils/integrations/incident_sync_adapter.py",
+          "summary": "Abstract base class establishing prepare/push/audit methods."
+        }
+      ],
+      "decision_docs": [
+        "docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md"
+      ],
+      "checkpoint": {
+        "path": "docs/checkpoints/.checkpoint_oracl_integration_complete.md",
+        "anchor": "pl-001-incidentsyncadapter-abstraction"
+      }
+    },
+    {
+      "id": "PL-002",
+      "name": "NullIncidentSyncAdapter",
+      "status": "pending",
+      "description": "Safe default adapter that logs outbound intent while real connectors remain offline.",
+      "files": [
+        {
+          "path": "codesentinel/utils/integrations/null_incident_adapter.py",
+          "summary": "No-op adapter implementation returning success responses."
+        }
+      ],
+      "decision_docs": [
+        "docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md"
+      ],
+      "checkpoint": {
+        "path": "docs/checkpoints/.checkpoint_oracl_integration_complete.md",
+        "anchor": "pl-002-nullincidentsyncadapter"
+      }
+    },
+    {
+      "id": "PL-003",
+      "name": "Integration config toggles",
+      "status": "pending",
+      "description": "Disabled-by-default Jira/ServiceNow toggles plus severity thresholds enforced by ConfigManager.",
+      "files": [
+        {
+          "path": "codesentinel.json",
+          "summary": "Integrations block controlling adapter enablement and severity thresholds."
+        },
+        {
+          "path": "codesentinel/utils/config.py",
+          "summary": "Validation logic for integrations schema." 
+        }
+      ],
+      "decision_docs": [
+        "docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md"
+      ],
+      "checkpoint": {
+        "path": "docs/checkpoints/.checkpoint_oracl_integration_complete.md",
+        "anchor": "pl-003-integration-config-toggles"
+      }
+    },
+    {
+      "id": "PL-004",
+      "name": "ORACall feed signature placeholder",
+      "status": "pending",
+      "description": "JSONL feed entries reserve signature field until Ed25519 signer is deployed.",
+      "files": [
+        {
+          "path": "tools/codesentinel/oracall_manager.py",
+          "summary": "Feed writer inserts placeholder signature for each entry."
+        },
+        {
+          "path": "docs/reports/feeds/oracall_feed.jsonl",
+          "summary": "Stored feed entries reflecting signature placeholder."
+        }
+      ],
+      "decision_docs": [
+        "docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md",
+        "docs/planning/ORACALL_RECOMMENDATION_REPORT.md"
+      ],
+      "checkpoint": {
+        "path": "docs/checkpoints/.checkpoint_oracl_integration_complete.md",
+        "anchor": "pl-004-ed25519-signer"
+      }
+    },
+    {
+      "id": "PL-005",
+      "name": "ORACall distribution headers",
+      "status": "pending",
+      "description": "Markdown templates embed cache metadata and severity markers ahead of partner API launch.",
+      "files": [
+        {
+          "path": "docs/reports/templates/oracl_incident_report.md",
+          "summary": "Incident template with tier metadata headers."
+        },
+        {
+          "path": "docs/reports/templates/oracl_job_completion.md",
+          "summary": "Action template with distribution headers."
+        },
+        {
+          "path": "docs/reports/templates/oracl_weekly_engineer.md",
+          "summary": "Weekly rollup template referencing distribution fields."
+        },
+        {
+          "path": "docs/reports/templates/oracl_quarterly_engineer.md",
+          "summary": "Quarterly summary template referencing distribution fields."
+        }
+      ],
+      "decision_docs": [
+        "docs/reports/README.md",
+        "docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md"
+      ],
+      "checkpoint": {
+        "path": "docs/checkpoints/.checkpoint_oracl_integration_complete.md",
+        "anchor": "pl-005-api-gateway-headers"
+      }
+    },
+    {
+      "id": "PL-006",
+      "name": "Equity allocation framework",
+      "status": "pending",
+      "description": "Investment brief placeholder for equity/ROI allocation pending Finance & Legal sign-off.",
+      "files": [
+        {
+          "path": "docs/planning/ORACALL_INVESTMENT_EQUITY_BRIEF.md",
+          "summary": "Captures tier-based payroll envelopes and equity TBD status."
+        }
+      ],
+      "decision_docs": [
+        "docs/planning/ORACALL_INVESTMENT_EQUITY_BRIEF.md",
+        "docs/planning/ORACALL_IMPLEMENTATION_PROPOSAL.md"
+      ],
+      "checkpoint": {
+        "path": "docs/checkpoints/.checkpoint_oracl_integration_complete.md",
+        "anchor": "pl-006-equity-allocation"
+      }
+    }
+  ]
+}
